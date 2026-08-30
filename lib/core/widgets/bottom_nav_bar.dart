@@ -29,31 +29,31 @@ class BottomNavBar extends StatelessWidget {
       iconName: 'dashboard',
       activeIconName: 'dashboard',
       label: 'Dashboard',
-      route: AppRoutes.dashboard,
+      route: AppRoutes.docdashboard,
     ),
     BottomNavItem(
       iconName: 'calendar_today',
       activeIconName: 'calendar_today',
       label: 'Appointments',
-      route: AppRoutes.appointments,
+      route: AppRoutes.docappointments,
     ),
     BottomNavItem(
       iconName: 'groups',
       activeIconName: 'groups',
       label: 'Patients',
-      route: AppRoutes.patients,
+      route: AppRoutes.docpatients,
     ),
     BottomNavItem(
       iconName: 'emergency',
       activeIconName: 'emergency',
       label: 'Emergency',
-      route: AppRoutes.sos,
+      route: AppRoutes.docsos,
     ),
     BottomNavItem(
       iconName: 'settings',
       activeIconName: 'settings',
       label: 'Settings',
-      route: AppRoutes.settings,
+      route: AppRoutes.docsettings,
     ),
   ];
 
@@ -62,7 +62,8 @@ class BottomNavBar extends StatelessWidget {
     final isDesktop = MediaQuery.of(context).size.width >= 1024;
     if (isDesktop) return const SizedBox.shrink();
 
-    final navBarBg = Theme.of(context).bottomNavigationBarTheme.backgroundColor ??
+    final navBarBg =
+        Theme.of(context).bottomNavigationBarTheme.backgroundColor ??
         Theme.of(context).colorScheme.surfaceContainerLowest;
     final outlineColor = Theme.of(context).colorScheme.outlineVariant;
 
@@ -105,9 +106,23 @@ class BottomNavBar extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            MaterialSymbolIcon(item.iconName, size: 22, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                            MaterialSymbolIcon(
+                              item.iconName,
+                              size: 22,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
                             const SizedBox(height: 3),
-                            Text(item.label, style: AppTheme.labelMedium.copyWith(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                            Text(
+                              item.label,
+                              style: AppTheme.labelMedium.copyWith(
+                                fontSize: 11,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -126,9 +141,7 @@ class BottomNavBar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: navBarBg,
-        border: Border(
-          top: BorderSide(color: outlineColor, width: 1),
-        ),
+        border: Border(top: BorderSide(color: outlineColor, width: 1)),
         boxShadow: [
           BoxShadow(
             color: Theme.of(context).shadowColor,
@@ -180,7 +193,9 @@ class BottomNavBar extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: active
-                                    ? Theme.of(context).colorScheme.primaryContainer
+                                    ? Theme.of(
+                                        context,
+                                      ).colorScheme.primaryContainer
                                     : Colors.transparent,
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -189,7 +204,9 @@ class BottomNavBar extends StatelessWidget {
                                 size: 22,
                                 color: active
                                     ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                                    : Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                                 fill: active,
                               ),
                             ),
@@ -203,7 +220,9 @@ class BottomNavBar extends StatelessWidget {
                                     : FontWeight.w500,
                                 color: active
                                     ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                                    : Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                               ),
                               child: Text(item.label),
                             ),

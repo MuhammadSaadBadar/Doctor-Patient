@@ -2,10 +2,10 @@ import 'package:get/get.dart';
 import 'package:doctor/core/network/api_client.dart';
 import 'package:doctor/core/services/storage_service.dart';
 import 'package:doctor/core/network/api_interceptors.dart';
-import 'package:doctor/features/profile/repositories/profile_repository.dart';
+import 'package:doctor/doctor/features/profile/repositories/doc_profile_repository.dart';
 import 'package:doctor/core/controllers/navigation_controller.dart';
 
-import 'package:doctor/features/auth/controllers/auth_controller.dart';
+import 'package:doctor/doctor/features/auth/controllers/auth_controller.dart';
 
 class InitialBinding extends Bindings {
   @override
@@ -31,7 +31,10 @@ class InitialBinding extends Bindings {
     Get.put<ApiClient>(apiClient, permanent: true);
 
     // Profile Repository
-    Get.put<ProfileRepository>(ProfileRepository(), permanent: true);
+    Get.put<DoctorProfileRepository>(
+      DoctorProfileRepository(),
+      permanent: true,
+    );
 
     // Auth Controller
     Get.put<AuthController>(AuthController(), permanent: true);

@@ -9,11 +9,11 @@ class NavigationController extends GetxController {
   Timer? _routePollTimer;
 
   static const Map<String, int> _routeToIndex = {
-    AppRoutes.dashboard: 0,
-    AppRoutes.appointments: 1,
-    AppRoutes.patients: 2,
-    AppRoutes.sos: 3,
-    AppRoutes.settings: 4,
+    AppRoutes.docdashboard: 0,
+    AppRoutes.docappointments: 1,
+    AppRoutes.docpatients: 2,
+    AppRoutes.docsos: 3,
+    AppRoutes.docsettings: 4,
   };
 
   @override

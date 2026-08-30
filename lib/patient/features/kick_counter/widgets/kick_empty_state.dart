@@ -1,0 +1,73 @@
+// lib/patient/features/kick_counter/widgets/kick_empty_state.dart
+
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+class KickEmptyState extends StatelessWidget {
+  final VoidCallback? onActionTap;
+
+  const KickEmptyState({super.key, this.onActionTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withOpacity(0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.child_care_rounded,
+                size: 40,
+                color: colorScheme.primary.withOpacity(0.4),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No Kick Sessions Yet',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Start tracking your baby\'s movements today!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: onActionTap ?? () => Get.back(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Start a Session'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
