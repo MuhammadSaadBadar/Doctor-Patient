@@ -1,11 +1,11 @@
 // lib/features/patient/controllers/create_edit_medicine_reminder_controller.dart
 
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:doctor/core/network/api_exceptions.dart';
 import 'package:doctor/core/utils/validation_utils.dart';
 import 'package:doctor/doctor/features/patient/models/doc_medicine_reminder.dart';
 import 'package:doctor/doctor/features/patient/repositories/doc_medicine_reminder_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class DoctorCreateEditMedicineReminderController extends GetxController {
   final DoctorMedicineReminderRepository _repository =
@@ -213,6 +213,16 @@ class DoctorCreateEditMedicineReminderController extends GetxController {
   }
 
   Future<void> submit() async {
+    if (patientId == null || patientId == 0) {
+      patientIdError.value = 'A patient must be selected';
+      Get.snackbar(
+        'Missing patient',
+        'Select a patient before saving this reminder.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
     if (!validateForm()) return;
 
     isSubmitting.value = true;

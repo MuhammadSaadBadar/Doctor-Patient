@@ -13,7 +13,7 @@ class DoctorMedicineReminderRepository {
 
   /// Get medicine reminders for a patient
   Future<MedicineReminderListResult> getMedicineReminders({
-    int? patientId,
+    required int patientId,
     int page = 1,
     int pageSize = 20,
     bool activeOnly = false,
@@ -23,9 +23,7 @@ class DoctorMedicineReminderRepository {
         'page': page,
         'page_size': pageSize,
       };
-      if (patientId != null) {
-        queryParams['patient_id'] = patientId;
-      }
+      queryParams['patient_id'] = patientId;
 
       final response = await _apiClient.get(
         ApiConstants.medicinesReminders,

@@ -4,6 +4,7 @@ import 'package:doctor/patient/features/water_intake/controllers/water_intake_co
 import 'package:doctor/patient/features/water_intake/widgets/glass_counter.dart';
 import 'package:doctor/patient/features/water_intake/widgets/hydration_tip_card.dart';
 import 'package:doctor/patient/features/water_intake/widgets/weekly_history_chart.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,39 +20,15 @@ class WaterIntakeScreen extends GetView<WaterIntakeController> {
 
     return Scaffold(
       backgroundColor: colorScheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
-          onPressed: () => Get.back(),
-        ),
-        title: Text(
-          'Mama Health',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-            color: colorScheme.primary,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
+      appBar: PatientTopAppBar(
+        title: 'Water Intake',
+        trailingActions: [
           IconButton(
-            icon: Icon(
-              Icons.history_rounded,
-              color: colorScheme.onSurface,
-            ),
+            icon: Icon(Icons.history_rounded, color: colorScheme.onSurface),
             onPressed: controller.navigateToHistory,
           ),
-          IconButton(
-            icon: Icon(
-              Icons.notifications_rounded,
-              color: colorScheme.onSurface,
-            ),
-            onPressed: () => Get.toNamed('/notifications'),
-          ),
         ],
+        onNotificationTap: () => Get.toNamed('/notifications'),
       ),
       body: Obx(() {
         if (controller.isLoading.value &&

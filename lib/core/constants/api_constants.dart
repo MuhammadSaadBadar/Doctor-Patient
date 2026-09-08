@@ -1,5 +1,5 @@
 // ============================================================================
-// api_constants.dart — Mama Health API endpoint constants
+// api_constants.dart — Gynae Hub API endpoint constants
 // Base: Render free tier — first request after idle can take 20–50s, retry
 // once on cold DB errors instead of failing immediately.
 // ============================================================================
@@ -44,6 +44,8 @@ class ApiConstants {
       '$apiPrefix/accounts/me/patient-profile/'; // GET/PUT/PATCH — own patient profile
   static const String accountsMeDoctorProfile =
       '$apiPrefix/accounts/me/doctor-profile/'; // GET/PUT/PATCH — own doctor profile
+  static const String accountsMeDoctorProfilePicture =
+      '$apiPrefix/accounts/me/doctor-profile/picture/'; // POST/DELETE — own doctor profile picture
   static const String accountsMeSubscription =
       '$apiPrefix/accounts/me/subscription/'; // GET — patient only, subscription status + payment methods (price shown to patient)
   static const String accountsPaymentMethods =
@@ -65,7 +67,7 @@ class ApiConstants {
   static const String appointments =
       '$apiPrefix/appointments/'; // POST/GET — book / list appointments
   static const String appointmentsDetail =
-      '$apiPrefix/appointments'; // GET/PATCH — append '/{id}/'
+      '$apiPrefix/appointments/'; // GET/PATCH — append '{id}/'
   static const String appointmentDoctorNotesSuffix =
       '/doctor-notes/'; // PATCH — append to appointment detail URL
   static const String appointmentRescheduleSuffix =
@@ -79,6 +81,10 @@ class ApiConstants {
   static const String appointmentPaymentMarkPaidSuffix =
       '/payment/mark-paid/'; // POST — append to appointment detail URL, patient claims they paid the consultation fee
 
+  static const String medicinesIntakeLogs =
+      '$apiPrefix/medicines/intake-logs/'; // ✅ ADDED — GET — read-only adherence history
+  static const String medicinesIntakeLogsDetail =
+      '$apiPrefix/medicines/intake-logs'; // ✅ ADDED — GET — append '/{id}/'
   // ---------------- HEALTH ----------------
   static const String healthPregnancyProgress =
       '$apiPrefix/health/pregnancy-progress/'; // GET — computed live from LMP/EDD
@@ -136,10 +142,6 @@ class ApiConstants {
       '$apiPrefix/medicines/reminders'; // GET/PUT/PATCH/DELETE — append '/{id}/'
   static const String medicinesReminderLogIntakeSuffix =
       '/log-intake/'; // POST — append to reminder detail URL, logs taken/skipped
-  static const String medicinesIntakeLogs =
-      '$apiPrefix/medicines/intake-logs/'; // GET — read-only adherence history
-  static const String medicinesIntakeLogsDetail =
-      '$apiPrefix/medicines/intake-logs'; // GET — append '/{id}/'
 
   // ---------------- NOTIFICATIONS ----------------
   static const String notificationsBroadcast =

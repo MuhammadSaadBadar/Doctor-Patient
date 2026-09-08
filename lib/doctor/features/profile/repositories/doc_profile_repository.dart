@@ -298,4 +298,34 @@ class DoctorProfileRepository {
       return null;
     }
   }
+
+  // ==================== DELETE PROFILE PICTURE ====================
+  /// Delete the doctor's profile picture
+  Future<bool> deleteProfilePicture() async {
+    try {
+      final response = await _apiClient.delete(
+        ApiConstants.accountsMeDoctorProfilePicture,
+      );
+
+      if (response.statusCode == 204 || response.statusCode == 200) {
+        debugPrint('[PROFILE] Profile picture deleted successfully');
+        return true;
+      }
+
+      debugPrint(
+        '[PROFILE] Failed to delete profile picture: ${response.statusCode}',
+      );
+      return false;
+    } on DioException catch (e) {
+      final apiException = ApiErrorMapper.mapDioException(
+        e,
+        defaultMessage: 'Failed to delete profile picture.',
+      );
+      debugPrint('[PROFILE] Delete profile picture error: ${apiException.message}');
+      return false;
+    } catch (e) {
+      debugPrint('[PROFILE] Delete profile picture unexpected error: $e');
+      return false;
+    }
+  }
 }

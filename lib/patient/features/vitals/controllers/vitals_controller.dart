@@ -8,12 +8,16 @@ import 'package:get/get.dart';
 class VitalsController extends GetxController {
   final VitalsRepository _repository = VitalsRepository();
 
+  // State variables
   final isLoading = true.obs;
   final hasError = false.obs;
   final errorMessage = ''.obs;
   final bpHistory = <BloodPressureReading>[].obs;
   final sugarHistory = <BloodSugarReading>[].obs;
   final selectedTab = 0.obs; // 0 = BP, 1 = Sugar
+
+  // ✅ ADDED: Flag to indicate vitals were updated
+  final justUpdatedVitals = false.obs;
 
   @override
   void onInit() {
@@ -54,7 +58,12 @@ class VitalsController extends GetxController {
     );
     if (reading != null) {
       bpHistory.insert(0, reading);
-      Get.snackbar('Logged', 'Blood pressure recorded', duration: const Duration(seconds: 2));
+      justUpdatedVitals.value = true; // ✅ Set flag when vitals are logged
+      Get.snackbar(
+        'Logged',
+        'Blood pressure recorded',
+        duration: const Duration(seconds: 2),
+      );
     } else {
       Get.snackbar('Error', 'Failed to log blood pressure');
     }
@@ -72,13 +81,26 @@ class VitalsController extends GetxController {
     );
     if (reading != null) {
       sugarHistory.insert(0, reading);
-      Get.snackbar('Logged', 'Blood sugar recorded', duration: const Duration(seconds: 2));
+      justUpdatedVitals.value = true; // ✅ Set flag when vitals are logged
+      Get.snackbar(
+        'Logged',
+        'Blood sugar recorded',
+        duration: const Duration(seconds: 2),
+      );
     } else {
       Get.snackbar('Error', 'Failed to log blood sugar');
     }
   }
 
+  // ✅ FIXED: Proper refresh method with flag management
   Future<void> refreshData() async {
     await loadData();
+    // Reset flag after refresh
+    justUpdatedVitals.value = false;
+  }
+
+  // ✅ ADDED: Method to explicitly reset the flag
+  void resetVitalsUpdateFlag() {
+    justUpdatedVitals.value = false;
   }
 }

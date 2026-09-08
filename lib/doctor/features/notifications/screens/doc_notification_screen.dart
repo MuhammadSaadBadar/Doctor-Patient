@@ -1,7 +1,7 @@
 import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/widgets/bottom_nav_bar.dart';
-import 'package:doctor/core/widgets/top_app_bar.dart';
+import 'package:doctor/core/widgets/doc_top_app_bar.dart';
 import 'package:doctor/doctor/features/notifications/controllers/doc_notification_controller.dart';
 import 'package:doctor/doctor/features/notifications/widgets/notification_card.dart';
 import 'package:flutter/material.dart';

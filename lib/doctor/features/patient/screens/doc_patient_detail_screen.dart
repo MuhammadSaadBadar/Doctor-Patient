@@ -3,7 +3,7 @@ import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/widgets/bottom_nav_bar.dart';
 import 'package:doctor/core/widgets/material_symbol_icon.dart';
-import 'package:doctor/core/widgets/top_app_bar.dart';
+import 'package:doctor/core/widgets/doc_top_app_bar.dart';
 import 'package:doctor/doctor/features/patient/controllers/doc_patient_detail_controller.dart';
 import 'package:doctor/doctor/features/patient/models/doc_patient.dart';
 import 'package:doctor/doctor/features/patient/models/doc_symptom.dart';

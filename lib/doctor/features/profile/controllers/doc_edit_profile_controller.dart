@@ -2,13 +2,20 @@
 
 import 'package:doctor/core/constants/app_constants.dart';
 import 'package:doctor/core/network/api_exceptions.dart';
+import 'package:doctor/doctor/features/auth/controllers/auth_controller.dart';
+import 'package:doctor/doctor/features/dashboard/controllers/doc_dashboard_controller.dart';
+import 'package:doctor/doctor/features/profile/controllers/doc_profile_controller.dart';
 import 'package:doctor/doctor/features/profile/models/doc_edit_profile_model.dart';
 import 'package:doctor/doctor/features/profile/repositories/doc_edit_profile_repository.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class DoctorEditProfileController extends GetxController {
   final DoctorEditProfileRepository _repository = DoctorEditProfileRepository();
+  final ImagePicker _imagePicker = ImagePicker();
 
   // Form controllers
   final firstNameController = TextEditingController();
@@ -29,9 +36,15 @@ class DoctorEditProfileController extends GetxController {
   final hasError = false.obs;
   final errorMessage = ''.obs;
 
+  // Avatar state
+  final selectedImage = Rxn<XFile>();
+  final selectedImageBytes = Rxn<Uint8List>();
+  final isUploadingAvatar = false.obs;
+
   // Profile data
   final profile = Rxn<DoctorProfileResponse>();
   final doctorProfile = Rxn<DoctorProfileData>();
+  int _profileImageVersion = DateTime.now().millisecondsSinceEpoch;
 
   // Validation errors
   final firstNameError = ''.obs;
@@ -59,9 +72,16 @@ class DoctorEditProfileController extends GetxController {
   }
 
   String get profileImageUrl {
-    // Return placeholder or actual image URL
-    return 'https://lh3.googleusercontent.com/aida-public/AB6AXuBiw7SYmzasWHgslU9N15rx6URNP9BO7tN0P-8qRZ2OZYX5oCS2kJClCbsaHBUwlHjF4QDrfcgyjT-A59kXCuaeSx1o_EQcVZb3eE3jfm5rQut_u0ZFnRJ0EJyUcdXmtnJEZzSC-7potk55SSxp92B5eyaJXTDiaK4VqwZcHilyHgqXVSKwtR91f_Y63iGKsrTQPqCLo1N7mmgfn8xmg3ACMdl0d3ZGyaAHcBm1wXQgxkpnqX0GSsdV';
+    if (selectedImage.value != null) {
+      return selectedImage.value!.path;
+    }
+    final url = doctorProfile.value?.profilePictureUrl ?? '';
+    if (url.isEmpty) return '';
+    final separator = url.contains('?') ? '&' : '?';
+    return '$url${separator}v=$_profileImageVersion';
   }
+
+  bool get hasProfileImage => profileImageUrl.isNotEmpty;
 
   @override
   void onInit() {
@@ -79,6 +99,7 @@ class DoctorEditProfileController extends GetxController {
       if (data != null) {
         profile.value = data;
         doctorProfile.value = data.doctorProfile;
+        _profileImageVersion = DateTime.now().millisecondsSinceEpoch;
         _populateForm(data);
       } else {
         throw Exception('Failed to load profile data');
@@ -241,6 +262,15 @@ class DoctorEditProfileController extends GetxController {
         // Update the form with the new data
         _updateFormWithNewData(result);
 
+        if (selectedImage.value != null) {
+          final imageUploaded = await uploadAvatar(showSuccessMessage: false);
+          if (!imageUploaded) {
+            throw Exception(
+              'Profile details were saved, but the profile picture could not be uploaded.',
+            );
+          }
+        }
+
         Get.back(result: true);
         Get.snackbar(
           'Success',
@@ -291,6 +321,269 @@ class DoctorEditProfileController extends GetxController {
       }
     } finally {
       isSaving.value = false;
+    }
+  }
+
+  /// Show bottom sheet to pick image source
+  void showImageSourceBottomSheet() {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Theme.of(Get.context!).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Theme.of(Get.context!).colorScheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Text(
+              'Select Profile Picture',
+              style: Theme.of(
+                Get.context!,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildImageSourceOption(
+                  icon: Icons.camera_alt_rounded,
+                  label: 'Take Photo',
+                  onTap: () {
+                    Get.back();
+                    pickImage(ImageSource.camera);
+                  },
+                ),
+                _buildImageSourceOption(
+                  icon: Icons.photo_library_rounded,
+                  label: 'Choose from Gallery',
+                  onTap: () {
+                    Get.back();
+                    pickImage(ImageSource.gallery);
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  Widget _buildImageSourceOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: Theme.of(Get.context!).colorScheme.primaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 32,
+              color: Theme.of(Get.context!).colorScheme.onPrimaryContainer,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            label,
+            style: Theme.of(
+              Get.context!,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Pick image from camera or gallery
+  Future<void> pickImage(ImageSource source) async {
+    // Request permissions before invoking the native picker.
+    final hasPermission = await _ensureSourcePermission(source);
+    if (!hasPermission) {
+      Get.snackbar(
+        'Permission Denied',
+        source == ImageSource.camera
+            ? 'Camera permission is required to take a photo.'
+            : 'Gallery permission is required to choose a photo.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.1),
+        colorText: Colors.red[800],
+      );
+      return;
+    }
+
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      // Verify the picked file is actually accessible. On Android scoped storage
+      // and on some Windows desktop paths, XFile.path can point to a location the
+      // current isolate cannot open (the "_Namespace" failure). Guard against it.
+      final bytes = await pickedFile.readAsBytes();
+      final length = bytes.length;
+      if (length > 5 * 1024 * 1024) {
+        Get.snackbar(
+          'Error',
+          'Image size must be less than 5MB',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withOpacity(0.1),
+          colorText: Colors.red[800],
+        );
+        return;
+      }
+
+      selectedImage.value = pickedFile;
+      selectedImageBytes.value = bytes;
+    } catch (e) {
+      debugPrint('[EDIT_PROFILE] Error picking image: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to pick image. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.1),
+        colorText: Colors.red[800],
+      );
+    }
+  }
+
+  /// Request the right runtime permission for the given [source]. Returns true
+  /// when the caller may proceed with the native picker.
+  Future<bool> _ensureSourcePermission(ImageSource source) async {
+    try {
+      if (kIsWeb) return true;
+
+      if (source == ImageSource.camera) {
+        final status = await Permission.camera.request();
+        return status.isGranted;
+      }
+
+      // Gallery: on Android 13+ this maps to READ_MEDIA_IMAGES via
+      // permission_handler; on older Android it falls back to storage.
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        final photos = await Permission.photos.request();
+        if (photos.isGranted || photos.isLimited) return true;
+        // Fallback for older Android versions
+        final storage = await Permission.storage.request();
+        return storage.isGranted;
+      }
+
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        final status = await Permission.photos.request();
+        return status.isGranted || status.isLimited;
+      }
+
+      // Windows / macOS / Linux desktops: image_picker uses a file picker that
+      // does not require a runtime permission.
+      return true;
+    } catch (e) {
+      debugPrint('[EDIT_PROFILE] Permission error: $e');
+      // If permission_handler is unavailable on the platform, allow the picker
+      // to attempt the operation and surface any native error via the catch
+      // above.
+      return true;
+    }
+  }
+
+  /// Upload profile picture to server
+  Future<bool> uploadAvatar({bool showSuccessMessage = true}) async {
+    final imageFile = selectedImage.value;
+    final imageBytes = selectedImageBytes.value;
+    if (imageFile == null || imageBytes == null) return true;
+
+    isUploadingAvatar.value = true;
+
+    try {
+      final newImageUrl = await _repository.uploadProfilePicture(
+        imageBytes,
+        imageFile.name,
+      );
+
+      if (newImageUrl != null && newImageUrl.isNotEmpty) {
+        selectedImage.value = null;
+        selectedImageBytes.value = null;
+        _profileImageVersion = DateTime.now().millisecondsSinceEpoch;
+
+        // Update local doctorProfile with the new image URL
+        if (doctorProfile.value != null) {
+          doctorProfile.value = DoctorProfileData(
+            specialization: doctorProfile.value!.specialization,
+            licenseNumber: doctorProfile.value!.licenseNumber,
+            yearsOfExperience: doctorProfile.value!.yearsOfExperience,
+            bio: doctorProfile.value!.bio,
+            isAcceptingPatients: doctorProfile.value!.isAcceptingPatients,
+            city: doctorProfile.value!.city,
+            area: doctorProfile.value!.area,
+            latitude: doctorProfile.value!.latitude,
+            longitude: doctorProfile.value!.longitude,
+            consultationFee: doctorProfile.value!.consultationFee,
+            profilePictureUrl: newImageUrl,
+          );
+        }
+
+        // Update global user profile image for cross-screen propagation
+        Get.find<AuthController>().updateProfileImage(newImageUrl);
+
+        // Refresh other doctor controllers so their local state syncs
+        try {
+          Get.find<DoctorProfileController>().refreshProfile();
+        } catch (_) {}
+        try {
+          Get.find<DoctorDashboardController>().refreshDashboard();
+        } catch (_) {}
+
+        if (showSuccessMessage) {
+          Get.snackbar(
+            'Success',
+            'Profile picture updated',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green.withOpacity(0.1),
+            colorText: Colors.green[800],
+          );
+        }
+        return true;
+      } else {
+        throw Exception('Failed to upload profile picture');
+      }
+    } catch (e) {
+      if (showSuccessMessage) {
+        Get.snackbar(
+          'Error',
+          e.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withOpacity(0.1),
+          colorText: Colors.red[800],
+        );
+      }
+      return false;
+    } finally {
+      isUploadingAvatar.value = false;
     }
   }
 

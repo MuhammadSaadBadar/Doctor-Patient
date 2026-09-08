@@ -3,6 +3,7 @@
 import 'package:doctor/patient/features/doctors/controllers/doctor_controller.dart';
 import 'package:doctor/patient/features/doctors/widgets/doctor_card.dart';
 import 'package:doctor/patient/features/doctors/widgets/specialization_chip.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,32 +13,13 @@ class FindDoctorsScreen extends GetView<DoctorController> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.menu_rounded, color: colorScheme.primary),
-          onPressed: () {},
-        ),
-        title: Text(
-          'Mama Health',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.primary,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_rounded, color: colorScheme.primary),
-            onPressed: controller.navigateToNotifications,
-          ),
-        ],
+      appBar: PatientTopAppBar(
+        title: 'Find Doctors',
+        onNotificationTap: controller.navigateToNotifications,
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.doctors.isEmpty) {
@@ -66,23 +48,14 @@ class FindDoctorsScreen extends GetView<DoctorController> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Welcome Section
                   _buildWelcomeSection(context),
-
                   const SizedBox(height: 16),
-
-                  // Search Bar
                   _buildSearchBar(context),
-
                   const SizedBox(height: 12),
-
-                  // Specialization Filters
                   _buildSpecializationFilters(context),
-
                   const SizedBox(height: 16),
-
-                  // Doctor List
                   _buildDoctorList(context),
                 ],
               ),
@@ -96,14 +69,16 @@ class FindDoctorsScreen extends GetView<DoctorController> {
 
   Widget _buildWelcomeSection(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           'Find Expert Care',
           style: TextStyle(
-            fontSize: 28,
+            fontSize: textScale.scale(24).clamp(18.0, 32.0),
             fontWeight: FontWeight.w700,
             color: colorScheme.primary,
           ),
@@ -111,7 +86,10 @@ class FindDoctorsScreen extends GetView<DoctorController> {
         const SizedBox(height: 4),
         Text(
           'Your journey deserves the best medical guidance.',
-          style: TextStyle(fontSize: 16, color: colorScheme.onSurfaceVariant),
+          style: TextStyle(
+            fontSize: textScale.scale(14).clamp(12.0, 18.0),
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -119,13 +97,16 @@ class FindDoctorsScreen extends GetView<DoctorController> {
 
   Widget _buildSearchBar(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
 
     return Obx(
       () => TextField(
         onChanged: controller.setSearchQuery,
         decoration: InputDecoration(
           hintText: 'Search by doctor or specialty...',
-          hintStyle: TextStyle(color: colorScheme.outline.withOpacity(0.6)),
+          hintStyle: TextStyle(
+            color: colorScheme.outline.withValues(alpha: 0.6),
+          ),
           prefixIcon: Icon(Icons.search_rounded, color: colorScheme.outline),
           suffixIcon: controller.searchQuery.value.isNotEmpty
               ? IconButton(
@@ -143,17 +124,20 @@ class FindDoctorsScreen extends GetView<DoctorController> {
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide(color: colorScheme.primary, width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          contentPadding: EdgeInsets.symmetric(
+            vertical: textScale.scale(12).clamp(10.0, 16.0),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildSpecializationFilters(BuildContext context) {
-    return Obx(
-      () => SizedBox(
-        height: 44,
-        child: ListView.builder(
+    // ✅ Fixed: Use Container with height instead of SizedBox, and move Obx inside
+    return Container(
+      height: 44,
+      child: Obx(
+        () => ListView.builder(
           scrollDirection: Axis.horizontal,
           itemCount: controller.specializations.length,
           itemBuilder: (context, index) {
@@ -176,6 +160,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
 
   Widget _buildDoctorList(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
 
     return Obx(() {
       final displayDoctors = controller.filteredDoctors;
@@ -185,6 +170,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
       }
 
       return Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           ...displayDoctors.map((doctor) {
             return Padding(
@@ -219,9 +205,10 @@ class FindDoctorsScreen extends GetView<DoctorController> {
               child: Text(
                 'Showing all ${controller.totalCount.value} available experts in your area.',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: textScale.scale(12).clamp(10.0, 16.0),
                   color: colorScheme.onSurfaceVariant,
                 ),
+                textAlign: TextAlign.center,
               ),
             ),
         ],
@@ -231,10 +218,12 @@ class FindDoctorsScreen extends GetView<DoctorController> {
 
   Widget _buildEmptyState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 48),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.medical_services_rounded,
@@ -245,7 +234,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
           Text(
             'No doctors found',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: textScale.scale(14).clamp(12.0, 18.0),
               fontWeight: FontWeight.w600,
               color: colorScheme.onSurface,
             ),
@@ -253,7 +242,10 @@ class FindDoctorsScreen extends GetView<DoctorController> {
           const SizedBox(height: 8),
           Text(
             'Try adjusting your search or filters',
-            style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: textScale.scale(12).clamp(10.0, 16.0),
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -277,10 +269,10 @@ class FindDoctorsScreen extends GetView<DoctorController> {
 
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surface.withOpacity(0.9),
+        color: colorScheme.surface.withValues(alpha: 0.9),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.05),
+            color: colorScheme.shadow.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -293,40 +285,50 @@ class FindDoctorsScreen extends GetView<DoctorController> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(
-                context,
-                icon: Icons.home_rounded,
-                label: 'Home',
-                onTap: controller.navigateToHome,
-                isActive: false,
+              Expanded(
+                child: _buildNavItem(
+                  context,
+                  icon: Icons.home_rounded,
+                  label: 'Home',
+                  onTap: controller.navigateToHome,
+                  isActive: false,
+                ),
               ),
-              _buildNavItem(
-                context,
-                icon: Icons.event_rounded,
-                label: 'Booking',
-                onTap: () {},
-                isActive: true,
+              Expanded(
+                child: _buildNavItem(
+                  context,
+                  icon: Icons.event_rounded,
+                  label: 'Booking',
+                  onTap: () {},
+                  isActive: true,
+                ),
               ),
-              _buildNavItem(
-                context,
-                icon: Icons.description_rounded,
-                label: 'Reports',
-                onTap: controller.navigateToReports,
-                isActive: false,
+              Expanded(
+                child: _buildNavItem(
+                  context,
+                  icon: Icons.description_rounded,
+                  label: 'Reports',
+                  onTap: controller.navigateToReports,
+                  isActive: false,
+                ),
               ),
-              _buildNavItem(
-                context,
-                icon: Icons.history_rounded,
-                label: 'History',
-                onTap: controller.navigateToHistory,
-                isActive: false,
+              Expanded(
+                child: _buildNavItem(
+                  context,
+                  icon: Icons.history_rounded,
+                  label: 'History',
+                  onTap: controller.navigateToHistory,
+                  isActive: false,
+                ),
               ),
-              _buildNavItem(
-                context,
-                icon: Icons.person_rounded,
-                label: 'Profile',
-                onTap: controller.navigateToProfile,
-                isActive: false,
+              Expanded(
+                child: _buildNavItem(
+                  context,
+                  icon: Icons.person_rounded,
+                  label: 'Profile',
+                  onTap: controller.navigateToProfile,
+                  isActive: false,
+                ),
               ),
             ],
           ),
@@ -343,14 +345,18 @@ class FindDoctorsScreen extends GetView<DoctorController> {
     required bool isActive,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: EdgeInsets.symmetric(
+          horizontal: textScale.scale(8).clamp(4.0, 12.0),
+          vertical: textScale.scale(4).clamp(2.0, 8.0),
+        ),
         decoration: BoxDecoration(
           color: isActive
-              ? colorScheme.primaryContainer.withOpacity(0.15)
+              ? colorScheme.primaryContainer.withValues(alpha: 0.15)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
@@ -366,7 +372,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
             Text(
               label,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: textScale.scale(9).clamp(7.0, 12.0),
                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                 color: isActive ? colorScheme.primary : colorScheme.outline,
               ),
@@ -388,7 +394,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
             height: 64,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withOpacity(0.2),
+              color: colorScheme.primaryContainer.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: CircularProgressIndicator(
@@ -408,11 +414,13 @@ class FindDoctorsScreen extends GetView<DoctorController> {
 
   Widget _buildErrorState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 72,
@@ -431,7 +439,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
             Text(
               'Something went wrong',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: textScale.scale(16).clamp(14.0, 20.0),
                 fontWeight: FontWeight.w600,
                 color: colorScheme.onSurface,
               ),
@@ -441,7 +449,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
               controller.errorMessage.value,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: textScale.scale(12).clamp(10.0, 16.0),
                 color: colorScheme.onSurfaceVariant,
               ),
             ),

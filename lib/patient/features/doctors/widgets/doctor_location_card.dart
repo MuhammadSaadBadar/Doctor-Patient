@@ -11,6 +11,7 @@ class DoctorLocationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
     final profile = doctor.doctorProfile;
 
     return Container(
@@ -40,7 +41,7 @@ class DoctorLocationCard extends StatelessWidget {
               Text(
                 'Practice Location',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: textScale.scale(16).clamp(14.0, 20.0),
                   fontWeight: FontWeight.w600,
                   color: colorScheme.secondary,
                 ),
@@ -48,89 +49,41 @@ class DoctorLocationCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            profile?.area ?? 'Area not specified',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface,
+          Flexible(
+            child: Text(
+              profile?.area ?? 'Area not specified',
+              style: TextStyle(
+                fontSize: textScale.scale(14).clamp(12.0, 18.0),
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface,
+              ),
             ),
           ),
           const SizedBox(height: 2),
-          Text(
-            profile?.city ?? 'City not specified',
-            style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
+          Flexible(
+            child: Text(
+              profile?.city ?? 'City not specified',
+              style: TextStyle(
+                fontSize: textScale.scale(12).clamp(10.0, 16.0),
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
           ),
           if (doctor.distanceKm != null) ...[
             const SizedBox(height: 6),
-            Text(
-              '${doctor.distanceKm!.toStringAsFixed(1)} km away from your location',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: colorScheme.primary,
+            Flexible(
+              child: Text(
+                '${doctor.distanceKm!.toStringAsFixed(1)} km away from your location',
+                style: TextStyle(
+                  fontSize: textScale.scale(10).clamp(8.0, 14.0),
+                  fontWeight: FontWeight.w500,
+                  color: colorScheme.primary,
+                ),
               ),
             ),
           ],
-          const SizedBox(height: 12),
-          // Map Placeholder
-          // Container(
-          //   height: 120,
-          //   width: double.infinity,
-          //   decoration: BoxDecoration(
-          //     color: colorScheme.primary.withValues(alpha: 0.05),
-          //     borderRadius: BorderRadius.circular(12),
-          //     border: Border.all(
-          //       color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-          //     ),
-          //   ),
-          //   child: Center(
-          //     child: Column(
-          //       mainAxisAlignment: MainAxisAlignment.center,
-          //       children: [
-          //         Icon(
-          //           Icons.map_rounded,
-          //           size: 32,
-          //           color: colorScheme.primary.withOpacity(0.3),
-          //         ),
-          //         const SizedBox(height: 4),
-          //         Text(
-          //           'Map View',
-          //           style: TextStyle(
-          //             fontSize: 12,
-          //             color: colorScheme.primary.withOpacity(0.3),
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
-          // ),
-          // const SizedBox(height: 12),
-          // SizedBox(
-          //   width: double.infinity,
-          //   child: OutlinedButton(
-          //     onPressed: () {
-          //       // Open maps with location
-          //       _openMaps(doctor);
-          //     },
-          //     style: OutlinedButton.styleFrom(
-          //       foregroundColor: colorScheme.secondary,
-          //       side: BorderSide(color: colorScheme.secondary),
-          //       padding: const EdgeInsets.symmetric(vertical: 12),
-          //       shape: RoundedRectangleBorder(
-          //         borderRadius: BorderRadius.circular(30),
-          //       ),
-          //     ),
-          //     child: const Text('Get Directions'),
-          //   ),
-          // ),
         ],
       ),
     );
-  }
-
-  void _openMaps(Doctor doctor) {
-    // Implementation depends on device
-    // Can use url_launcher to open Google Maps or Apple Maps
   }
 }

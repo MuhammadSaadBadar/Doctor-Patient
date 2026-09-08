@@ -44,6 +44,28 @@ class KickSession {
   }
 
   bool get isActive => endedAt == null;
+
+  KickSession copyWith({
+    int? id,
+    int? patientId,
+    DateTime? startedAt,
+    DateTime? endedAt,
+    int? kickCount,
+    DateTime? logDate,
+    List<KickEvent>? events,
+    DateTime? createdAt,
+  }) {
+    return KickSession(
+      id: id ?? this.id,
+      patientId: patientId ?? this.patientId,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      kickCount: kickCount ?? this.kickCount,
+      logDate: logDate ?? this.logDate,
+      events: events ?? this.events,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
   String get duration {
     if (endedAt == null) {
       final diff = DateTime.now().difference(startedAt);

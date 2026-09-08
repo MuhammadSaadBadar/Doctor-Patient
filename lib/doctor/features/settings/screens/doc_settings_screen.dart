@@ -1,8 +1,9 @@
 import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/widgets/bottom_nav_bar.dart';
+import 'package:doctor/core/widgets/doctor_avatar.dart';
 import 'package:doctor/core/widgets/material_symbol_icon.dart';
-import 'package:doctor/core/widgets/top_app_bar.dart';
+import 'package:doctor/core/widgets/doc_top_app_bar.dart';
 import 'package:doctor/doctor/features/profile/controllers/doc_edit_profile_controller.dart';
 import 'package:doctor/doctor/features/profile/controllers/doc_profile_controller.dart';
 import 'package:doctor/doctor/features/settings/widgets/settings_section.dart';
@@ -177,22 +178,12 @@ class DoctorSettingsScreen extends GetView<DoctorProfileController> {
           ),
           child: Row(
             children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    profile.initials,
-                    style: AppTheme.headlineSmall.copyWith(
-                      color: AppColors.onPrimaryContainer,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+              DoctorAvatar(
+                imageUrl: profile.profilePictureUrl,
+                firstName: profile.firstName,
+                lastName: profile.lastName,
+                size: 56,
+                enableCacheBusting: true,
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -248,35 +239,51 @@ class DoctorSettingsScreen extends GetView<DoctorProfileController> {
 
   // ==================== ACCOUNT SECTION ====================
   Widget _buildAccountSection() {
-    return SettingsSection(
-      title: 'Account & Profile',
-      children: [
-        SettingsTile(
-          icon: 'person',
-          title: 'Edit Personal Info',
-          subtitle: 'Name, email, phone number',
-          onTap: () => Get.toNamed('/edit-profile')?.then((result) {
-            if (result == true) {
-              controller.refreshProfile();
-            }
-          }),
-          isFirst: true,
-        ),
-        SettingsTile(
-          icon: 'lock_outline',
-          title: 'Change Password',
-          subtitle: 'Update your password',
-          onTap: () => Get.toNamed('/change-password'),
-        ),
-        SettingsTile(
-          icon: 'medical_services',
-          title: 'Doctor Profile',
-          subtitle: 'Specialization, license, bio',
-          onTap: () => Get.toNamed('/profile'),
-          isLast: true,
-        ),
-      ],
-    );
+    return Obx(() {
+      final profile = controller.profileData.value;
+      final hasProfilePicture =
+          profile?.profilePictureUrl?.trim().isNotEmpty == true ||
+          profile?.doctorProfile?.profilePictureUrl?.trim().isNotEmpty == true;
+
+      return SettingsSection(
+        title: 'Account & Profile',
+        children: [
+          SettingsTile(
+            icon: 'person',
+            title: 'Edit Personal Info',
+            subtitle: 'Name, email, phone number',
+            onTap: () => Get.toNamed('/edit-profile')?.then((result) {
+              if (result == true) {
+                controller.refreshProfile();
+              }
+            }),
+            isFirst: true,
+          ),
+          if (hasProfilePicture)
+            SettingsTile(
+              icon: 'delete',
+              title: 'Delete Profile Picture',
+              subtitle: 'Remove your profile picture',
+              textColor: AppColors.error,
+              iconColor: AppColors.error,
+              onTap: () => _showDeleteProfilePictureDialog(),
+            ),
+          SettingsTile(
+            icon: 'lock_outline',
+            title: 'Change Password',
+            subtitle: 'Update your password',
+            onTap: () => Get.toNamed('/change-password'),
+          ),
+          SettingsTile(
+            icon: 'medical_services',
+            title: 'Doctor Profile',
+            subtitle: 'Specialization, license, bio',
+            onTap: () => Get.toNamed('/profile'),
+            isLast: true,
+          ),
+        ],
+      );
+    });
   }
 
   // ==================== DOCTOR PROFILE SECTION ====================
@@ -568,6 +575,68 @@ class DoctorSettingsScreen extends GetView<DoctorProfileController> {
         ),
         actions: [
           TextButton(onPressed: () => Get.back(), child: const Text('Close')),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteProfilePictureDialog() {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Delete Profile Picture',
+          style: TextStyle(
+            fontFamily: 'PlusJakartaSans',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: AppColors.primary,
+          ),
+        ),
+        content: const Text(
+          'Are you sure you want to remove your profile picture? This action cannot be undone.',
+          style: TextStyle(
+            fontFamily: 'PlusJakartaSans',
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: AppColors.onSurface,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                fontFamily: 'PlusJakartaSans',
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.onSurfaceVariant,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              controller.deleteProfilePicture();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.onError,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'Delete',
+              style: TextStyle(
+                fontFamily: 'PlusJakartaSans',
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
         ],
       ),
     );

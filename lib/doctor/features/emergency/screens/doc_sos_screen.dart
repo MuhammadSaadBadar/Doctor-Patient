@@ -4,7 +4,7 @@ import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/widgets/bottom_nav_bar.dart';
-import 'package:doctor/core/widgets/top_app_bar.dart';
+import 'package:doctor/core/widgets/doc_top_app_bar.dart';
 import 'package:doctor/doctor/features/emergency/controllers/doc_sos_controller.dart';
 import 'package:doctor/doctor/features/emergency/models/doc_sos_event.dart';
 import 'package:doctor/doctor/features/emergency/widgets/sos_event_card.dart';

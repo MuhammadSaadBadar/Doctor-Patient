@@ -4,6 +4,7 @@ import 'package:doctor/patient/features/kick_counter/controllers/kick_history_co
 import 'package:doctor/patient/features/kick_counter/widgets/kick_daily_summary_card.dart';
 import 'package:doctor/patient/features/kick_counter/widgets/kick_empty_state.dart';
 import 'package:doctor/patient/features/kick_counter/widgets/kick_session_item.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -16,24 +17,9 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
 
     return Scaffold(
       backgroundColor: colorScheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
-          onPressed: () => Get.back(),
-        ),
-        title: Text(
-          'Kick History',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
+      appBar: PatientTopAppBar(
+        title: 'Kick History',
+        trailingActions: [
           IconButton(
             icon: Icon(Icons.child_care_rounded, color: colorScheme.primary),
             onPressed: () => Get.toNamed('/kick-counter'),

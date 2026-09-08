@@ -1,15 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:doctor/core/constants/color_constants.dart';
-import 'package:doctor/doctor/features/dashboard/models/doc_dashboard_metric.dart';
+import 'package:doctor/doctor/features/appointments/repositories/doc_appointment_repository.dart';
 import 'package:doctor/doctor/features/dashboard/models/doc_dashboard_alert.dart';
 import 'package:doctor/doctor/features/dashboard/models/doc_dashboard_appointment.dart';
+import 'package:doctor/doctor/features/dashboard/models/doc_dashboard_metric.dart';
 import 'package:doctor/doctor/features/dashboard/repositories/doc_dashboard_repository.dart';
+import 'package:doctor/doctor/features/emergency/repositories/doc_sos_repository.dart';
 import 'package:doctor/doctor/features/notifications/repositories/doc_notification_repository.dart';
 import 'package:doctor/doctor/features/profile/repositories/doc_profile_repository.dart';
-import 'package:doctor/doctor/features/emergency/repositories/doc_sos_repository.dart';
-import 'package:doctor/doctor/features/appointments/repositories/doc_appointment_repository.dart';
-import 'package:doctor/doctor/features/appointments/models/doc_appointment_schedule.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class DoctorDashboardController extends GetxController {
   final DoctorDashboardRepository _repository = DoctorDashboardRepository();
@@ -32,6 +31,7 @@ class DoctorDashboardController extends GetxController {
 
   // Doctor info
   final doctorName = ''.obs;
+  final doctorImageUrl = Rxn<String>();
 
   // Unread notification count
   final unreadNotificationCount = 0.obs;
@@ -55,6 +55,7 @@ class DoctorDashboardController extends GetxController {
       final userProfile = await _profileRepository.getUserProfile();
       if (userProfile != null && userProfile.fullName.isNotEmpty) {
         doctorName.value = 'Dr. ${userProfile.fullName}';
+        doctorImageUrl.value = userProfile.profilePictureUrl;
       }
     } catch (e) {
       debugPrint('[DASHBOARD] Error loading doctor name: $e');
@@ -67,6 +68,7 @@ class DoctorDashboardController extends GetxController {
     errorMessage.value = '';
 
     try {
+      await _loadDoctorName();
       // Fetch dashboard data, active SOS count, and filtered appointment counts in parallel
       final results = await Future.wait([
         _repository.getDoctorDashboard(),

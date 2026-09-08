@@ -31,6 +31,7 @@ class ProfileData {
     final last = lastName.isNotEmpty ? lastName[0] : '';
     return '$first$last'.toUpperCase();
   }
+  String? get profilePictureUrl => doctorProfile?.profilePictureUrl;
 
   factory ProfileData.fromJson(Map<String, dynamic> json) {
     final doctorProfileData = json['doctor_profile'] as Map<String, dynamic>?;

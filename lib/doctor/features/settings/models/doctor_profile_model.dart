@@ -13,6 +13,7 @@ class DoctorProfile {
   final String? latitude;
   final String? longitude;
   final String? consultationFee;
+  final String? profilePictureUrl;
 
   // ============ PAYOUT FIELDS ============
   final String? payoutMethod;
@@ -37,6 +38,7 @@ class DoctorProfile {
     this.latitude,
     this.longitude,
     this.consultationFee,
+    this.profilePictureUrl,
     // Payout fields
     this.payoutMethod,
     this.payoutJazzcashNumber,
@@ -61,6 +63,7 @@ class DoctorProfile {
       latitude: json['latitude'] as String?,
       longitude: json['longitude'] as String?,
       consultationFee: json['consultation_fee'] as String?,
+      profilePictureUrl: json['profile_picture_url'] as String?,
       // Payout fields
       payoutMethod: json['payout_method'] as String?,
       payoutJazzcashNumber: json['payout_jazzcash_number'] as String?,
@@ -193,6 +196,7 @@ class DoctorProfile {
     String? latitude,
     String? longitude,
     String? consultationFee,
+    String? profilePictureUrl,
     // Payout fields
     String? payoutMethod,
     String? payoutJazzcashNumber,
@@ -215,6 +219,7 @@ class DoctorProfile {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       consultationFee: consultationFee ?? this.consultationFee,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
       // Payout fields
       payoutMethod: payoutMethod ?? this.payoutMethod,
       payoutJazzcashNumber: payoutJazzcashNumber ?? this.payoutJazzcashNumber,

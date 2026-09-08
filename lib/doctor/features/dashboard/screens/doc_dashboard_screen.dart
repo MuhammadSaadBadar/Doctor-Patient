@@ -1,19 +1,20 @@
 // lib/features/dashboard/screens/dashboard_screen.dart
 
-import 'package:doctor/core/routes/app_routes.dart';
-import 'package:doctor/doctor/features/dashboard/models/doc_dashboard_alert.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:doctor/core/constants/color_constants.dart';
+import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/widgets/bottom_nav_bar.dart';
+import 'package:doctor/core/widgets/doctor_avatar.dart';
 import 'package:doctor/core/widgets/side_nav.dart';
-import 'package:doctor/core/widgets/top_app_bar.dart';
+import 'package:doctor/core/widgets/doc_top_app_bar.dart';
 import 'package:doctor/doctor/features/dashboard/controllers/doc_dashboard_controller.dart';
-import 'package:doctor/doctor/features/dashboard/widgets/appointment_tile.dart';
+import 'package:doctor/doctor/features/dashboard/models/doc_dashboard_alert.dart';
 import 'package:doctor/doctor/features/dashboard/widgets/alert_card.dart';
-import 'package:doctor/doctor/features/dashboard/widgets/dashboard_metric_card.dart';
+import 'package:doctor/doctor/features/dashboard/widgets/appointment_tile.dart';
 import 'package:doctor/doctor/features/dashboard/widgets/dashboard_hero_stat.dart';
+import 'package:doctor/doctor/features/dashboard/widgets/dashboard_metric_card.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class DoctorDashboardScreen extends GetView<DoctorDashboardController> {
   const DoctorDashboardScreen({super.key});
@@ -152,23 +153,15 @@ class DoctorDashboardScreen extends GetView<DoctorDashboardController> {
             ),
           ),
           const SizedBox(width: 16),
-          // Decorative avatar circle
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: AppColors.onPrimary.withOpacity(0.10),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.onPrimary.withOpacity(0.20),
-                width: 1.5,
-              ),
-            ),
-            child: Icon(
-              Icons.person_rounded,
-              color: AppColors.onPrimary.withOpacity(0.70),
-              size: 28,
-            ),
+          // Reactive avatar showing doctor's profile image
+          DoctorAvatar(
+            imageUrl: controller.doctorImageUrl.value,
+            firstName: controller.doctorName.value
+                .replaceFirst('Dr. ', '')
+                .split(' ')
+                .first,
+            size: 56,
+            enableCacheBusting: true,
           ),
         ],
       ),

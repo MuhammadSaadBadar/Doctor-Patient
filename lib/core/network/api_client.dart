@@ -10,16 +10,29 @@ class ApiClient {
         baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 120),
         receiveTimeout: const Duration(seconds: 120),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers: _buildHeaders(),
       ),
     );
 
     if (interceptors != null) {
       _dio.interceptors.addAll(interceptors);
     }
+  }
+
+  Map<String, String> _buildHeaders() {
+    if (kIsWeb) {
+      // On web, use application/x-www-form-urlencoded to avoid CORS preflight
+      // The API.yaml confirms the register endpoint accepts this Content-Type
+      return {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
+      };
+    }
+    // On mobile/desktop, use application/json
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
   }
 
   /// The underlying [Dio] instance. Exposed so the [AuthInterceptor] can

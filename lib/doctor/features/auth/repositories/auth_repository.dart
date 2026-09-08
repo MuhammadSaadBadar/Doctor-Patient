@@ -1,14 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:doctor/core/constants/api_constants.dart';
-import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/constants/user_role.dart';
-import 'package:doctor/core/themes/app_theme.dart';
-
 import 'package:doctor/core/network/api_client.dart';
 import 'package:doctor/core/network/api_error_mapper.dart';
-import 'package:doctor/core/network/api_exceptions.dart';
 import 'package:doctor/core/services/storage_service.dart';
 import 'package:doctor/doctor/features/auth/controllers/auth_controller.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Response;
 
@@ -17,11 +13,7 @@ class LoginResult {
   final UserRole? role;
   final String? errorMessage;
 
-  const LoginResult({
-    required this.success,
-    this.role,
-    this.errorMessage,
-  });
+  const LoginResult({required this.success, this.role, this.errorMessage});
 
   factory LoginResult.success(UserRole role) =>
       LoginResult(success: true, role: role);
@@ -40,7 +32,11 @@ class AuthRepository {
       _storage = storage ?? Get.find<StorageService>();
 
   // ==================== LOGIN ====================
-  Future<LoginResult> login(String email, String password) async {
+  Future<LoginResult> login(
+    String email,
+    String password, {
+    UserRole? preferredRole,
+  }) async {
     try {
       debugPrint('[AUTH] Login attempt for email: $email');
 
@@ -49,7 +45,11 @@ class AuthRepository {
       try {
         response = await _apiClient.post(
           ApiConstants.authLogin,
-          data: {'email': email, 'password': password},
+          data: {
+            'email': email,
+            'password': password,
+            if (preferredRole != null) 'role': preferredRole.name,
+          },
         );
       } on DioException catch (e) {
         if (e.type == DioExceptionType.connectionTimeout ||
@@ -60,7 +60,11 @@ class AuthRepository {
           );
           response = await _apiClient.post(
             ApiConstants.authLogin,
-            data: {'email': email, 'password': password},
+            data: {
+              'email': email,
+              'password': password,
+              if (preferredRole != null) 'role': preferredRole.name,
+            },
           );
         } else {
           rethrow;
@@ -85,8 +89,22 @@ class AuthRepository {
           // Parse and store user role from backend
           UserRole? userRole;
           if (roleString != null) {
-            userRole = roleString == 'doctor' ? UserRole.doctor : UserRole.patient;
-            await _storage.setUserRole(roleString);
+            final normalizedRole = roleString.toLowerCase();
+            if (normalizedRole == 'doctor') {
+              userRole = UserRole.doctor;
+            } else if (normalizedRole == 'patient') {
+              userRole = UserRole.patient;
+            }
+            // Unknown roles are intentionally left null so the fallback
+            // below can try the user object, and if that also fails we
+            // return an explicit error rather than silently defaulting
+            // to patient.
+            debugPrint(
+              '[AUTH] Parsed role from top-level: $roleString -> $userRole',
+            );
+            if (userRole != null) {
+              await _storage.setUserRole(normalizedRole);
+            }
           }
 
           // Store user info if available
@@ -107,16 +125,38 @@ class AuthRepository {
             if (userRole == null) {
               final userRoleString = user['role'] as String?;
               if (userRoleString != null) {
-                userRole = userRoleString == 'doctor' ? UserRole.doctor : UserRole.patient;
-                await _storage.setUserRole(userRoleString);
+                final normalizedUserRole = userRoleString.toLowerCase();
+                if (normalizedUserRole == 'doctor') {
+                  userRole = UserRole.doctor;
+                } else if (normalizedUserRole == 'patient') {
+                  userRole = UserRole.patient;
+                }
+                debugPrint(
+                  '[AUTH] Parsed role from user object: $userRoleString -> $userRole',
+                );
+                if (userRole != null) {
+                  await _storage.setUserRole(normalizedUserRole);
+                }
               }
             }
           }
 
           await _storage.setLoggedIn(true);
           Get.find<AuthController>().isLoggedIn.value = true;
-          debugPrint('[AUTH] Login successful - tokens stored, role: $userRole');
-          return LoginResult.success(userRole ?? UserRole.patient);
+          debugPrint(
+            '[AUTH] Login successful - tokens stored, role: $userRole',
+          );
+
+          if (userRole == null) {
+            debugPrint(
+              '[AUTH] ERROR: Could not determine user role from login response',
+            );
+            return LoginResult.failure(
+              'Unable to determine user role. Please contact support.',
+            );
+          }
+
+          return LoginResult.success(userRole);
         } else {
           debugPrint('[AUTH] Login response missing tokens');
           return LoginResult.failure('Login response missing tokens');
@@ -167,7 +207,9 @@ class AuthRepository {
       }
     } catch (e) {
       debugPrint('[AUTH] Login unexpected error: $e');
-      return LoginResult.failure('An unexpected error occurred. Please try again.');
+      return LoginResult.failure(
+        'An unexpected error occurred. Please try again.',
+      );
     }
   }
 
@@ -288,7 +330,6 @@ class AuthRepository {
         final resetToken = data['reset_token'] as String?;
         if (resetToken != null) {
           _resetToken = resetToken;
-          await _storage.setRefreshToken(resetToken);
           Get.find<AuthController>().resetToken.value = resetToken;
         }
         return true;
@@ -341,7 +382,6 @@ class AuthRepository {
       );
 
       if (response.statusCode == 200) {
-        await _storage.setRefreshToken('');
         Get.find<AuthController>().resetToken.value = '';
         debugPrint('[AUTH] Password reset with token successful');
         return true;

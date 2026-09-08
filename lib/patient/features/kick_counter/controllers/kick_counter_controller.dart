@@ -1,5 +1,6 @@
 // lib/patient/features/kick_counter/controllers/kick_counter_controller.dart
 
+import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/patient/features/kick_counter/models/kick_session.dart';
 import 'package:doctor/patient/features/kick_counter/repositories/kick_counter_repository.dart';
 import 'package:flutter/material.dart';
@@ -118,6 +119,12 @@ class KickCounterController extends GetxController {
   Future<void> recordKick() async {
     if (!isSessionActive || activeSession.value == null) return;
 
+    // Optimistic UI update: immediately update local state
+    final currentCount = activeSession.value!.kickCount;
+    activeSession.value = activeSession.value!.copyWith(
+      kickCount: currentCount + 1,
+    );
+
     isProcessing.value = true;
 
     try {
@@ -126,7 +133,11 @@ class KickCounterController extends GetxController {
       );
 
       if (updatedSession != null) {
-        activeSession.value = updatedSession;
+        // Verify backend matches optimistic update (or update with backend data)
+        if (updatedSession.kickCount != currentCount + 1) {
+          // Backend disagrees with optimistic update, use backend version
+          activeSession.value = updatedSession;
+        }
 
         // Update in allSessions list
         final index = allSessions.indexWhere((s) => s.id == updatedSession.id);
@@ -134,6 +145,11 @@ class KickCounterController extends GetxController {
           allSessions[index] = updatedSession;
         }
       } else {
+        // Revert optimistic update on failure
+        activeSession.value = allSessions.firstWhere(
+          (s) => s.id == activeSession.value!.id,
+          orElse: () => activeSession.value!,
+        );
         Get.snackbar(
           'Error',
           'Failed to record kick',
@@ -141,6 +157,11 @@ class KickCounterController extends GetxController {
         );
       }
     } catch (e) {
+      // Revert optimistic update on error
+      activeSession.value = allSessions.firstWhere(
+        (s) => s.id == activeSession.value!.id,
+        orElse: () => activeSession.value!,
+      );
       debugPrint('[KICK_COUNTER] Error recording kick: $e');
       Get.snackbar(
         'Error',
@@ -202,9 +223,9 @@ class KickCounterController extends GetxController {
   }
 
   // Navigation methods
-  void navigateToHome() => Get.offAllNamed('/patient/dashboard');
-  void navigateToBooking() => Get.toNamed('/patient/appointments');
+  void navigateToHome() => Get.offAllNamed(AppRoutes.patientDashboard);
+  void navigateToBooking() => Get.toNamed(AppRoutes.patientAppointments);
   void navigateToReports() => Get.toNamed('/patient/reports');
-  void navigateToProfile() => Get.toNamed('/patient/profile/edit');
-  void navigateToHistory() => Get.toNamed('/patient/kick-count/history');
+  void navigateToProfile() => Get.toNamed(AppRoutes.patientEditProfile);
+  void navigateToHistory() => Get.toNamed(AppRoutes.patientKickCountHistory);
 }

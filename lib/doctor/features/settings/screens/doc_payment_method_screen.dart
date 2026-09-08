@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/themes/app_theme.dart';
-import 'package:doctor/core/widgets/top_app_bar.dart';
+import 'package:doctor/core/widgets/doc_top_app_bar.dart';
 import 'package:doctor/core/widgets/material_symbol_icon.dart';
 import 'package:doctor/doctor/features/profile/controllers/doc_profile_controller.dart';
 // ============ ADD THIS IMPORT ============

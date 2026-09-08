@@ -11,6 +11,7 @@ class DoctorPracticeDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
     final profile = doctor.doctorProfile;
 
     return Container(
@@ -32,7 +33,7 @@ class DoctorPracticeDetails extends StatelessWidget {
           Text(
             'Professional Details',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: textScale.scale(16).clamp(14.0, 20.0),
               fontWeight: FontWeight.w600,
               color: colorScheme.secondary,
             ),
@@ -70,6 +71,7 @@ class DoctorPracticeDetails extends StatelessWidget {
     bool isPrice = false,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -93,7 +95,7 @@ class DoctorPracticeDetails extends StatelessWidget {
                   child: Text(
                     label,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: textScale.scale(12).clamp(10.0, 16.0),
                       color: colorScheme.onSurfaceVariant,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -107,7 +109,7 @@ class DoctorPracticeDetails extends StatelessWidget {
             child: Text(
               value,
               style: TextStyle(
-                fontSize: isPrice ? 18 : 16,
+                fontSize: textScale.scale(isPrice ? 16 : 12).clamp(isPrice ? 14.0 : 10.0, isPrice ? 22.0 : 16.0),
                 fontWeight: isPrice ? FontWeight.w700 : FontWeight.w500,
                 color: isPrice ? colorScheme.primary : colorScheme.onSurface,
               ),

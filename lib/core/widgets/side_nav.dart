@@ -100,7 +100,7 @@ class SideNav extends StatelessWidget {
 
   void _navigate(BuildContext context, String route) {
     if (route != currentRoute) {
-      Get.offNamed(route);
+      Get.toNamed(route);
     }
   }
 }

@@ -1,12 +1,12 @@
 import 'package:doctor/core/constants/color_constants.dart';
-import 'package:doctor/core/themes/app_theme.dart';
+import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/services/storage_service.dart';
+import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/doctor/features/auth/controllers/auth_controller.dart';
 import 'package:doctor/doctor/features/auth/repositories/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:doctor/core/routes/app_routes.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -89,7 +89,9 @@ class _SplashScreenState extends State<SplashScreen>
 
       if (sessionValid) {
         // Session is valid (or refreshed), go to appropriate dashboard based on role
-        Get.find<AuthController>().isLoggedIn.value = true;
+        final authController = Get.find<AuthController>();
+        authController.isLoggedIn.value = true;
+        await authController.initializeCurrentUser();
         final userRole = _storage.userRole;
         if (userRole == 'patient') {
           Get.offAllNamed(AppRoutes.patientDashboard);

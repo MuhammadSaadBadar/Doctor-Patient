@@ -4,7 +4,7 @@ import 'package:doctor/core/services/storage_service.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/widgets/bottom_nav_bar.dart';
 import 'package:doctor/core/widgets/material_symbol_icon.dart';
-import 'package:doctor/core/widgets/top_app_bar.dart';
+import 'package:doctor/core/widgets/doc_top_app_bar.dart';
 import 'package:doctor/doctor/features/patient/controllers/doc_diet_plans_controller.dart';
 import 'package:doctor/doctor/features/patient/models/doc_diet_plan.dart';
 import 'package:doctor/doctor/features/patient/widgets/doc_diet_plan_card.dart';

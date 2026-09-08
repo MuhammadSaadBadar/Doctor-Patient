@@ -17,11 +17,15 @@ class SpecializationChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EdgeInsets.symmetric(
+          horizontal: textScale.scale(14).clamp(10.0, 20.0),
+          vertical: textScale.scale(6).clamp(4.0, 12.0),
+        ),
         decoration: BoxDecoration(
           color: isSelected
               ? colorScheme.primary
@@ -30,7 +34,7 @@ class SpecializationChip extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: colorScheme.primary.withOpacity(0.3),
+                    color: colorScheme.primary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -40,7 +44,7 @@ class SpecializationChip extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: textScale.scale(11).clamp(9.0, 14.0),
             fontWeight: FontWeight.w500,
             color: isSelected
                 ? colorScheme.onPrimary

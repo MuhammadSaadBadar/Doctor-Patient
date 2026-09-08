@@ -1,6 +1,8 @@
 // lib/features/profile/repositories/edit_profile_repository.dart
 
-import 'package:dio/dio.dart';
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart' as dio_pkg;
 import 'package:doctor/core/constants/api_constants.dart';
 import 'package:doctor/core/network/api_client.dart';
 import 'package:doctor/core/network/api_error_mapper.dart';
@@ -24,7 +26,7 @@ class DoctorEditProfileRepository {
       }
 
       return null;
-    } on DioException catch (e) {
+    } on dio_pkg.DioException catch (e) {
       final apiException = ApiErrorMapper.mapDioException(
         e,
         defaultMessage: 'Failed to load profile.',
@@ -34,6 +36,67 @@ class DoctorEditProfileRepository {
     } catch (e) {
       debugPrint('[EDIT_PROFILE] Unexpected error: $e');
       throw Exception('Failed to load profile. Please try again.');
+    }
+  }
+
+  /// Upload profile picture (multipart/form-data) using raw bytes.
+  ///
+  /// Reads bytes once on the caller side (controller) so the upload works
+  /// uniformly on Android, iOS, and desktop.
+  ///
+  /// Returns the profile picture URL directly from the response.
+  /// The API returns `DoctorProfile` directly (not wrapped in `doctor_profile`),
+  /// with `profile_picture_url` at the top level.
+  Future<String?> uploadProfilePicture(
+    Uint8List bytes,
+    String fileName,
+  ) async {
+    try {
+      final formData = dio_pkg.FormData.fromMap({
+        'image': dio_pkg.MultipartFile.fromBytes(
+          bytes,
+          filename: fileName,
+        ),
+      });
+
+      final response = await _apiClient.dio.post(
+        ApiConstants.accountsMeDoctorProfilePicture,
+        data: formData,
+        options: dio_pkg.Options(
+          headers: {'Content-Type': 'multipart/form-data'},
+          connectTimeout: _apiClient.dio.options.connectTimeout,
+          receiveTimeout: _apiClient.dio.options.receiveTimeout,
+        ),
+      );
+
+      debugPrint(
+        '[EDIT_PROFILE] Upload avatar response: ${response.statusCode}',
+      );
+      debugPrint(
+        '[EDIT_PROFILE] Upload avatar body: ${response.data}',
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+        // API returns DoctorProfile directly with profile_picture_url at TOP LEVEL
+        final profilePictureUrl = data['profile_picture_url'] as String?;
+        debugPrint(
+          '[EDIT_PROFILE] Extracted profile picture URL: $profilePictureUrl',
+        );
+        return profilePictureUrl;
+      }
+
+      return null;
+    } on dio_pkg.DioException catch (e) {
+      final apiException = ApiErrorMapper.mapDioException(
+        e,
+        defaultMessage: 'Failed to upload profile picture.',
+      );
+      debugPrint('[EDIT_PROFILE] Upload avatar error: ${apiException.message}');
+      throw apiException;
+    } catch (e) {
+      debugPrint('[EDIT_PROFILE] Upload avatar unexpected error: $e');
+      throw Exception('Failed to upload profile picture. Please try again.');
     }
   }
 
@@ -55,10 +118,10 @@ class DoctorEditProfileRepository {
       }
 
       return null;
-    } on DioException catch (e) {
+    } on dio_pkg.DioException catch (e) {
       final apiException = ApiErrorMapper.mapDioException(
         e,
-        defaultMessage: 'Failed to update profile.',
+        defaultMessage: 'Failed to update user profile.',
       );
       debugPrint('[EDIT_PROFILE] Error updating user: ${apiException.message}');
       throw apiException;
@@ -92,7 +155,7 @@ class DoctorEditProfileRepository {
       }
 
       return null;
-    } on DioException catch (e) {
+    } on dio_pkg.DioException catch (e) {
       final apiException = ApiErrorMapper.mapDioException(
         e,
         defaultMessage: 'Failed to update professional details.',

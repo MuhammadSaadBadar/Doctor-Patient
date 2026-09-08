@@ -1,14 +1,15 @@
 // lib/features/profile/controllers/profile_controller.dart
 
 import 'package:doctor/core/constants/color_constants.dart';
+import 'package:doctor/core/services/storage_service.dart';
+import 'package:doctor/doctor/features/auth/controllers/auth_controller.dart';
+import 'package:doctor/doctor/features/profile/models/doc_add_payment_method.dart';
+import 'package:doctor/doctor/features/profile/models/doc_profile_models.dart';
+import 'package:doctor/doctor/features/profile/repositories/doc_profile_repository.dart';
 import 'package:doctor/doctor/features/settings/models/doctor_profile_model.dart';
+import 'package:doctor/doctor/features/settings/models/payment_method_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:doctor/core/services/storage_service.dart';
-import 'package:doctor/doctor/features/profile/repositories/doc_profile_repository.dart';
-import 'package:doctor/doctor/features/profile/models/doc_profile_models.dart';
-import 'package:doctor/doctor/features/profile/models/doc_add_payment_method.dart';
-import 'package:doctor/doctor/features/settings/models/payment_method_model.dart';
 
 class DoctorProfileController extends GetxController {
   final DoctorProfileRepository _repository =
@@ -384,6 +385,53 @@ class DoctorProfileController extends GetxController {
     }
   }
 
+  /// Delete profile picture
+  Future<bool> deleteProfilePicture() async {
+    isSaving.value = true;
+    try {
+      final success = await _repository.deleteProfilePicture();
+
+      if (success) {
+        // Refresh profile to get updated data without the picture
+        await refreshProfile();
+
+        // Clear global profile image
+        try {
+          Get.find<AuthController>().clearProfileImage();
+        } catch (_) {}
+
+        Get.snackbar(
+          'Success',
+          'Profile picture removed',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        return true;
+      } else {
+        Get.snackbar(
+          'Error',
+          'Failed to remove profile picture.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: AppColors.error,
+          colorText: AppColors.onError,
+        );
+        return false;
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'An error occurred. Please try again.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+      return false;
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
   /// Change password
   Future<bool> changePassword({
     required String oldPassword,
@@ -468,6 +516,7 @@ class DoctorProfileController extends GetxController {
     try {
       await _repository.logout();
       await _storage.clearAll();
+      Get.find<AuthController>().clearCurrentUser();
       Get.offAllNamed('/login');
     } catch (e) {
       Get.snackbar(

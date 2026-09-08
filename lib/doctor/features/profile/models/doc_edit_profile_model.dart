@@ -118,6 +118,7 @@ class DoctorProfileData {
   final double? latitude;
   final double? longitude;
   final double? consultationFee;
+  final String? profilePictureUrl;
 
   DoctorProfileData({
     this.specialization,
@@ -130,6 +131,7 @@ class DoctorProfileData {
     this.latitude,
     this.longitude,
     this.consultationFee,
+    this.profilePictureUrl,
   });
 
   factory DoctorProfileData.fromJson(Map<String, dynamic> json) {
@@ -150,6 +152,7 @@ class DoctorProfileData {
       consultationFee: json['consultation_fee'] != null
           ? double.tryParse(json['consultation_fee'].toString())
           : null,
+      profilePictureUrl: json['profile_picture_url'] as String?,
     );
   }
 }

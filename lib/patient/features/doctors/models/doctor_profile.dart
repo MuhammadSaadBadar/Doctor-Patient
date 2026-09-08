@@ -11,6 +11,7 @@ class DoctorProfile {
   final double? latitude;
   final double? longitude;
   final String? consultationFee;
+  final String? profilePictureUrl;
 
   DoctorProfile({
     this.specialization,
@@ -23,6 +24,7 @@ class DoctorProfile {
     this.latitude,
     this.longitude,
     this.consultationFee,
+    this.profilePictureUrl,
   });
 
   factory DoctorProfile.fromJson(Map<String, dynamic> json) {
@@ -37,6 +39,7 @@ class DoctorProfile {
       latitude: _parseDouble(json['latitude']),
       longitude: _parseDouble(json['longitude']),
       consultationFee: _parseString(json['consultation_fee']),
+      profilePictureUrl: json['profile_picture_url'] as String?,
     );
   }
 
@@ -68,4 +71,17 @@ class DoctorProfile {
       specialization != null && specialization!.isNotEmpty;
 
   bool get hasLocation => latitude != null && longitude != null;
+
+  /// Returns a clean, comma-separated address string from available fields.
+  /// Handles missing parts gracefully (no leading/trailing/duplicate commas).
+  String get formattedAddress {
+    final parts = <String>[];
+    if (area != null && area!.isNotEmpty) parts.add(area!);
+    if (city != null && city!.isNotEmpty) parts.add(city!);
+    return parts.join(', ');
+  }
+
+  /// True if at least one address component (area or city) is present.
+  bool get hasAddress => (area != null && area!.isNotEmpty) ||
+      (city != null && city!.isNotEmpty);
 }

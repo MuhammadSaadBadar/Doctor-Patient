@@ -15,6 +15,7 @@ class Doctor {
   final double? averageRating;
   final int? totalRatings;
   final int? completedAppointmentsCount;
+  final String? profilePictureUrl;
 
   Doctor({
     required this.id,
@@ -29,6 +30,7 @@ class Doctor {
     this.averageRating,
     this.totalRatings,
     this.completedAppointmentsCount,
+    this.profilePictureUrl,
   });
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
@@ -48,6 +50,7 @@ class Doctor {
       averageRating: (json['average_rating'] as num?)?.toDouble(),
       totalRatings: json['total_ratings'] as int?,
       completedAppointmentsCount: json['completed_appointments_count'] as int?,
+      profilePictureUrl: json['doctor_profile']?['profile_picture_url'] as String?,
     );
   }
 
@@ -57,6 +60,8 @@ class Doctor {
     if (firstName.isEmpty || lastName.isEmpty) return 'DR';
     return '${firstName[0]}${lastName[0]}';
   }
+
+  String? get doctorProfilePictureUrl => doctorProfile?.profilePictureUrl;
 
   bool get isAcceptingPatients =>
       doctorProfile?.isAcceptingPatients ?? false;

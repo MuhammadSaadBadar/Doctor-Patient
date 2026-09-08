@@ -11,6 +11,7 @@ class DoctorAvailabilityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
     final isAccepting = doctor.doctorProfile?.isAcceptingPatients ?? false;
 
     return Container(
@@ -19,11 +20,11 @@ class DoctorAvailabilityCard extends StatelessWidget {
         color: colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 2),
-            ),
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -40,7 +41,7 @@ class DoctorAvailabilityCard extends StatelessWidget {
               Text(
                 'Availability',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: textScale.scale(16).clamp(14.0, 20.0),
                   fontWeight: FontWeight.w600,
                   color: colorScheme.secondary,
                 ),
@@ -82,7 +83,7 @@ class DoctorAvailabilityCard extends StatelessWidget {
                             ? 'Accepting New Patients'
                             : 'Not Accepting Patients',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: textScale.scale(14).clamp(12.0, 18.0),
                           fontWeight: FontWeight.w600,
                           color: isAccepting
                               ? Colors.green.shade700
@@ -90,15 +91,17 @@ class DoctorAvailabilityCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        isAccepting
-                            ? 'This doctor is currently taking new patients'
-                            : 'This doctor is not currently accepting new patients',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isAccepting
-                              ? Colors.green.shade600
-                              : Colors.grey.shade600,
+                      Flexible(
+                        child: Text(
+                          isAccepting
+                              ? 'This doctor is currently taking new patients'
+                              : 'This doctor is not currently accepting new patients',
+                          style: TextStyle(
+                            fontSize: textScale.scale(10).clamp(8.0, 14.0),
+                            color: isAccepting
+                                ? Colors.green.shade600
+                                : Colors.grey.shade600,
+                          ),
                         ),
                       ),
                     ],

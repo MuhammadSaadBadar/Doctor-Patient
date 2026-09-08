@@ -2,6 +2,7 @@
 
 import 'package:doctor/patient/features/water_intake/controllers/water_intake_history_controller.dart';
 import 'package:doctor/patient/features/water_intake/widgets/water_intake_history_entry.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -14,29 +15,11 @@ class WaterIntakeHistoryScreen extends GetView<WaterIntakeHistoryController> {
 
     return Scaffold(
       backgroundColor: colorScheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
-          onPressed: () => Get.back(),
-        ),
-        title: Text(
-          'Water Intake History',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
+      appBar: PatientTopAppBar(
+        title: 'Water Intake History',
+        trailingActions: [
           IconButton(
-            icon: Icon(
-              Icons.refresh_rounded,
-              color: colorScheme.onSurface,
-            ),
+            icon: Icon(Icons.refresh_rounded, color: colorScheme.onSurface),
             onPressed: controller.refreshData,
           ),
         ],

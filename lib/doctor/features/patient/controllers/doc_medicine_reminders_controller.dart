@@ -1,10 +1,10 @@
 // lib/features/patient/controllers/medicine_reminders_controller.dart
 
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:doctor/core/services/storage_service.dart';
 import 'package:doctor/doctor/features/patient/models/doc_medicine_reminder.dart';
 import 'package:doctor/doctor/features/patient/repositories/doc_medicine_reminder_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class DoctorMedicineRemindersController extends GetxController {
   final DoctorMedicineReminderRepository _repository =
@@ -31,10 +31,11 @@ class DoctorMedicineRemindersController extends GetxController {
 
   // Filtered reminders
   List<MedicineReminder> get filteredReminders {
-    if (!showActiveOnly.value) {
-      return reminders;
-    }
-    return reminders.where((r) => r.isActive).toList();
+    final scopedReminders = reminders
+        .where((reminder) => reminder.patientId == _patientId)
+        .toList();
+    if (!showActiveOnly.value) return scopedReminders;
+    return scopedReminders.where((reminder) => reminder.isActive).toList();
   }
 
   // Stats
@@ -68,21 +69,32 @@ class DoctorMedicineRemindersController extends GetxController {
 
     if (!hasMoreData.value) return;
 
+    if (_patientId == null || _patientId == 0) {
+      isLoading.value = false;
+      hasError.value = true;
+      errorMessage.value = 'A patient must be selected to view reminders.';
+      return;
+    }
+
     isLoading.value = true;
     hasError.value = false;
     errorMessage.value = '';
 
     try {
       final result = await _repository.getMedicineReminders(
-        patientId: _patientId,
+        patientId: _patientId!,
         page: _currentPage,
         pageSize: _pageSize,
       );
 
+      final scopedReminders = result.reminders
+          .where((reminder) => reminder.patientId == _patientId)
+          .toList();
+
       if (refresh) {
-        reminders.value = result.reminders;
+        reminders.value = scopedReminders;
       } else {
-        reminders.addAll(result.reminders);
+        reminders.addAll(scopedReminders);
       }
 
       hasMoreData.value = result.hasNext;

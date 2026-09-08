@@ -147,24 +147,28 @@ class MedicineReminderCard extends StatelessWidget {
             // Details row
             Row(
               children: [
-                _buildDetailItem(
-                  context,
-                  icon: Icons.access_time_rounded,
-                  label: 'Times',
-                  value: reminder.timesPerDay.toString(),
+                Flexible(
+                  child: _buildDetailItem(
+                    context,
+                    icon: Icons.access_time_rounded,
+                    label: 'Times',
+                    value: reminder.timesPerDay.toString(),
+                  ),
                 ),
                 const SizedBox(width: 16),
-                _buildDetailItem(
-                  context,
-                  icon: Icons.schedule_rounded,
-                  label: 'Schedule',
-                  value: reminder.formattedTimes,
-                  flexible: true,
+                Flexible(
+                  child: _buildDetailItem(
+                    context,
+                    icon: Icons.schedule_rounded,
+                    label: 'Schedule',
+                    value: reminder.formattedTimes,
+                    flexible: true,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 10),
-            // Date row - responsive layout
+            // Date row - responsive layout using Wrap for natural flow
             LayoutBuilder(
               builder: (context, constraints) {
                 final isNarrow = constraints.maxWidth < 360;
@@ -194,30 +198,31 @@ class MedicineReminderCard extends StatelessWidget {
                     ],
                   );
                 }
-                return Row(
+                return Wrap(
+                  spacing: 16,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    _buildDetailItem(
-                      context,
-                      icon: Icons.calendar_today_rounded,
-                      label: 'Start',
-                      value: _formatDate(reminder.startDate),
-                    ),
-                    const SizedBox(width: 16),
-                    if (reminder.endDate != null)
-                      _buildDetailItem(
+                    Flexible(
+                      child: _buildDetailItem(
                         context,
                         icon: Icons.calendar_today_rounded,
-                        label: 'End',
-                        value: _formatDate(reminder.endDate!),
+                        label: 'Start',
+                        value: _formatDate(reminder.startDate),
                       ),
-                    if (reminder.endDate == null)
-                      _buildDetailItem(
+                    ),
+                    Flexible(
+                      child: _buildDetailItem(
                         context,
-                        icon: Icons.refresh_rounded,
+                        icon: reminder.endDate != null
+                            ? Icons.calendar_today_rounded
+                            : Icons.refresh_rounded,
                         label: 'End',
-                        value: 'Ongoing',
+                        value: reminder.endDate != null
+                            ? _formatDate(reminder.endDate!)
+                            : 'Ongoing',
                       ),
-                    const Spacer(),
+                    ),
                     _buildActionButtons(context),
                   ],
                 );
@@ -244,21 +249,25 @@ class MedicineReminderCard extends StatelessWidget {
                       color: dueColor,
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      'Due today',
-                      style: TextStyle(
-                        color: dueColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    Flexible(
+                      child: Text(
+                        'Due today',
+                        style: AppTheme.bodyMedium.copyWith(
+                          color: dueColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const Spacer(),
-                    Text(
-                      reminder.formattedTimes,
-                      style: TextStyle(
-                        color: dueColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        reminder.formattedTimes,
+                        style: AppTheme.bodyMedium.copyWith(
+                          color: dueColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

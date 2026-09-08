@@ -4,6 +4,7 @@ import 'package:doctor/patient/features/kick_counter/controllers/kick_counter_co
 import 'package:doctor/patient/features/kick_counter/widgets/kick_counter_display.dart';
 import 'package:doctor/patient/features/kick_counter/widgets/kick_history_item.dart';
 import 'package:doctor/patient/features/kick_counter/widgets/kick_status_badge.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -16,29 +17,9 @@ class KickCounterScreen extends GetView<KickCounterController> {
 
     return Scaffold(
       backgroundColor: colorScheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.menu_rounded, color: colorScheme.primary),
-          onPressed: () {},
-        ),
-        title: Text(
-          'Mama Health',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.primary,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_rounded, color: colorScheme.primary),
-            onPressed: () => Get.toNamed('/notifications'),
-          ),
-        ],
+      appBar: PatientTopAppBar(
+        title: 'Kick Counter',
+        onNotificationTap: () => Get.toNamed('/notifications'),
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.allSessions.isEmpty) {
@@ -65,31 +46,31 @@ class KickCounterScreen extends GetView<KickCounterController> {
                 const SizedBox(height: 24),
 
                 // Kick Counter Display
-                Obx(
-                  () => KickCounterDisplay(
-                    kickCount: controller.kickCount,
-                    onAdd: controller.recordKick,
-                    onRemove: () {
-                      // Remove last kick (not supported by API)
-                      Get.snackbar(
-                        'Info',
-                        'Remove functionality coming soon',
-                        snackPosition: SnackPosition.BOTTOM,
-                      );
-                    },
-                    isActive: controller.isSessionActive,
-                  ),
-                ),
+Obx(
+                   () => KickCounterDisplay(
+                     kickCount: controller.activeSession.value?.kickCount ?? 0,
+                     onAdd: controller.recordKick,
+                     onRemove: () {
+                       // Remove last kick (not supported by API)
+                       Get.snackbar(
+                         'Info',
+                         'Remove functionality coming soon',
+                         snackPosition: SnackPosition.BOTTOM,
+                       );
+                     },
+                     isActive: controller.activeSession.value != null,
+                   ),
+                 ),
 
                 const SizedBox(height: 12),
 
                 // Status Badge
-                Obx(
-                  () => KickStatusBadge(
-                    isActive: controller.isSessionActive,
-                    kickCount: controller.kickCount,
-                  ),
-                ),
+Obx(
+                   () => KickStatusBadge(
+                     isActive: controller.activeSession.value != null,
+                     kickCount: controller.activeSession.value?.kickCount,
+                   ),
+                 ),
 
                 const SizedBox(height: 8),
 

@@ -4,8 +4,80 @@ import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/constants/user_role.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/doctor/features/auth/repositories/auth_repository.dart';
+import 'package:doctor/doctor/features/profile/models/doc_edit_profile_model.dart';
+import 'package:doctor/doctor/features/profile/repositories/doc_edit_profile_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+/// Global user model for reactive profile state across the app
+class UserModel {
+  final String id;
+  final String email;
+  final String firstName;
+  final String lastName;
+  final String phoneNumber;
+  final bool isEmailVerified;
+  final String role;
+  final DateTime dateJoined;
+  final String? profilePictureUrl;
+
+  UserModel({
+    required this.id,
+    required this.email,
+    required this.firstName,
+    required this.lastName,
+    required this.phoneNumber,
+    required this.isEmailVerified,
+    required this.role,
+    required this.dateJoined,
+    this.profilePictureUrl,
+  });
+
+  factory UserModel.fromDoctorProfileResponse(DoctorProfileResponse response) {
+    return UserModel(
+      id: response.id,
+      email: response.email,
+      firstName: response.firstName,
+      lastName: response.lastName,
+      phoneNumber: response.phoneNumber,
+      isEmailVerified: response.isEmailVerified,
+      role: response.role,
+      dateJoined: response.dateJoined,
+      profilePictureUrl: response.doctorProfile?.profilePictureUrl,
+    );
+  }
+
+  UserModel copyWith({
+    String? id,
+    String? email,
+    String? firstName,
+    String? lastName,
+    String? phoneNumber,
+    bool? isEmailVerified,
+    String? role,
+    DateTime? dateJoined,
+    String? profilePictureUrl,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      isEmailVerified: isEmailVerified ?? this.isEmailVerified,
+      role: role ?? this.role,
+      dateJoined: dateJoined ?? this.dateJoined,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
+    );
+  }
+
+  String get fullName => '$firstName $lastName';
+
+  String get initials {
+    if (firstName.isEmpty || lastName.isEmpty) return 'DR';
+    return '${firstName[0]}${lastName[0]}'.toUpperCase();
+  }
+}
 
 class AuthController extends GetxController {
   final AuthRepository _repository = AuthRepository();
@@ -21,6 +93,9 @@ class AuthController extends GetxController {
 
   // Login state
   final isLoggedIn = false.obs;
+
+  // Global reactive user profile state
+  final currentUser = Rx<UserModel?>(null);
 
   // ============ Forgot Password ============
   final forgotPasswordEmailController = TextEditingController();
@@ -133,11 +208,18 @@ class AuthController extends GetxController {
   }) async {
     isLoading.value = true;
     try {
-      final result = await _repository.login(email, password);
+      final result = await _repository.login(
+        email,
+        password,
+        preferredRole: preferredRole,
+      );
       if (result.success && result.role != null) {
         // TODO: Get FCM token from Firebase Messaging when package is added
         // final fcmToken = await FirebaseMessaging.instance.getToken();
         // if (fcmToken != null) await updateFcmToken(fcmToken);
+
+        // Fetch and populate global user profile
+        await initializeCurrentUser();
 
         // Route based on actual role from backend, not selected role
         if (result.role == UserRole.doctor) {
@@ -206,6 +288,25 @@ class AuthController extends GetxController {
   Future<void> verifyOtp(String otp, String email) async {
     isOtpLoading.value = true;
     try {
+      final purpose = Get.arguments?['purpose'] as String? ?? 'reset';
+      if (purpose == 'registration') {
+        final verified = await _repository.verifyEmail(email, otp);
+        if (verified) {
+          _timer?.cancel();
+          Get.offAllNamed(AppRoutes.login);
+          Get.snackbar(
+            'Email verified',
+            'Your account is ready. You can now sign in.',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: AppColors.secondary,
+            colorText: AppColors.onPrimary,
+          );
+        } else {
+          throw Exception('Invalid verification code');
+        }
+        return;
+      }
+
       final result = await _repository.verifyOtpForReset(email, otp);
       if (result) {
         resetToken.value = _repository.getResetToken ?? '';
@@ -238,7 +339,10 @@ class AuthController extends GetxController {
 
     isLoading.value = true;
     try {
-      final success = await _repository.resendResetOtp(email);
+      final purpose = Get.arguments?['purpose'] as String? ?? 'reset';
+      final success = purpose == 'registration'
+          ? await _repository.resendVerification(email)
+          : await _repository.resendResetOtp(email);
       if (success) {
         _startTimer();
         Get.snackbar(
@@ -377,5 +481,58 @@ class AuthController extends GetxController {
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  /// Initialize global currentUser from profile endpoint after login
+  Future<void> initializeCurrentUser() async {
+    try {
+      final profileRepo = DoctorEditProfileRepository();
+      final profile = await profileRepo.getProfile();
+      if (profile != null) {
+        currentUser.value = UserModel.fromDoctorProfileResponse(profile);
+        debugPrint(
+          '[AUTH] Current user initialized: ${currentUser.value?.fullName}',
+        );
+      }
+    } catch (e) {
+      debugPrint('[AUTH] Failed to initialize current user: $e');
+    }
+  }
+
+  /// Update profile picture URL globally with cache-busting timestamp
+  void updateProfileImage(String newUrl) {
+    if (currentUser.value != null) {
+      // Append timestamp for cache busting
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final cacheBustedUrl = '$newUrl?v=$timestamp';
+      currentUser.value = currentUser.value!.copyWith(
+        profilePictureUrl: cacheBustedUrl,
+      );
+      debugPrint('[AUTH] Profile image updated globally: $cacheBustedUrl');
+    }
+  }
+
+  /// Clear current user on logout
+  void clearCurrentUser() {
+    currentUser.value = null;
+  }
+
+  /// Clear profile image globally (after deletion)
+  void clearProfileImage() {
+    if (currentUser.value != null) {
+      final user = currentUser.value!;
+      currentUser.value = UserModel(
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
+        isEmailVerified: user.isEmailVerified,
+        role: user.role,
+        dateJoined: user.dateJoined,
+        profilePictureUrl: null,
+      );
+      debugPrint('[AUTH] Profile image cleared globally');
+    }
   }
 }

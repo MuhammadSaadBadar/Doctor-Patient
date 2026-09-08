@@ -1066,6 +1066,61 @@ paths:
                       - Required when payout_method is 'bank'.
                   summary: 400 Missing bank details
           description: ''
+  /api/v1/accounts/me/doctor-profile/picture/:
+    post:
+      operationId: accounts_me_doctor_profile_picture_create
+      description: Doctor-only, multipart form upload (field name `image`) — JPEG/PNG/WebP,
+        up to 5MB raw. The server always resizes to at most 512x512 and re-encodes
+        as a JPEG before storing (stored directly in the database, not a separate
+        file host — see `DoctorProfile.profile_picture_data`), so the actual stored
+        size is small and predictable regardless of what's uploaded. Replaces any
+        existing picture. Returns the full doctor profile, including the new `profile_picture_url`
+        (`GET /accounts/doctors/{id}/profile-picture/`).
+      summary: Upload/replace my profile picture (doctor only)
+      tags:
+      - Accounts
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DoctorProfilePictureUploadRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoctorProfile'
+              examples:
+                200OK:
+                  value:
+                    profile_picture_url: https://mama-health-backend.onrender.com/api/v1/accounts/doctors/4/profile-picture/
+                  summary: 200 OK
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailResponse'
+              examples:
+                400TooLarge:
+                  value:
+                    detail: This image is too large. Please upload a photo under 5MB.
+                    errors: null
+                  summary: 400 Too large
+          description: ''
+    delete:
+      operationId: accounts_me_doctor_profile_picture_destroy
+      summary: Remove my profile picture (doctor only)
+      tags:
+      - Accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/accounts/me/subscription/:
     get:
       operationId: accounts_me_subscription_retrieve
@@ -1435,6 +1490,35 @@ paths:
                       payout_bank_account_number: 01234567890123
                       payout_bank_iban: PK00MEZN0001234567890123
                   summary: 200 OK — as seen by admin
+          description: ''
+  /api/v1/accounts/doctors/{id}/profile-picture/:
+    get:
+      operationId: accounts_doctors_profile_picture_retrieve
+      description: Any authenticated user. Returns the raw image (always `image/jpeg`,
+        see `POST /accounts/me/doctor-profile/picture/`) directly — point `Image.network()`
+        at this URL rather than decoding anything client-side. 404 if this doctor
+        hasn't set one; check `profile_picture_url` on the doctor's serialized profile
+        first (it's `null` when there's nothing to fetch here).
+      summary: Get a doctor's profile picture
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - Accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: 'The image bytes, Content-Type: image/jpeg.'
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailResponse'
           description: ''
   /api/v1/accounts/patients/:
     get:
@@ -2714,6 +2798,48 @@ paths:
               schema:
                 $ref: '#/components/schemas/BloodPressureReading'
           description: ''
+    put:
+      operationId: health_blood_pressure_update
+      description: |-
+        Scopes a viewset's queryset by the requesting user's role, for any model
+        with a FK to the patient (default field name "patient"):
+          - PATIENT: only their own records
+          - DOCTOR: only records of patients assigned to them (PatientDoctorAssignment)
+          - ADMIN: unrestricted by default, or narrowed to one patient via
+            `?patient_id=` (e.g. an admin dashboard viewing a single patient's
+            full record — without this, admin would see every patient's rows
+            mixed together with no way to filter to just one)
+      summary: Replace a blood pressure reading
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this blood pressure reading.
+        required: true
+      tags:
+      - Health
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BloodPressureReadingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BloodPressureReadingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BloodPressureReadingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloodPressureReading'
+          description: ''
     get:
       operationId: health_blood_pressure_retrieve
       description: |-
@@ -2759,48 +2885,6 @@ paths:
                     notes: Felt fine
                     created_at: '2026-07-29T09:00:00Z'
                   summary: 200 OK
-          description: ''
-    put:
-      operationId: health_blood_pressure_update
-      description: |-
-        Scopes a viewset's queryset by the requesting user's role, for any model
-        with a FK to the patient (default field name "patient"):
-          - PATIENT: only their own records
-          - DOCTOR: only records of patients assigned to them (PatientDoctorAssignment)
-          - ADMIN: unrestricted by default, or narrowed to one patient via
-            `?patient_id=` (e.g. an admin dashboard viewing a single patient's
-            full record — without this, admin would see every patient's rows
-            mixed together with no way to filter to just one)
-      summary: Replace a blood pressure reading
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this blood pressure reading.
-        required: true
-      tags:
-      - Health
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BloodPressureReadingRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/BloodPressureReadingRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/BloodPressureReadingRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BloodPressureReading'
           description: ''
     delete:
       operationId: health_blood_pressure_destroy
@@ -2986,6 +3070,48 @@ paths:
               schema:
                 $ref: '#/components/schemas/BloodSugarReading'
           description: ''
+    put:
+      operationId: health_blood_sugar_update
+      description: |-
+        Scopes a viewset's queryset by the requesting user's role, for any model
+        with a FK to the patient (default field name "patient"):
+          - PATIENT: only their own records
+          - DOCTOR: only records of patients assigned to them (PatientDoctorAssignment)
+          - ADMIN: unrestricted by default, or narrowed to one patient via
+            `?patient_id=` (e.g. an admin dashboard viewing a single patient's
+            full record — without this, admin would see every patient's rows
+            mixed together with no way to filter to just one)
+      summary: Replace a blood sugar reading
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this blood sugar reading.
+        required: true
+      tags:
+      - Health
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BloodSugarReadingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BloodSugarReadingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BloodSugarReadingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloodSugarReading'
+          description: ''
     get:
       operationId: health_blood_sugar_retrieve
       description: |-
@@ -3030,48 +3156,6 @@ paths:
                     notes: ''
                     created_at: '2026-07-29T07:15:00Z'
                   summary: 200 OK
-          description: ''
-    put:
-      operationId: health_blood_sugar_update
-      description: |-
-        Scopes a viewset's queryset by the requesting user's role, for any model
-        with a FK to the patient (default field name "patient"):
-          - PATIENT: only their own records
-          - DOCTOR: only records of patients assigned to them (PatientDoctorAssignment)
-          - ADMIN: unrestricted by default, or narrowed to one patient via
-            `?patient_id=` (e.g. an admin dashboard viewing a single patient's
-            full record — without this, admin would see every patient's rows
-            mixed together with no way to filter to just one)
-      summary: Replace a blood sugar reading
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this blood sugar reading.
-        required: true
-      tags:
-      - Health
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BloodSugarReadingRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/BloodSugarReadingRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/BloodSugarReadingRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BloodSugarReading'
           description: ''
     delete:
       operationId: health_blood_sugar_destroy
@@ -3255,6 +3339,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/SymptomLog'
           description: ''
+    put:
+      operationId: health_symptoms_update
+      description: POST upserts by (patient, log_date) — one entry per day, see SymptomLogSerializer.create().
+      summary: Replace a symptom log
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this symptom log.
+        required: true
+      tags:
+      - Health
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SymptomLogRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SymptomLogRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SymptomLogRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SymptomLog'
+          description: ''
     get:
       operationId: health_symptoms_retrieve
       description: POST upserts by (patient, log_date) — one entry per day, see SymptomLogSerializer.create().
@@ -3295,39 +3412,6 @@ paths:
                     created_at: '2026-07-29T20:00:00Z'
                     updated_at: '2026-07-29T20:00:00Z'
                   summary: 200 OK
-          description: ''
-    put:
-      operationId: health_symptoms_update
-      description: POST upserts by (patient, log_date) — one entry per day, see SymptomLogSerializer.create().
-      summary: Replace a symptom log
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this symptom log.
-        required: true
-      tags:
-      - Health
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SymptomLogRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/SymptomLogRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/SymptomLogRequest'
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SymptomLog'
           description: ''
     delete:
       operationId: health_symptoms_destroy
@@ -4026,6 +4110,48 @@ paths:
               schema:
                 $ref: '#/components/schemas/SurgicalProcedureRecord'
           description: ''
+    put:
+      operationId: health_surgical_procedures_update
+      description: |-
+        Scopes a viewset's queryset by the requesting user's role, for any model
+        with a FK to the patient (default field name "patient"):
+          - PATIENT: only their own records
+          - DOCTOR: only records of patients assigned to them (PatientDoctorAssignment)
+          - ADMIN: unrestricted by default, or narrowed to one patient via
+            `?patient_id=` (e.g. an admin dashboard viewing a single patient's
+            full record — without this, admin would see every patient's rows
+            mixed together with no way to filter to just one)
+      summary: Replace a surgical procedure record
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this surgical procedure record.
+        required: true
+      tags:
+      - Health
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurgicalProcedureRecordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SurgicalProcedureRecordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SurgicalProcedureRecordRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurgicalProcedureRecord'
+          description: ''
     get:
       operationId: health_surgical_procedures_retrieve
       description: |-
@@ -4071,48 +4197,6 @@ paths:
                     created_at: '2026-07-29T10:00:00Z'
                     updated_at: '2026-07-29T10:00:00Z'
                   summary: 200 OK
-          description: ''
-    put:
-      operationId: health_surgical_procedures_update
-      description: |-
-        Scopes a viewset's queryset by the requesting user's role, for any model
-        with a FK to the patient (default field name "patient"):
-          - PATIENT: only their own records
-          - DOCTOR: only records of patients assigned to them (PatientDoctorAssignment)
-          - ADMIN: unrestricted by default, or narrowed to one patient via
-            `?patient_id=` (e.g. an admin dashboard viewing a single patient's
-            full record — without this, admin would see every patient's rows
-            mixed together with no way to filter to just one)
-      summary: Replace a surgical procedure record
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this surgical procedure record.
-        required: true
-      tags:
-      - Health
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SurgicalProcedureRecordRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/SurgicalProcedureRecordRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/SurgicalProcedureRecordRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SurgicalProcedureRecord'
           description: ''
     delete:
       operationId: health_surgical_procedures_destroy
@@ -4484,6 +4568,40 @@ paths:
               schema:
                 $ref: '#/components/schemas/DietPlan'
           description: ''
+    put:
+      operationId: diet_plans_update
+      description: Doctor/admin authored; patient is read-only (never creates/edits
+        their own plan).
+      summary: Replace a diet plan (doctor/admin only)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this diet plan.
+        required: true
+      tags:
+      - Diet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DietPlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DietPlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DietPlanRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DietPlan'
+          description: ''
     get:
       operationId: diet_plans_retrieve
       description: Doctor/admin authored; patient is read-only (never creates/edits
@@ -4538,40 +4656,6 @@ paths:
                     created_at: '2026-07-20T09:00:00Z'
                     updated_at: '2026-07-20T09:00:00Z'
                   summary: 200 OK
-          description: ''
-    put:
-      operationId: diet_plans_update
-      description: Doctor/admin authored; patient is read-only (never creates/edits
-        their own plan).
-      summary: Replace a diet plan (doctor/admin only)
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this diet plan.
-        required: true
-      tags:
-      - Diet
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DietPlanRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/DietPlanRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/DietPlanRequest'
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DietPlan'
           description: ''
     delete:
       operationId: diet_plans_destroy
@@ -4761,6 +4845,48 @@ paths:
               schema:
                 $ref: '#/components/schemas/MedicineReminder'
           description: ''
+    put:
+      operationId: medicines_reminders_update
+      description: |-
+        Scopes a viewset's queryset by the requesting user's role, for any model
+        with a FK to the patient (default field name "patient"):
+          - PATIENT: only their own records
+          - DOCTOR: only records of patients assigned to them (PatientDoctorAssignment)
+          - ADMIN: unrestricted by default, or narrowed to one patient via
+            `?patient_id=` (e.g. an admin dashboard viewing a single patient's
+            full record — without this, admin would see every patient's rows
+            mixed together with no way to filter to just one)
+      summary: Replace a medicine reminder
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this medicine reminder.
+        required: true
+      tags:
+      - Medicines
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicineReminderRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MedicineReminderRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MedicineReminderRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicineReminder'
+          description: ''
     get:
       operationId: medicines_reminders_retrieve
       description: |-
@@ -4811,48 +4937,6 @@ paths:
                     created_at: '2026-07-01T08:00:00Z'
                     updated_at: '2026-07-01T08:00:00Z'
                   summary: 200 OK
-          description: ''
-    put:
-      operationId: medicines_reminders_update
-      description: |-
-        Scopes a viewset's queryset by the requesting user's role, for any model
-        with a FK to the patient (default field name "patient"):
-          - PATIENT: only their own records
-          - DOCTOR: only records of patients assigned to them (PatientDoctorAssignment)
-          - ADMIN: unrestricted by default, or narrowed to one patient via
-            `?patient_id=` (e.g. an admin dashboard viewing a single patient's
-            full record — without this, admin would see every patient's rows
-            mixed together with no way to filter to just one)
-      summary: Replace a medicine reminder
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this medicine reminder.
-        required: true
-      tags:
-      - Medicines
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MedicineReminderRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/MedicineReminderRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/MedicineReminderRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MedicineReminder'
           description: ''
     delete:
       operationId: medicines_reminders_destroy
@@ -7264,6 +7348,10 @@ components:
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
           nullable: true
+        profile_picture_url:
+          type: string
+          nullable: true
+          readOnly: true
         payout_method:
           oneOf:
           - $ref: '#/components/schemas/PayoutMethodEnum'
@@ -7292,6 +7380,21 @@ components:
         payout_bank_iban:
           type: string
           maxLength: 50
+      required:
+      - profile_picture_url
+    DoctorProfilePictureUploadRequest:
+      type: object
+      description: |-
+        Schema-only, for Swagger — MyDoctorProfilePictureView reads the raw
+        uploaded file itself and hands it to services.process_profile_picture()
+        rather than using this serializer's own validation/save.
+      properties:
+        image:
+          type: string
+          format: binary
+          description: JPEG, PNG, or WebP, up to 5MB — resized/recompressed server-side.
+      required:
+      - image
     DoctorProfilePublic:
       type: object
       description: |-
@@ -7338,6 +7441,12 @@ components:
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
           nullable: true
+        profile_picture_url:
+          type: string
+          nullable: true
+          readOnly: true
+      required:
+      - profile_picture_url
     DoctorProfileRequest:
       type: object
       description: |-

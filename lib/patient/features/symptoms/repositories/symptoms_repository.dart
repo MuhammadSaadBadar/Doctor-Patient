@@ -71,26 +71,4 @@ class SymptomsRepository {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getSymptomTypes() async {
-    try {
-      final response = await _apiClient.get(
-        '${ApiConstants.healthSymptoms}types/',
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
-        return (data['results'] as List<dynamic>? ?? [])
-            .map((e) => e as Map<String, dynamic>)
-            .toList();
-      }
-
-      return [];
-    } on DioException catch (e) {
-      debugPrint('[SYMPTOMS] Error getting types: $e');
-      return [];
-    } catch (e) {
-      debugPrint('[SYMPTOMS] Unexpected error: $e');
-      return [];
-    }
-  }
 }

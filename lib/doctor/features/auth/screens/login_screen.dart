@@ -560,13 +560,13 @@
 // }
 import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/constants/user_role.dart';
+import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/widgets/material_symbol_icon.dart';
+import 'package:doctor/doctor/features/auth/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:doctor/core/routes/app_routes.dart';
-import 'package:doctor/doctor/features/auth/controllers/auth_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -622,26 +622,28 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildFooter(BuildContext context) {
-    return TextButton(
-      onPressed: () {},
-      style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        minimumSize: Size.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          MaterialSymbolIcon('help', size: 16, color: AppColors.outline),
-          const SizedBox(width: 6),
-          Text(
-            'Need help? Contact Administrator',
-            style: AppTheme.bodySmall.copyWith(
-              color: AppColors.outline,
-              fontWeight: FontWeight.w500,
-            ),
+    if (_selectedRole == UserRole.patient) {
+      return TextButton(
+        onPressed: () => Get.toNamed(AppRoutes.patientRegister),
+        child: Text(
+          "Don't have an account? Sign Up",
+          style: AppTheme.bodySmall.copyWith(
+            color: AppColors.secondary,
+            fontWeight: FontWeight.w700,
           ),
-        ],
+        ),
+      );
+    }
+
+    return TextButton.icon(
+      onPressed: () {},
+      icon: MaterialSymbolIcon('help', size: 16, color: AppColors.outline),
+      label: Text(
+        'Need help? Contact Administrator',
+        style: AppTheme.bodySmall.copyWith(
+          color: AppColors.outline,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }

@@ -28,3 +28,9 @@ class ServerException extends ApiException {
 class NetworkException extends ApiException {
   NetworkException() : super('Network error');
 }
+
+class AIAssistantUnavailableException extends ApiException {
+  AIAssistantUnavailableException()
+      : super('AI Assistant is temporarily unavailable. Please try again later.',
+            statusCode: 503);
+}

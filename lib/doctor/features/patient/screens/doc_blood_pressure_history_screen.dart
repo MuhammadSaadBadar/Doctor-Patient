@@ -3,7 +3,7 @@
 import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/widgets/bottom_nav_bar.dart';
-import 'package:doctor/core/widgets/top_app_bar.dart';
+import 'package:doctor/core/widgets/doc_top_app_bar.dart';
 import 'package:doctor/doctor/features/patient/controllers/doc_blood_pressure_history_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

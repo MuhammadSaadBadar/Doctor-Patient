@@ -1,12 +1,12 @@
 // lib/features/profile/screens/profile_screen.dart
 
-import 'package:doctor/core/constants/app_constants.dart';
 import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/widgets/bottom_nav_bar.dart';
+import 'package:doctor/core/widgets/doctor_avatar.dart';
 import 'package:doctor/core/widgets/material_symbol_icon.dart';
-import 'package:doctor/core/widgets/top_app_bar.dart';
+import 'package:doctor/core/widgets/doc_top_app_bar.dart';
 import 'package:doctor/doctor/features/profile/controllers/doc_profile_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -240,29 +240,12 @@ class DoctorProfileScreen extends GetView<DoctorProfileController> {
         return Column(
           children: [
             // Avatar
-            Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                color: AppColors.primaryContainer,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.surface, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.cardShadow,
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  _getInitials(profile.firstName, profile.lastName),
-                  style: AppTheme.headlineLarge.copyWith(
-                    color: AppColors.onPrimaryContainer,
-                  ),
-                ),
-              ),
+            DoctorAvatar(
+              imageUrl: profile.profilePictureUrl,
+              firstName: profile.firstName,
+              lastName: profile.lastName,
+              size: 88,
+              enableCacheBusting: true,
             ),
             const SizedBox(height: 12),
 

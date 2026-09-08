@@ -113,5 +113,5 @@ class WaterIntakeController extends GetxController {
 
   void navigateToReports() => Get.toNamed('/patient/reports');
 
-  void navigateToProfile() => Get.toNamed('/patient/profile/edit');
+  void navigateToProfile() => Get.toNamed(AppRoutes.patientEditProfile);
 }

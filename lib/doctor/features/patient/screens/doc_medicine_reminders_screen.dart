@@ -3,7 +3,7 @@
 import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/widgets/bottom_nav_bar.dart';
-import 'package:doctor/core/widgets/top_app_bar.dart';
+import 'package:doctor/core/widgets/doc_top_app_bar.dart';
 import 'package:doctor/doctor/features/patient/controllers/doc_medicine_reminders_controller.dart';
 import 'package:doctor/doctor/features/patient/models/doc_medicine_reminder.dart';
 import 'package:doctor/doctor/features/patient/widgets/doc_medicine_reminder_card.dart';
@@ -274,16 +274,17 @@ class DoctorMedicineRemindersScreen
   }
 
   Widget _buildFilterBar() {
-    return Row(
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 12,
+      runSpacing: 8,
       children: [
-        Expanded(
-          child: Text(
-            controller.showActiveOnly.value
-                ? 'Showing active reminders'
-                : 'Showing all reminders',
-            style: AppTheme.bodySmall.copyWith(
-              color: AppColors.onSurfaceVariant,
-            ),
+        Text(
+          controller.showActiveOnly.value
+              ? 'Showing active reminders'
+              : 'Showing all reminders',
+          style: AppTheme.bodySmall.copyWith(
+            color: AppColors.onSurfaceVariant,
           ),
         ),
         Obx(

@@ -1,5 +1,6 @@
 // lib/patient/features/doctors/widgets/doctor_card.dart
 
+import 'package:doctor/core/widgets/doctor_avatar.dart';
 import 'package:doctor/patient/features/doctors/models/doctor.dart';
 import 'package:flutter/material.dart';
 
@@ -18,19 +19,22 @@ class DoctorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
         boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.04),
-              blurRadius: 16,
-              offset: const Offset(0, 2),
-            ),
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: InkWell(
@@ -38,62 +42,54 @@ class DoctorCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min, // ✅ Prevents unbounded height issues
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Avatar
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                  border: Border.all(
-                    color: colorScheme.primary.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                ),
-                child: CircleAvatar(
-                  radius: 30,
-                  backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
-                    child: Text(
-                      doctor.initials,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.primary,
-                      ),
-                    ),
-                  ),
+                DoctorAvatar(
+                  imageUrl:
+                      doctor.profilePictureUrl ??
+                      doctor.doctorProfilePictureUrl,
+                  firstName: doctor.firstName,
+                  lastName: doctor.lastName,
+                  size: 64,
+                  enableCacheBusting: true,
                 ),
                 const SizedBox(width: 12),
-                // Info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min, // ✅ Added
                     children: [
                       Text(
+                        // ✅ Removed Flexible wrapper
                         doctor.fullName,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: textScale.scale(14).clamp(12.0, 18.0),
                           fontWeight: FontWeight.w700,
                           color: colorScheme.primary,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       if (doctor.doctorProfile?.hasSpecialization ?? false)
                         Text(
+                          // ✅ Removed Flexible wrapper
                           doctor.doctorProfile!.specialization!,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: textScale.scale(11).clamp(9.0, 14.0),
                             fontWeight: FontWeight.w600,
                             color: colorScheme.secondary,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          // Rating
                           Container(
+                            // ✅ Removed Flexible wrapper
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
                               vertical: 2,
@@ -114,7 +110,9 @@ class DoctorCard extends StatelessWidget {
                                 Text(
                                   doctor.formattedRating,
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: textScale
+                                        .scale(10)
+                                        .clamp(8.0, 14.0),
                                     fontWeight: FontWeight.w600,
                                     color: colorScheme.primary,
                                   ),
@@ -123,8 +121,8 @@ class DoctorCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          // Experience
                           Row(
+                            // ✅ Removed Flexible wrapper
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
@@ -134,12 +132,17 @@ class DoctorCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
+                                // ✅ Removed Flexible wrapper
                                 doctor.doctorProfile?.experienceDisplay ??
                                     'N/A',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: textScale
+                                      .scale(10)
+                                      .clamp(8.0, 14.0),
                                   color: colorScheme.onSurfaceVariant,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -157,16 +160,19 @@ class DoctorCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
+                            // ✅ Removed Flexible wrapper
                             doctor.isAcceptingPatients
                                 ? 'Accepting Patients'
                                 : 'Not Accepting',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: textScale.scale(10).clamp(8.0, 14.0),
                               fontWeight: FontWeight.w600,
                               color: doctor.isAcceptingPatients
                                   ? Colors.green
                                   : Colors.grey,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -176,51 +182,56 @@ class DoctorCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            // Bottom row - Fee and Book button
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: doctor.doctorProfile?.formattedFee ?? 'Free',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: colorScheme.onSurface,
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: doctor.doctorProfile?.formattedFee ?? 'Free',
+                          style: TextStyle(
+                            fontSize: textScale.scale(16).clamp(14.0, 22.0),
+                            fontWeight: FontWeight.w700,
+                            color: colorScheme.onSurface,
+                          ),
                         ),
-                      ),
-                      TextSpan(
-                        text: doctor.doctorProfile?.consultationFee != null
-                            ? '/visit'
-                            : '',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          color: colorScheme.onSurfaceVariant,
+                        TextSpan(
+                          text: doctor.doctorProfile?.consultationFee != null
+                              ? '/visit'
+                              : '',
+                          style: TextStyle(
+                            fontSize: textScale.scale(10).clamp(8.0, 14.0),
+                            fontWeight: FontWeight.w400,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: onBookTap,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: colorScheme.onPrimary,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: textScale.scale(16).clamp(12.0, 24.0),
+                      vertical: textScale.scale(8).clamp(6.0, 14.0),
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                     elevation: 2,
                   ),
-                  child: const Text(
-                    'Book Appointment',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                  child: Text(
+                    'Book',
+                    style: TextStyle(
+                      fontSize: textScale.scale(11).clamp(9.0, 14.0),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],

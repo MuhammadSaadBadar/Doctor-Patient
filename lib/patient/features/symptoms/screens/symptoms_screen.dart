@@ -1,8 +1,8 @@
 // lib/patient/features/symptoms/screens/symptoms_screen.dart
 
-import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/patient/features/symptoms/controllers/symptoms_controller.dart';
 import 'package:doctor/patient/features/symptoms/models/symptom_log.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,24 +12,12 @@ class SymptomsScreen extends GetView<SymptomsController> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
-          onPressed: () => Get.back(),
-        ),
-        title: Text(
-          'Symptoms Tracker',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        centerTitle: true,
+      backgroundColor: colorScheme.surface,
+      appBar: PatientTopAppBar(
+        title: 'Symptoms Tracker',
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.symptomLogs.isEmpty) {
@@ -48,6 +36,8 @@ class SymptomsScreen extends GetView<SymptomsController> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize:
+                  MainAxisSize.min, // ✅ Prevents unbounded height issues
               children: [
                 _buildLogSymptomsCard(context),
                 const SizedBox(height: 24),
@@ -62,67 +52,82 @@ class SymptomsScreen extends GetView<SymptomsController> {
 
   Widget _buildLogSymptomsCard(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min, // ✅ Prevents unbounded height issues
         children: [
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.pink.withOpacity(0.12),
+                  color: Colors.pink.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.sick_rounded, size: 20, color: Colors.pink),
+                child: const Icon(
+                  Icons.sick_rounded,
+                  size: 20,
+                  color: Colors.pink,
+                ),
               ),
               const SizedBox(width: 12),
-              Text(
-                'Log Today\'s Symptoms',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
+              Expanded(
+                child: Text(
+                  'Log Today\'s Symptoms',
+                  style: TextStyle(
+                    fontSize: textScale.scale(14).clamp(12.0, 18.0),
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
           Text(
+            // ✅ Removed Flexible wrapper
             'How are you feeling today?',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: textScale.scale(12).clamp(10.0, 16.0),
               color: colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 12),
-          Obx(() => Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: controller.symptomTypes.map((type) {
-              final id = type['id'] as int;
-              final name = type['name'] as String;
-              final isSelected = controller.selectedSymptomIds.contains(id);
-              return FilterChip(
-                label: Text(name),
-                selected: isSelected,
-                onSelected: (_) => controller.toggleSymptom(id),
-                selectedColor: colorScheme.primary.withOpacity(0.2),
-                checkmarkColor: colorScheme.primary,
-                labelStyle: TextStyle(
-                  color: isSelected ? colorScheme.primary : colorScheme.onSurface,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                ),
-              );
-            }).toList(),
-          )),
+          Obx(
+            () => Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: controller.symptomTypes.map((type) {
+                final id = type['id'] as int;
+                final name = type['name'] as String;
+                final isSelected = controller.selectedSymptomIds.contains(id);
+                return FilterChip(
+                  label: Text(name),
+                  selected: isSelected,
+                  onSelected: (_) => controller.toggleSymptom(id),
+                  selectedColor: colorScheme.primary.withValues(alpha: 0.2),
+                  checkmarkColor: colorScheme.primary,
+                  labelStyle: TextStyle(
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurface,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
           const SizedBox(height: 16),
           TextField(
             controller: controller.notesController,
@@ -143,22 +148,37 @@ class SymptomsScreen extends GetView<SymptomsController> {
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            child: Obx(() => ElevatedButton(
-              onPressed: controller.isLoading.value ? null : controller.saveTodaysSymptoms,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Obx(
+              () => ElevatedButton(
+                onPressed: controller.isLoading.value
+                    ? null
+                    : controller.saveTodaysSymptoms,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: controller.isLoading.value
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        'Save Symptoms',
+                        style: TextStyle(
+                          fontSize: textScale.scale(14).clamp(12.0, 18.0),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
-              child: controller.isLoading.value
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Text('Save Symptoms', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            )),
+            ),
           ),
         ],
       ),
@@ -167,14 +187,16 @@ class SymptomsScreen extends GetView<SymptomsController> {
 
   Widget _buildHistorySection(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min, // ✅ Prevents unbounded height issues
       children: [
         Text(
           'Recent Logs',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: textScale.scale(16).clamp(14.0, 20.0),
             fontWeight: FontWeight.w700,
             color: colorScheme.onSurface,
           ),
@@ -187,21 +209,39 @@ class SymptomsScreen extends GetView<SymptomsController> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
+                border: Border.all(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                ),
               ),
               child: Center(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min, // ✅ Added
                   children: [
-                    Icon(Icons.sick_rounded, size: 48, color: colorScheme.onSurfaceVariant.withOpacity(0.5)),
+                    Icon(
+                      Icons.sick_rounded,
+                      size: 48,
+                      color: colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.5,
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       'No symptoms logged yet',
-                      style: TextStyle(fontSize: 16, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: textScale.scale(14).clamp(12.0, 18.0),
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
+                      // ✅ Removed Flexible wrapper
                       'Tap above to log how you\'re feeling',
-                      style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant.withOpacity(0.7)),
+                      style: TextStyle(
+                        fontSize: textScale.scale(11).clamp(9.0, 15.0),
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.7,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -210,31 +250,41 @@ class SymptomsScreen extends GetView<SymptomsController> {
           }
 
           return Column(
-            children: controller.symptomLogs.map((log) => _buildSymptomLogCard(log, colorScheme)).toList(),
+            mainAxisSize: MainAxisSize.min, // ✅ Added
+            children: controller.symptomLogs
+                .map((log) => _buildSymptomLogCard(context, log))
+                .toList(),
           );
         }),
       ],
     );
   }
 
-  Widget _buildSymptomLogCard(SymptomLog log, ColorScheme colorScheme) {
+  Widget _buildSymptomLogCard(BuildContext context, SymptomLog log) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min, // ✅ Prevents unbounded height issues
         children: [
           Row(
             children: [
               Text(
+                // ✅ Removed Flexible wrapper
                 log.dateLabel,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: textScale.scale(12).clamp(10.0, 16.0),
                   fontWeight: FontWeight.w600,
                   color: colorScheme.onSurface,
                 ),
@@ -242,15 +292,18 @@ class SymptomsScreen extends GetView<SymptomsController> {
               if (log.isToday) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.12),
+                    color: colorScheme.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     'TODAY',
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: textScale.scale(9).clamp(7.0, 12.0),
                       fontWeight: FontWeight.w600,
                       color: colorScheme.primary,
                     ),
@@ -265,15 +318,18 @@ class SymptomsScreen extends GetView<SymptomsController> {
             runSpacing: 6,
             children: log.symptoms.map((symptom) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withOpacity(0.08),
+                  color: colorScheme.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
                   symptom.name,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: textScale.scale(11).clamp(9.0, 15.0),
                     fontWeight: FontWeight.w500,
                     color: colorScheme.primary,
                   ),
@@ -284,8 +340,12 @@ class SymptomsScreen extends GetView<SymptomsController> {
           if (log.notes != null && log.notes!.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
+              // ✅ Removed Flexible wrapper
               log.notes!,
-              style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                fontSize: textScale.scale(11).clamp(9.0, 15.0),
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ],
@@ -301,7 +361,15 @@ class SymptomsScreen extends GetView<SymptomsController> {
         children: [
           CircularProgressIndicator(color: colorScheme.primary),
           const SizedBox(height: 16),
-          Text('Loading symptoms...', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+          Text(
+            'Loading symptoms...',
+            style: TextStyle(
+              fontSize: MediaQuery.textScalerOf(
+                context,
+              ).scale(14).clamp(12.0, 18.0),
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
@@ -309,19 +377,43 @@ class SymptomsScreen extends GetView<SymptomsController> {
 
   Widget _buildErrorState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min, // ✅ Prevents unbounded height issues
           children: [
-            Icon(Icons.error_outline_rounded, size: 48, color: colorScheme.error),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: colorScheme.error,
+            ),
             const SizedBox(height: 16),
-            Text('Failed to load', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
+            Text(
+              'Failed to load',
+              style: TextStyle(
+                fontSize: textScale.scale(16).clamp(14.0, 20.0),
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text(controller.errorMessage.value, textAlign: TextAlign.center, style: TextStyle(color: colorScheme.onSurfaceVariant)),
+            Text(
+              // ✅ Removed Flexible wrapper
+              controller.errorMessage.value,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: textScale.scale(12).clamp(10.0, 16.0),
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: 24),
-            ElevatedButton(onPressed: controller.refreshData, child: const Text('Retry')),
+            ElevatedButton(
+              onPressed: controller.refreshData,
+              child: const Text('Retry'),
+            ),
           ],
         ),
       ),

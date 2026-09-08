@@ -3,6 +3,7 @@
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/patient/features/dashboard/models/patient_summary.dart';
 import 'package:doctor/patient/features/dashboard/repositories/patient_dashboard_repository.dart';
+import 'package:doctor/patient/features/vitals/controllers/vitals_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -70,33 +71,51 @@ class PatientDashboardController extends GetxController {
     await loadData();
   }
 
-// Navigation methods
+  void _checkForVitalsUpdate() {
+    if (Get.isRegistered<VitalsController>()) {
+      final vitalsController = Get.find<VitalsController>();
+      if (vitalsController.justUpdatedVitals.value) {
+        vitalsController.justUpdatedVitals.value = false;
+        refreshData();
+      }
+    }
+  }
+
+  // Navigation methods
   void navigateToSymptoms() => Get.toNamed(AppRoutes.patientSymptoms);
   void navigateToWaterIntake() => Get.toNamed(AppRoutes.patientWaterIntake);
   void navigateToKickCount() => Get.toNamed(AppRoutes.patientKickCount);
-  void navigateToVitals() => Get.toNamed(AppRoutes.patientVitals);
-  void navigateToDietPlan() => Get.toNamed(AppRoutes.patientDietPlanDetail);
-  void navigateToAppointments() => Get.toNamed('/patient/appointments');
-  void navigateToAppointmentDetail(int appointmentId) =>
-      Get.toNamed('/patient/appointment-detail', arguments: {'appointmentId': appointmentId});
-  void navigateToMedicineReminders() => Get.toNamed('/patient/medicine-reminders');
-  // lib/patient/features/dashboard/controllers/patient_dashboard_controller.dart
 
-  // Add these navigation methods to your controller:
-
-  void navigateToVideoConsultation() {
-    Get.toNamed('/video-consultation');
+  Future<void> navigateToVitals() async {
+    await Get.toNamed(AppRoutes.patientVitals);
+    _checkForVitalsUpdate();
   }
 
+  void navigateToDietPlan() => Get.toNamed(AppRoutes.patientDietPlans);
+  void navigateToAppointments() => Get.toNamed(AppRoutes.patientAppointments);
+  void navigateToAppointmentDetail(int appointmentId) => Get.toNamed(
+    AppRoutes.patientAppointmentDetail,
+    arguments: {'appointmentId': appointmentId},
+  );
+  void navigateToMedicineReminders() =>
+      Get.toNamed(AppRoutes.medicineReminders);
+  void navigateToEmergency() => Get.toNamed(AppRoutes.patientEmergency);
+
+  void navigateToSettings() => Get.toNamed(AppRoutes.patientSettings);
+
   void navigateToSurgicalProcedures() {
-    Get.toNamed('/surgical-procedures');
+    Get.toNamed(AppRoutes.patientSurgicalProcedures);
   }
 
   void navigateToAIAssistant() {
-    Get.toNamed('/ai-assistant');
+    Get.toNamed(AppRoutes.patientAIAssistant);
   }
 
   void navigateToFindDoctors() {
     Get.toNamed(AppRoutes.findDoctors);
+  }
+
+  void navigateToExerciseVideos() {
+    Get.toNamed(AppRoutes.patientExerciseVideos);
   }
 }

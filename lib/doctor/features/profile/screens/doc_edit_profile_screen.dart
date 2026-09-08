@@ -1,8 +1,9 @@
 // lib/features/profile/screens/edit_profile_screen.dart
 
 import 'package:doctor/core/constants/color_constants.dart';
+import 'package:doctor/core/services/storage_service.dart';
 import 'package:doctor/core/themes/app_theme.dart';
-import 'package:doctor/core/widgets/top_app_bar.dart';
+import 'package:doctor/core/widgets/doc_top_app_bar.dart';
 import 'package:doctor/doctor/features/profile/controllers/doc_edit_profile_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -40,6 +41,8 @@ class DoctorEditProfileScreen extends GetView<DoctorEditProfileController> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      _buildAvatarHeader(),
+                      const SizedBox(height: 24),
                       _buildPersonalInfoSection(),
                       const SizedBox(height: 24),
                       _buildProfessionalDetailsSection(),
@@ -125,6 +128,146 @@ class DoctorEditProfileScreen extends GetView<DoctorEditProfileController> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatarHeader() {
+    final hasLocalImage = controller.selectedImage.value != null;
+    final avatarUrl = controller.profileImageUrl;
+    final isLocalFile = hasLocalImage;
+
+    return GestureDetector(
+      onTap: controller.isUploadingAvatar.value
+          ? null
+          : controller.showImageSourceBottomSheet,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 110,
+            height: 110,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.3),
+                width: 3,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: isLocalFile
+                  ? Image.memory(
+                      controller.selectedImageBytes.value!,
+                      fit: BoxFit.cover,
+                      width: 110,
+                      height: 110,
+                    )
+                  : (avatarUrl.isNotEmpty
+                        ? Image.network(
+                            avatarUrl,
+                            fit: BoxFit.cover,
+                            width: 110,
+                            height: 110,
+                            headers: _profileImageHeaders,
+                            errorBuilder: (context, error, stackTrace) =>
+                                _buildInitialsAvatar(),
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return _buildInitialsAvatar();
+                            },
+                          )
+                        : _buildInitialsAvatar()),
+            ),
+          ),
+          // Camera badge overlay
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Theme.of(Get.context!).colorScheme.background,
+                  width: 3,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: controller.isUploadingAvatar.value
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.camera_alt_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Map<String, String>? get _profileImageHeaders {
+    final accessToken = StorageService.instance.accessToken;
+    if (accessToken == null || accessToken.isEmpty) return null;
+    return {'Authorization': 'Bearer $accessToken'};
+  }
+
+  Widget _buildInitialsAvatar() {
+    final firstName = controller.firstNameController.text;
+    final lastName = controller.lastNameController.text;
+    final first = firstName.isNotEmpty ? firstName[0] : '';
+    final last = lastName.isNotEmpty ? lastName[0] : '';
+    final initials = '$first$last'.toUpperCase();
+    if (initials.isEmpty)
+      return const Center(
+        child: Text(
+          'DR',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+      );
+
+    return Container(
+      width: 110,
+      height: 110,
+      color: AppColors.primaryContainer,
+      child: Center(
+        child: Text(
+          initials,
+          style: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.w600,
+            color: AppColors.onPrimaryContainer,
+          ),
         ),
       ),
     );
@@ -312,66 +455,64 @@ class DoctorEditProfileScreen extends GetView<DoctorEditProfileController> {
           const SizedBox(height: 16),
           const Divider(color: AppColors.surfaceContainer, height: 1),
           const SizedBox(height: 16),
-          // Toggle with Obx
-          Obx(
-            () => Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Accepting New Patients',
-                          style: AppTheme.bodyMedium.copyWith(
-                            color: AppColors.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
+          // Toggle - reactive via outer Obx
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Accepting New Patients',
+                        style: AppTheme.bodyMedium.copyWith(
+                          color: AppColors.onSurface,
+                          fontWeight: FontWeight.w600,
                         ),
-                        Text(
-                          'Toggle if you are currently taking new bookings.',
-                          style: AppTheme.bodySmall.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => controller.isAcceptingPatients.toggle(),
-                    child: Container(
-                      width: 44,
-                      height: 24,
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: controller.isAcceptingPatients.value
-                            ? AppColors.secondary
-                            : AppColors.outlineVariant,
-                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: AnimatedAlign(
-                        duration: const Duration(milliseconds: 200),
-                        alignment: controller.isAcceptingPatients.value
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
+                      Text(
+                        'Toggle if you are currently taking new bookings.',
+                        style: AppTheme.bodySmall.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => controller.isAcceptingPatients.toggle(),
+                  child: Container(
+                    width: 44,
+                    height: 24,
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: controller.isAcceptingPatients.value
+                          ? AppColors.secondary
+                          : AppColors.outlineVariant,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: AnimatedAlign(
+                      duration: const Duration(milliseconds: 200),
+                      alignment: controller.isAcceptingPatients.value
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 16),

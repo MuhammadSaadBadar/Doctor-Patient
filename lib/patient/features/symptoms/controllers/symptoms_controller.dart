@@ -6,7 +6,25 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class SymptomsController extends GetxController {
-  final SymptomsRepository _repository = SymptomsRepository();
+  final SymptomsRepository _repository = Get.find<SymptomsRepository>();
+
+  static const List<Map<String, dynamic>> _preSeededSymptoms = [
+    {'id': 1, 'name': 'Nausea'},
+    {'id': 2, 'name': 'Vomiting'},
+    {'id': 3, 'name': 'Fatigue'},
+    {'id': 4, 'name': 'Headache'},
+    {'id': 5, 'name': 'Back pain'},
+    {'id': 6, 'name': 'Swelling'},
+    {'id': 7, 'name': 'Heartburn'},
+    {'id': 8, 'name': 'Constipation'},
+    {'id': 9, 'name': 'Dizziness'},
+    {'id': 10, 'name': 'Shortness of breath'},
+    {'id': 11, 'name': 'Leg cramps'},
+    {'id': 12, 'name': 'Insomnia'},
+    {'id': 13, 'name': 'Mood swings'},
+    {'id': 14, 'name': 'Frequent urination'},
+    {'id': 15, 'name': 'Braxton Hicks contractions'},
+  ];
 
   final isLoading = true.obs;
   final hasError = false.obs;
@@ -47,12 +65,7 @@ class SymptomsController extends GetxController {
   }
 
   Future<void> loadSymptomTypes() async {
-    try {
-      final types = await _repository.getSymptomTypes();
-      symptomTypes.value = types;
-    } catch (e) {
-      debugPrint('[SYMPTOMS] Error loading types: $e');
-    }
+    symptomTypes.value = _preSeededSymptoms;
   }
 
   Future<void> saveTodaysSymptoms() async {

@@ -18,13 +18,7 @@ class DoctorController extends GetxController {
   // Filters
   final selectedSpecialization = 'All Experts'.obs;
   final searchQuery = ''.obs;
-  final List<String> specializations = [
-    'All Experts',
-    'Gynaecologist',
-    'Pediatrician',
-    'Nutritionist',
-    'Mental Health',
-  ];
+  final specializations = <String>['All Experts'].obs;
 
   // Pagination
   final currentPage = 1.obs;
@@ -76,6 +70,7 @@ class DoctorController extends GetxController {
           '[DOCTOR] Loaded ${doctors.length} of ${result.count} doctors',
         );
         _applyFilters();
+        _loadSpecializationsFromDoctors();
       } else {
         hasError.value = true;
         errorMessage.value = 'Failed to load doctors. Please try again.';
@@ -130,6 +125,25 @@ class DoctorController extends GetxController {
     _applyFilters();
   }
 
+  void _loadSpecializationsFromDoctors() {
+    final uniqueSpecs = <String>{};
+    final displaySpecs = <String, String>{};
+
+    for (final doctor in doctors) {
+      final spec = doctor.doctorProfile?.specialization;
+      if (spec != null && spec.isNotEmpty) {
+        final normalized = spec.trim().toLowerCase();
+        if (!uniqueSpecs.contains(normalized)) {
+          uniqueSpecs.add(normalized);
+          displaySpecs[normalized] = spec.trim();
+        }
+      }
+    }
+
+    final sortedDisplaySpecs = displaySpecs.values.toList()..sort();
+    specializations.value = ['All Experts', ...sortedDisplaySpecs];
+  }
+
   void setSearchQuery(String query) {
     searchQuery.value = query;
     _applyFilters();
@@ -142,17 +156,11 @@ class DoctorController extends GetxController {
 
   // Navigation methods
   void navigateToDoctorDetail(int doctorId) {
-    Get.toNamed(
-      '${AppRoutes.doctorDetail}/$doctorId',
-      arguments: {'doctorId': doctorId},
-    );
+    Get.toNamed(AppRoutes.doctorDetail, arguments: {'doctorId': doctorId});
   }
 
   void navigateToBookAppointment(int doctorId) {
-    Get.toNamed(
-      '${AppRoutes.doctorDetail}/$doctorId',
-      arguments: {'doctorId': doctorId},
-    );
+    Get.toNamed(AppRoutes.bookAppointment, arguments: {'doctorId': doctorId});
   }
 
   void navigateToHome() {

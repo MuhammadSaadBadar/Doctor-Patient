@@ -19,7 +19,9 @@ class VitalsRepository {
         final data = response.data as Map<String, dynamic>;
         final results = data['results'] as List<dynamic>? ?? [];
         return results
-            .map((e) => BloodPressureReading.fromJson(e as Map<String, dynamic>))
+            .map(
+              (e) => BloodPressureReading.fromJson(e as Map<String, dynamic>),
+            )
             .toList();
       }
 
@@ -73,7 +75,9 @@ class VitalsRepository {
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        return BloodPressureReading.fromJson(response.data as Map<String, dynamic>);
+        return BloodPressureReading.fromJson(
+          response.data as Map<String, dynamic>,
+        );
       }
 
       return null;
@@ -106,7 +110,9 @@ class VitalsRepository {
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        return BloodSugarReading.fromJson(response.data as Map<String, dynamic>);
+        return BloodSugarReading.fromJson(
+          response.data as Map<String, dynamic>,
+        );
       }
 
       return null;

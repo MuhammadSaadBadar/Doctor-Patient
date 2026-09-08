@@ -1,13 +1,15 @@
 // lib/patient/features/dashboard/screens/dashboard_screen.dart
 
+import 'package:doctor/core/routes/app_routes.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/dashboard/controllers/patient_dashboard_controller.dart';
 import 'package:doctor/patient/features/dashboard/widgets/appointment_card.dart';
 import 'package:doctor/patient/features/dashboard/widgets/diet_plan_card.dart';
+import 'package:doctor/patient/features/dashboard/widgets/medicine_adherence_card.dart';
 import 'package:doctor/patient/features/dashboard/widgets/pregnancy_progress_card.dart';
 import 'package:doctor/patient/features/dashboard/widgets/quick_action_grid.dart';
 import 'package:doctor/patient/features/dashboard/widgets/symptom_summary.dart';
 import 'package:doctor/patient/features/dashboard/widgets/vital_card.dart';
-import 'package:doctor/patient/features/dashboard/widgets/medicine_adherence_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,48 +21,11 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: cs.surfaceContainerLow,
-      appBar: AppBar(
-        backgroundColor: cs.primary,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.menu_rounded, color: cs.onPrimary),
-          onPressed: () {},
-        ),
-        title: Text(
-          'Mama Health',
-          style: TextStyle(
-            fontFamily: 'PlayfairDisplay',
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-            color: cs.onPrimary,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          Stack(
-            children: [
-              IconButton(
-                icon: Icon(Icons.notifications_rounded, color: cs.onPrimary),
-                onPressed: () => Get.toNamed('/notifications'),
-              ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: cs.error,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: cs.primary, width: 1.5),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+      backgroundColor: cs.background,
+      appBar: PatientTopAppBar(
+        title: 'Gynae Hub',
+        showBackButton: false,
+        onNotificationTap: () => Get.toNamed('/notifications'),
       ),
       body: Obx(() {
         if (controller.isLoading.value) return _buildLoadingState(context);
@@ -161,12 +126,6 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                 QuickActionGrid(
                   actions: [
                     QuickAction(
-                      label: 'Video\nConsultation',
-                      icon: Icons.videocam_rounded,
-                      color: Colors.blue.shade700,
-                      onTap: controller.navigateToVideoConsultation,
-                    ),
-                    QuickAction(
                       label: 'My\nAppointments',
                       icon: Icons.calendar_month_rounded,
                       color: Colors.deepPurple,
@@ -184,18 +143,19 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                       color: Colors.cyan,
                       onTap: controller.navigateToSurgicalProcedures,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
 
-                QuickActionGrid(
-                  actions: [
                     QuickAction(
                       label: 'Book\nAppointment',
                       icon: Icons.medical_services_rounded,
                       color: Colors.green,
                       onTap: controller.navigateToFindDoctors,
                     ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                QuickActionGrid(
+                  actions: [
                     QuickAction(
                       label: 'Diet\nPlan',
                       icon: Icons.restaurant_menu_rounded,
@@ -207,6 +167,24 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                       icon: Icons.auto_awesome_rounded,
                       color: Colors.indigo,
                       onTap: controller.navigateToAIAssistant,
+                    ),
+                    QuickAction(
+                      label: 'Exercise\nVideos',
+                      icon: Icons.self_improvement_rounded,
+                      color: const Color(0xFF8BA7E8),
+                      onTap: controller.navigateToExerciseVideos,
+                    ),
+                    QuickAction(
+                      label: 'Emergency',
+                      icon: Icons.emergency_rounded,
+                      color: Colors.red,
+                      onTap: controller.navigateToEmergency,
+                    ),
+                    QuickAction(
+                      label: 'Settings',
+                      icon: Icons.settings_rounded,
+                      color: Colors.teal,
+                      onTap: controller.navigateToSettings,
                     ),
                   ],
                 ),
@@ -265,7 +243,7 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                 // Medicine Adherence
                 MedicineAdherenceCard(
                   adherence: summary.medicineAdherence,
-                  onTap: controller.navigateToMedicineReminders,
+                  onTap: () => Get.toNamed(AppRoutes.medicineReminders),
                 ),
               ],
             ),
@@ -439,7 +417,7 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Welcome to Mama Health!',
+              'Welcome to Gynae Hub!',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,

@@ -2,7 +2,7 @@ import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/widgets/material_symbol_icon.dart';
-import 'package:doctor/core/widgets/top_app_bar.dart';
+import 'package:doctor/core/widgets/doc_top_app_bar.dart';
 import 'package:doctor/doctor/features/auth/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,33 +15,41 @@ class OtpVerificationScreen extends GetView<AuthController> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Brand Icon
-                  _buildBrandIcon(),
-                  const SizedBox(height: 32),
-
-                  // Header is now handled by TopAppNavBar
-                  TopAppNavBar(
-                    title: 'OTP Verification',
-                    subtitle:
-                        'Enter the 6-digit code sent to your registered email address.',
-                    centerTitle: true,
+        top: true,
+        bottom: false,
+        child: Column(
+          children: [
+            // Top App Bar
+            TopAppNavBar(
+              title: 'OTP Verification',
+              subtitle:
+                  'Enter the 6-digit code sent to your registered email address.',
+              centerTitle: true,
+            ),
+            const SizedBox(height: 24),
+            // Scrollable Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Brand Icon
+                      _buildBrandIcon(),
+                      const SizedBox(height: 32),
+                      // OTP Input Form
+                      _buildOtpForm(),
+                      const SizedBox(height: 24),
+                      // Back to Login
+                      _buildBackToLoginButton(),
+                    ],
                   ),
-                  const SizedBox(height: 24),
-
-                  // OTP Input Form
-                  _buildOtpForm(),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -57,7 +65,7 @@ class OtpVerificationScreen extends GetView<AuthController> {
       ),
       child: const Center(
         child: Icon(
-          Icons.enhanced_encryption,
+          Icons.enhanced_encryption_rounded,
           size: 48,
           color: AppColors.primary,
         ),
@@ -68,124 +76,127 @@ class OtpVerificationScreen extends GetView<AuthController> {
   Widget _buildOtpForm() {
     return Form(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // OTP Input Fields
+          // OTP Input Fields — wrapped in Expanded/Flexible to prevent overflow
           _buildOtpInputFields(),
-          const SizedBox(height: 16),
-
+          const SizedBox(height: 24),
           // Timer & Resend
           _buildTimerAndResend(),
           const SizedBox(height: 24),
-
           // Verify Button
           _buildVerifyButton(),
-          const SizedBox(height: 16),
-
-          // Back to Login
-          _buildBackToLoginButton(),
         ],
       ),
     );
   }
 
   Widget _buildOtpInputFields() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(6, (index) {
-        return Container(
-          width: 48,
-          height: 56,
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          child: TextFormField(
-            controller: controller.otpControllers[index],
-            focusNode: controller.otpFocusNodes[index],
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-            maxLength: 1,
-            style: AppTheme.headlineMedium.copyWith(color: AppColors.primary),
-            decoration: InputDecoration(
-              counterText: '',
-              filled: true,
-              fillColor: AppColors.surfaceContainerLowest,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(
-                  color: AppColors.surfaceVariant,
-                  width: 2,
+    return Expanded(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(6, (index) {
+            return Flexible(
+              fit: FlexFit.tight,
+              child: SizedBox(
+                height: 56,
+                child: TextFormField(
+                  controller: controller.otpControllers[index],
+                  focusNode: controller.otpFocusNodes[index],
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  maxLength: 1,
+                  style: AppTheme.headlineMedium.copyWith(
+                    color: AppColors.primary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  decoration: InputDecoration(
+                    counterText: '',
+                    filled: true,
+                    fillColor: AppColors.surfaceContainerLowest,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.surfaceVariant,
+                        width: 1.5,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.surfaceVariant,
+                        width: 1.5,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.primary,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    if (value.length == 1 && index < 5) {
+                      FocusScope.of(Get.context!).nextFocus();
+                    } else if (value.isEmpty && index > 0) {
+                      FocusScope.of(Get.context!).previousFocus();
+                    }
+                    if (index == 5 && value.length == 1) {
+                      _handleVerifyOtp();
+                    }
+                  },
                 ),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(
-                  color: AppColors.surfaceVariant,
-                  width: 2,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(
-                  color: AppColors.secondary,
-                  width: 2,
-                ),
-              ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-            onChanged: (value) {
-              if (value.length == 1 && index < 5) {
-                FocusScope.of(Get.context!).nextFocus();
-              } else if (value.isEmpty && index > 0) {
-                FocusScope.of(Get.context!).previousFocus();
-              }
-              // Auto-submit when all fields are filled
-              if (index == 5 && value.length == 1) {
-                _handleVerifyOtp();
-              }
-            },
-          ),
-        );
-      }),
+            );
+          }),
+        ),
+      ),
     );
   }
 
   Widget _buildTimerAndResend() {
     return Obx(
       () => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               MaterialSymbolIcon(
                 'schedule',
                 size: 16,
                 color: AppColors.onSurfaceVariant,
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 8),
               Text(
                 controller.formatTime(controller.timerSeconds.value),
-                style: AppTheme.bodySmall.copyWith(
+                style: AppTheme.bodyMedium.copyWith(
                   color: AppColors.onSurfaceVariant,
                 ),
               ),
             ],
           ),
-          if (controller.timerSeconds.value > 0)
+          if (controller.timerSeconds.value <= 0) ...[
+            const SizedBox(width: 16),
             TextButton(
-              onPressed: null,
+              onPressed: controller.isLoading.value
+                  ? null
+                  : _handleResendOtp,
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.onSurfaceVariant.withOpacity(0.5),
+                foregroundColor: AppColors.primary,
                 textStyle: AppTheme.labelMedium,
-              ),
-              child: const Text('Resend OTP'),
-            )
-          else
-            TextButton(
-              onPressed: controller.isLoading.value ? null : _handleResendOtp,
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.secondary,
-                textStyle: AppTheme.labelMedium,
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: const Text('Resend OTP'),
             ),
+          ],
         ],
       ),
     );
@@ -199,24 +210,25 @@ class OtpVerificationScreen extends GetView<AuthController> {
         child: ElevatedButton(
           onPressed: controller.isOtpLoading.value ? null : _handleVerifyOtp,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryContainer,
-            foregroundColor: AppColors.onPrimaryContainer,
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.onPrimary,
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
             ),
-            textStyle: AppTheme.labelMedium,
-            disabledBackgroundColor: AppColors.primaryContainer.withOpacity(
-              0.6,
+            textStyle: AppTheme.labelLarge.copyWith(
+              fontWeight: FontWeight.w700,
             ),
+            disabledBackgroundColor:
+                AppColors.primary.withOpacity(0.4),
           ),
           child: controller.isOtpLoading.value
               ? const SizedBox(
-                  width: 20,
-                  height: 20,
+                  width: 24,
+                  height: 24,
                   child: CircularProgressIndicator(
-                    color: AppColors.onPrimaryContainer,
-                    strokeWidth: 2,
+                    color: AppColors.onPrimary,
+                    strokeWidth: 2.5,
                   ),
                 )
               : const Text('Verify OTP'),
@@ -229,13 +241,15 @@ class OtpVerificationScreen extends GetView<AuthController> {
     return TextButton.icon(
       onPressed: () => Get.offAllNamed(AppRoutes.login),
       icon: MaterialSymbolIcon(
-        'arrow_back',
-        size: 16,
+        'arrow_back_rounded',
+        size: 18,
         color: AppColors.onSurfaceVariant,
       ),
       label: Text(
         'Back to Login',
-        style: AppTheme.labelMedium.copyWith(color: AppColors.onSurfaceVariant),
+        style: AppTheme.labelMedium.copyWith(
+          color: AppColors.onSurfaceVariant,
+        ),
       ),
       style: TextButton.styleFrom(
         padding: EdgeInsets.zero,
@@ -246,19 +260,17 @@ class OtpVerificationScreen extends GetView<AuthController> {
   }
 
   String _getEmail() {
-    // Get email from arguments or from the controller
     final email = Get.arguments?['email'] ?? controller.emailController.text;
     return email;
   }
 
   void _handleVerifyOtp() {
     String otp = '';
-    for (var controller in controller.otpControllers) {
-      otp += controller.text;
+    for (var ctrl in controller.otpControllers) {
+      otp += ctrl.text;
     }
 
     if (otp.length == 6) {
-      // Get email and pass to the verify method
       final email = _getEmail();
       controller.verifyOtp(otp, email);
     } else {

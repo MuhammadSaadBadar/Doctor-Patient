@@ -23,7 +23,8 @@ class BloodPressureReading {
       systolic: json['systolic'] ?? 0,
       diastolic: json['diastolic'] ?? 0,
       pulse: json['pulse'],
-      recordedAt: DateTime.tryParse(json['recorded_at'] ?? '') ?? DateTime.now(),
+      recordedAt:
+          DateTime.tryParse(json['recorded_at'] ?? '') ?? DateTime.now(),
       notes: json['notes'],
     );
   }
@@ -58,7 +59,8 @@ class BloodSugarReading {
       id: json['id'] ?? 0,
       valueMgDl: json['value_mg_dl'] ?? 0,
       readingContext: json['reading_context'] ?? 'random',
-      recordedAt: DateTime.tryParse(json['recorded_at'] ?? '') ?? DateTime.now(),
+      recordedAt:
+          DateTime.tryParse(json['recorded_at'] ?? '') ?? DateTime.now(),
       notes: json['notes'],
     );
   }
