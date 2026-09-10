@@ -1,5 +1,6 @@
 // lib/patient/features/emergency/screens/generate_sos_screen.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/emergency/controllers/generate_sos_controller.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,7 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: colors.background,
-      appBar: const PatientTopAppBar(title: 'Generate SOS'),
+      appBar: PatientTopAppBar(title: TranslationKeys.sosGenerate.tr),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
         child: Obx(
@@ -89,7 +90,7 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Emergency Alert',
+            TranslationKeys.sosEmergencyAlert.tr,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
@@ -99,7 +100,7 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
           ),
           const SizedBox(height: 6),
           Text(
-            'An emergency alert will be sent\nimmediately to your care team.',
+            TranslationKeys.sosAlertDesc.tr,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
@@ -126,7 +127,7 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
             ),
             const SizedBox(width: 6),
             Text(
-              'Additional details',
+              TranslationKeys.sosAdditionalDetails.tr,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -134,7 +135,7 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
               ),
             ),
             Text(
-              ' — optional',
+              ' — ${TranslationKeys.sosOptional.tr}',
               style: TextStyle(fontSize: 13, color: colors.onSurfaceVariant),
             ),
           ],
@@ -144,8 +145,7 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
           controller: controller.notesController,
           maxLines: 4,
           decoration: InputDecoration(
-            hintText:
-                'Describe the emergency (e.g. chest pain, difficulty breathing…)',
+            hintText: TranslationKeys.sosNotesHint.tr,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(color: colors.outlineVariant),
@@ -235,8 +235,8 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
                     children: [
                       Text(
                         hasLocation
-                            ? 'Location captured'
-                            : 'Add current location',
+                            ? TranslationKeys.sosLocationCaptured.tr
+                            : TranslationKeys.sosAddLocation.tr,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -249,7 +249,7 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
                       Text(
                         hasLocation
                             ? controller.locationMessage.value
-                            : 'Optional — helps responders find you faster',
+                            : '${TranslationKeys.sosOptional.tr} — ${TranslationKeys.sosCheckLocation.tr}',
                         style: TextStyle(
                           fontSize: 12,
                           color: colors.onSurfaceVariant,
@@ -312,7 +312,7 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Sending alert…',
+                    TranslationKeys.sosSend.tr,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -323,11 +323,11 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.sos_rounded, size: 22),
                   SizedBox(width: 10),
                   Text(
-                    'Send SOS Alert',
+                    TranslationKeys.sosSend.tr,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                 ],
@@ -352,7 +352,7 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
         const SizedBox(width: 7),
         Expanded(
           child: Text(
-            'Only use SOS in genuine emergencies. False alerts may affect your account standing.',
+            TranslationKeys.sosDisclaimer.tr,
             style: TextStyle(
               fontSize: 12,
               color: colors.onSurfaceVariant,

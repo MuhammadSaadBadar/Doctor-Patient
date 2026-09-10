@@ -9,6 +9,7 @@ import 'package:doctor/patient/features/diet_plans/widgets/doctor_note_card.dart
 import 'package:doctor/patient/features/diet_plans/widgets/food_avoidance_item.dart';
 import 'package:doctor/patient/features/diet_plans/widgets/hydration_card.dart';
 import 'package:doctor/patient/features/diet_plans/widgets/meal_card.dart';
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -21,7 +22,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
 
     return Scaffold(
       backgroundColor: colorScheme.background,
-      appBar: PatientTopAppBar(title: 'Diet Plan'),
+      appBar: PatientTopAppBar(title: TranslationKeys.dietPlanTitle.tr),
       body: Obx(() {
         if (controller.isLoading.value && controller.dietPlan.value == null) {
           return _buildLoadingState(context);
@@ -84,7 +85,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
         ),
         child: Center(
           child: Text(
-            'No meals in this plan',
+            TranslationKeys.dietNoMeals.tr,
             style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
           ),
         ),
@@ -98,7 +99,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Daily Meal Plan',
+              TranslationKeys.dietDailyMealPlan.tr,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -107,7 +108,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
               ),
             ),
             Text(
-              '${plan.mealCount} Meals + Snacks',
+              '${TranslationKeys.dietMealsSnacks.tr.replaceAll('@count', plan.mealCount.toString())}',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
@@ -136,7 +137,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Foods to Avoid',
+          TranslationKeys.dietFoodsToAvoid.tr,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -157,7 +158,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
                 Icon(Icons.check_circle_rounded, size: 20, color: Colors.green),
                 const SizedBox(width: 8),
                 Text(
-                  'No foods to avoid in this plan',
+                  TranslationKeys.dietNoFoodsToAvoid.tr,
                   style: TextStyle(
                     fontSize: 14,
                     color: colorScheme.onSurfaceVariant,
@@ -204,7 +205,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Loading diet plan...',
+            TranslationKeys.dietLoadingPlan.tr,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -239,7 +240,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              TranslationKeys.commonSomethingWentWrong.tr,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -269,7 +270,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Try Again'),
+              child: Text(TranslationKeys.commonTryAgain.tr),
             ),
           ],
         ),
@@ -300,7 +301,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Diet Plan Not Found',
+              TranslationKeys.dietPlanNotFound.tr,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -310,7 +311,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
             ),
             const SizedBox(height: 8),
             Text(
-              'The diet plan you\'re looking for could not be found.',
+              TranslationKeys.dietPlanNotFoundDesc.tr,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -331,7 +332,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Back'),
+              child: Text(TranslationKeys.commonBack.tr),
             ),
           ],
         ),

@@ -1,11 +1,12 @@
 // lib/patient/features/exercise_videos/screens/exercise_videos_screen.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/exercise_videos/controllers/exercise_video_controller.dart';
 import 'package:doctor/patient/features/exercise_videos/models/exercise_video.dart';
 import 'package:doctor/patient/features/exercise_videos/widgets/filter_chip.dart';
 import 'package:doctor/patient/features/exercise_videos/widgets/video_card.dart';
 import 'package:doctor/patient/features/exercise_videos/widgets/video_player_overlay.dart';
-import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -20,7 +21,7 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
     return Scaffold(
       backgroundColor: cs.surface,
       appBar: PatientTopAppBar(
-        title: 'Exercise & Breathing',
+        title: TranslationKeys.exerciseTitle.tr,
         trailingActions: [
           IconButton(
             icon: Icon(Icons.search_rounded, color: cs.primary),
@@ -91,8 +92,8 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
           colors: [
             cs.primary.withValues(alpha: 0.06),
             cs.primary.withValues(alpha: 0.02),
@@ -108,7 +109,7 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
               mainAxisSize: MainAxisSize.min, // ✅ Added
               children: [
                 Text(
-                  'Gentle Movement',
+                  TranslationKeys.exerciseGentleMovement.tr,
                   style: TextStyle(
                     fontSize: textScale.scale(22).clamp(18.0, 28.0),
                     fontWeight: FontWeight.w700,
@@ -118,7 +119,7 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
                 const SizedBox(height: 4),
                 Text(
                   // ✅ Removed Flexible wrapper
-                  'Nurture your body and calm your mind with expert-guided sessions.',
+                  TranslationKeys.exerciseSubtitle.tr,
                   style: TextStyle(
                     fontSize: textScale.scale(12).clamp(10.0, 16.0),
                     color: cs.onSurfaceVariant,
@@ -159,13 +160,16 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
           itemBuilder: (context, index) {
             final filter = controller.filters[index];
             final id = filter['id'] as String;
-            final label = filter['label'] as String;
+            final labelKey = filter['label'] as String;
+            final label = id.startsWith('t')
+              ? labelKey.tr.replaceAll('@number', id.substring(1))
+              : labelKey.tr;
             final icon = filter['icon'] as IconData;
             final isSelected = controller.selectedFilter.value == id;
             final count = controller.getFilterCount(id);
 
             return Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsetsDirectional.only(end: 8),
               child: ExerciseFilterChip(
                 id: id,
                 label: label,
@@ -192,7 +196,7 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
           padding: const EdgeInsets.symmetric(vertical: 48),
           child: Center(
             child: Text(
-              'No videos match the current filter or search.',
+              TranslationKeys.exerciseNoMatch.tr,
               style: TextStyle(
                 fontSize: textScale.scale(12).clamp(10.0, 16.0),
                 color: cs.onSurfaceVariant,
@@ -234,7 +238,7 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Loading videos\u2026',
+            TranslationKeys.exerciseLoading.tr,
             style: TextStyle(
               fontSize: textScale.scale(12).clamp(10.0, 16.0),
               fontWeight: FontWeight.w500,
@@ -271,7 +275,7 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              TranslationKeys.commonSomethingWentWrong.tr,
               style: TextStyle(
                 fontSize: textScale.scale(16).clamp(14.0, 20.0),
                 fontWeight: FontWeight.w600,
@@ -302,7 +306,7 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Try Again'),
+              child: Text(TranslationKeys.exerciseTryAgain.tr),
             ),
           ],
         ),
@@ -335,7 +339,7 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No videos available',
+              TranslationKeys.exerciseNoVideos.tr,
               style: TextStyle(
                 fontSize: textScale.scale(16).clamp(14.0, 22.0),
                 fontWeight: FontWeight.w700,
@@ -346,7 +350,7 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
             const SizedBox(height: 8),
             Text(
               // ✅ Removed Flexible wrapper
-              'Check back later for new exercise and breathing content.',
+              TranslationKeys.exerciseNoVideosDesc.tr,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: textScale.scale(12).clamp(10.0, 16.0),
@@ -367,7 +371,7 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Refresh'),
+              child: Text(TranslationKeys.exerciseRefresh.tr),
             ),
           ],
         ),
@@ -382,7 +386,7 @@ class _ExerciseSearchDelegate extends SearchDelegate<String> {
   _ExerciseSearchDelegate({
     required String initialQuery,
     required this.onChanged,
-  }) : super(searchFieldLabel: 'Search exercises & breathing');
+  }) : super(searchFieldLabel: TranslationKeys.exerciseSearchHint.tr);
 
   @override
   List<Widget>? buildActions(BuildContext context) => [

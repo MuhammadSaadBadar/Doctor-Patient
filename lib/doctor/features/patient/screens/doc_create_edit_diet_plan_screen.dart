@@ -299,7 +299,7 @@ class DoctorCreateEditDietPlanScreen
                     _buildMealDescriptionField(context, index, meal),
                     const SizedBox(height: 8),
                     Align(
-                      alignment: Alignment.centerRight,
+                      alignment: AlignmentDirectional.centerEnd,
                       child: _buildRemoveButton(
                         context: context,
                         onPressed: () => controller.removeMeal(index),
@@ -466,7 +466,7 @@ class DoctorCreateEditDietPlanScreen
                     ),
                     const SizedBox(height: 8),
                     Align(
-                      alignment: Alignment.centerRight,
+                      alignment: AlignmentDirectional.centerEnd,
                       child: _buildRemoveButton(
                         context: context,
                         onPressed: () => controller.removeFoodToAvoid(index),

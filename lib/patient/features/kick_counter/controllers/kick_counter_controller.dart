@@ -1,5 +1,6 @@
 // lib/patient/features/kick_counter/controllers/kick_counter_controller.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/patient/features/kick_counter/models/kick_session.dart';
 import 'package:doctor/patient/features/kick_counter/repositories/kick_counter_repository.dart';
@@ -68,11 +69,11 @@ class KickCounterController extends GetxController {
         debugPrint('[KICK_COUNTER] Loaded ${allSessions.length} sessions');
       } else {
         hasError.value = true;
-        errorMessage.value = 'Failed to load kick data. Please try again.';
+        errorMessage.value = TranslationKeys.commonTryAgain.tr;
       }
     } catch (e) {
       hasError.value = true;
-      errorMessage.value = 'Something went wrong. Please try again.';
+      errorMessage.value = TranslationKeys.commonTryAgain.tr;
       debugPrint('[KICK_COUNTER] Error: $e');
     } finally {
       isLoading.value = false;
@@ -93,23 +94,23 @@ class KickCounterController extends GetxController {
         activeSession.value = session;
         allSessions.insert(0, session);
         Get.snackbar(
-          'Session Started',
-          'Kick counting session has begun',
+          TranslationKeys.kickCounterSessionStarted.tr,
+          TranslationKeys.kickCounterSessionStartedDesc.tr,
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 2),
         );
       } else {
         hasError.value = true;
-        errorMessage.value = 'Failed to start session. Please try again.';
+        errorMessage.value = TranslationKeys.commonTryAgain.tr;
         Get.snackbar(
-          'Error',
-          'Failed to start session',
+          TranslationKeys.commonError.tr,
+          TranslationKeys.commonTryAgain.tr,
           snackPosition: SnackPosition.BOTTOM,
         );
       }
     } catch (e) {
       hasError.value = true;
-      errorMessage.value = 'Something went wrong. Please try again.';
+      errorMessage.value = TranslationKeys.commonTryAgain.tr;
       debugPrint('[KICK_COUNTER] Error starting session: $e');
     } finally {
       isProcessing.value = false;
@@ -151,8 +152,8 @@ class KickCounterController extends GetxController {
           orElse: () => activeSession.value!,
         );
         Get.snackbar(
-          'Error',
-          'Failed to record kick',
+          TranslationKeys.commonError.tr,
+          TranslationKeys.commonTryAgain.tr,
           snackPosition: SnackPosition.BOTTOM,
         );
       }
@@ -164,8 +165,8 @@ class KickCounterController extends GetxController {
       );
       debugPrint('[KICK_COUNTER] Error recording kick: $e');
       Get.snackbar(
-        'Error',
-        'Failed to record kick',
+        TranslationKeys.commonError.tr,
+        TranslationKeys.commonTryAgain.tr,
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
@@ -195,23 +196,26 @@ class KickCounterController extends GetxController {
         }
 
         Get.snackbar(
-          'Session Ended',
-          'Recorded ${endedSession.kickCount} kicks',
+          TranslationKeys.kickCounterSessionEnded.tr,
+          TranslationKeys.kickCounterSessionEndedDesc.tr.replaceAll(
+            '@count',
+            endedSession.kickCount.toString(),
+          ),
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 2),
         );
       } else {
         hasError.value = true;
-        errorMessage.value = 'Failed to end session. Please try again.';
+        errorMessage.value = TranslationKeys.commonTryAgain.tr;
         Get.snackbar(
-          'Error',
-          'Failed to end session',
+          TranslationKeys.commonError.tr,
+          TranslationKeys.commonTryAgain.tr,
           snackPosition: SnackPosition.BOTTOM,
         );
       }
     } catch (e) {
       hasError.value = true;
-      errorMessage.value = 'Something went wrong. Please try again.';
+      errorMessage.value = TranslationKeys.commonTryAgain.tr;
       debugPrint('[KICK_COUNTER] Error ending session: $e');
     } finally {
       isProcessing.value = false;

@@ -57,17 +57,17 @@ class NotificationCard extends StatelessWidget {
                       width: 4,
                       decoration: BoxDecoration(
                         color: AppColors.primary,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          bottomLeft: Radius.circular(12),
+                        borderRadius: const BorderRadiusDirectional.only(
+                          topStart: Radius.circular(12),
+                          bottomStart: Radius.circular(12),
                         ),
                       ),
                     ),
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.only(
-                        left: notification.isRead ? 16 : 12,
-                        right: 16,
+                      padding: EdgeInsetsDirectional.only(
+                        start: notification.isRead ? 16 : 12,
+                        end: 16,
                         top: 16,
                         bottom: 16,
                       ),

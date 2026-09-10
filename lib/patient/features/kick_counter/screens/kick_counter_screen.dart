@@ -1,10 +1,11 @@
 // lib/patient/features/kick_counter/screens/kick_counter_screen.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/kick_counter/controllers/kick_counter_controller.dart';
 import 'package:doctor/patient/features/kick_counter/widgets/kick_counter_display.dart';
 import 'package:doctor/patient/features/kick_counter/widgets/kick_history_item.dart';
 import 'package:doctor/patient/features/kick_counter/widgets/kick_status_badge.dart';
-import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -18,7 +19,7 @@ class KickCounterScreen extends GetView<KickCounterController> {
     return Scaffold(
       backgroundColor: colorScheme.background,
       appBar: PatientTopAppBar(
-        title: 'Kick Counter',
+        title: TranslationKeys.kickCounterTitle.tr,
         onNotificationTap: () => Get.toNamed('/notifications'),
       ),
       body: Obx(() {
@@ -36,7 +37,11 @@ class KickCounterScreen extends GetView<KickCounterController> {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.fromLTRB(
-              16, 16, 16, MediaQuery.of(context).padding.bottom + 20),
+              16,
+              16,
+              16,
+              MediaQuery.of(context).padding.bottom + 20,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -46,31 +51,31 @@ class KickCounterScreen extends GetView<KickCounterController> {
                 const SizedBox(height: 24),
 
                 // Kick Counter Display
-Obx(
-                   () => KickCounterDisplay(
-                     kickCount: controller.activeSession.value?.kickCount ?? 0,
-                     onAdd: controller.recordKick,
-                     onRemove: () {
-                       // Remove last kick (not supported by API)
-                       Get.snackbar(
-                         'Info',
-                         'Remove functionality coming soon',
-                         snackPosition: SnackPosition.BOTTOM,
-                       );
-                     },
-                     isActive: controller.activeSession.value != null,
-                   ),
-                 ),
+                Obx(
+                  () => KickCounterDisplay(
+                    kickCount: controller.activeSession.value?.kickCount ?? 0,
+                    onAdd: controller.recordKick,
+                    onRemove: () {
+                      // Remove last kick (not supported by API)
+                      Get.snackbar(
+                        TranslationKeys.kickCounterInfo.tr,
+                        TranslationKeys.kickCounterRemoveComingSoon.tr,
+                        snackPosition: SnackPosition.BOTTOM,
+                      );
+                    },
+                    isActive: controller.activeSession.value != null,
+                  ),
+                ),
 
                 const SizedBox(height: 12),
 
                 // Status Badge
-Obx(
-                   () => KickStatusBadge(
-                     isActive: controller.activeSession.value != null,
-                     kickCount: controller.activeSession.value?.kickCount,
-                   ),
-                 ),
+                Obx(
+                  () => KickStatusBadge(
+                    isActive: controller.activeSession.value != null,
+                    kickCount: controller.activeSession.value?.kickCount,
+                  ),
+                ),
 
                 const SizedBox(height: 8),
 
@@ -91,7 +96,7 @@ Obx(
           ),
         );
       }),
-      bottomNavigationBar: _buildBottomNav(context),
+      // bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
@@ -101,7 +106,7 @@ Obx(
     return Column(
       children: [
         Text(
-          'Kick Counter',
+          TranslationKeys.kickCounterTitle.tr,
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
@@ -110,7 +115,7 @@ Obx(
         ),
         const SizedBox(height: 4),
         Text(
-          "Track your baby's movements today.",
+          TranslationKeys.kickCounterNoSessionsDesc.tr,
           style: TextStyle(fontSize: 16, color: colorScheme.onSurfaceVariant),
         ),
       ],
@@ -144,8 +149,8 @@ Obx(
                   strokeWidth: 2.5,
                 ),
               )
-            : const Text(
-                'Start Session',
+            : Text(
+                TranslationKeys.kickCounterStart.tr,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
       ),
@@ -181,8 +186,8 @@ Obx(
                 children: [
                   Icon(Icons.stop_rounded, size: 20),
                   const SizedBox(width: 8),
-                  const Text(
-                    'End Session',
+                  Text(
+                    TranslationKeys.kickCounterEnd.tr,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                 ],
@@ -225,7 +230,7 @@ Obx(
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Recent History',
+                    TranslationKeys.kickCounterRecentHistory.tr,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -239,7 +244,7 @@ Obx(
                 style: TextButton.styleFrom(
                   foregroundColor: colorScheme.primary,
                 ),
-                child: const Text('View All'),
+                child: Text(TranslationKeys.kickCounterViewAll.tr),
               ),
             ],
           ),
@@ -248,7 +253,7 @@ Obx(
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: Center(
                 child: Text(
-                  'No sessions recorded yet',
+                  TranslationKeys.kickCounterNoSessions.tr,
                   style: TextStyle(color: colorScheme.onSurfaceVariant),
                 ),
               ),
@@ -263,115 +268,115 @@ Obx(
       ),
     );
   }
-Widget _buildBottomNav(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+  // Widget _buildBottomNav(BuildContext context) {
+  //     final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface.withOpacity(0.9),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                context,
-                icon: Icons.home_rounded,
-                label: 'Home',
-                onTap: controller.navigateToHome,
-                isActive: false,
-              ),
-              _buildNavItem(
-                context,
-                icon: Icons.event_rounded,
-                label: 'Booking',
-                onTap: controller.navigateToBooking,
-                isActive: false,
-              ),
-              _buildNavItem(
-                context,
-                icon: Icons.description_rounded,
-                label: 'Reports',
-                onTap: controller.navigateToReports,
-                isActive: false,
-              ),
-              _buildNavItem(
-                context,
-                icon: Icons.history_rounded,
-                label: 'History',
-                onTap: controller.navigateToHistory,
-                isActive: true,
-              ),
-              _buildNavItem(
-                context,
-                icon: Icons.person_rounded,
-                label: 'Profile',
-                onTap: controller.navigateToProfile,
-                isActive: false,
-              ),
-            ],
-          ),
-        ),
-      ),
+  //     return Container(
+  //       decoration: BoxDecoration(
+  //         color: colorScheme.surface.withOpacity(0.9),
+  //         boxShadow: [
+  //           BoxShadow(
+  //             color: colorScheme.shadow.withOpacity(0.05),
+  //             blurRadius: 20,
+  //             offset: const Offset(0, -4),
+  //           ),
+  //         ],
+  //         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+  //       ),
+  //       child: SafeArea(
+  //         child: Padding(
+  //           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+  //           child: Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //             children: [
+  //               _buildNavItem(
+  //                 context,
+  //                 icon: Icons.home_rounded,
+  //                 label: 'Home',
+  //                 onTap: controller.navigateToHome,
+  //                 isActive: false,
+  //               ),
+  //               _buildNavItem(
+  //                 context,
+  //                 icon: Icons.event_rounded,
+  //                 label: 'Booking',
+  //                 onTap: controller.navigateToBooking,
+  //                 isActive: false,
+  //               ),
+  //               _buildNavItem(
+  //                 context,
+  //                 icon: Icons.description_rounded,
+  //                 label: 'Reports',
+  //                 onTap: controller.navigateToReports,
+  //                 isActive: false,
+  //               ),
+  //               _buildNavItem(
+  //                 context,
+  //                 icon: Icons.history_rounded,
+  //                 label: 'History',
+  //                 onTap: controller.navigateToHistory,
+  //                 isActive: true,
+  //               ),
+  //               _buildNavItem(
+  //                 context,
+  //                 icon: Icons.person_rounded,
+  //                 label: 'Profile',
+  //                 onTap: controller.navigateToProfile,
+  //                 isActive: false,
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
 
-    );
-  }
+  //     );
+  //   }
 
-  Widget _buildNavItem(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required bool isActive,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
+  //   Widget _buildNavItem(
+  //     BuildContext context, {
+  //     required IconData icon,
+  //     required String label,
+  //     required VoidCallback onTap,
+  //     required bool isActive,
+  //   }) {
+  //     final colorScheme = Theme.of(context).colorScheme;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: isActive
-              ? colorScheme.primaryContainer.withOpacity(0.15)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isActive ? colorScheme.primary : colorScheme.outline,
-              size: 24,
-            ),
-            const SizedBox(height: 2),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                  color: isActive ? colorScheme.primary : colorScheme.outline,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  //     return GestureDetector(
+  //       onTap: onTap,
+  //       child: Container(
+  //         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+  //         decoration: BoxDecoration(
+  //           color: isActive
+  //               ? colorScheme.primaryContainer.withOpacity(0.15)
+  //               : Colors.transparent,
+  //           borderRadius: BorderRadius.circular(12),
+  //         ),
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             Icon(
+  //               icon,
+  //               color: isActive ? colorScheme.primary : colorScheme.outline,
+  //               size: 24,
+  //             ),
+  //             const SizedBox(height: 2),
+  //             Flexible(
+  //               child: Text(
+  //                 label,
+  //                 maxLines: 1,
+  //                 overflow: TextOverflow.ellipsis,
+  //                 style: TextStyle(
+  //                   fontSize: 10,
+  //                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+  //                   color: isActive ? colorScheme.primary : colorScheme.outline,
+  //                 ),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     );
+  //   }
 
   Widget _buildLoadingState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -394,7 +399,7 @@ Widget _buildBottomNav(BuildContext context) {
           ),
           const SizedBox(height: 16),
           Text(
-            'Loading kick data...',
+            TranslationKeys.commonLoading.tr,
             style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
           ),
         ],
@@ -425,7 +430,7 @@ Widget _buildBottomNav(BuildContext context) {
             ),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              TranslationKeys.commonSomethingWentWrong.tr,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -455,7 +460,7 @@ Widget _buildBottomNav(BuildContext context) {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Try Again'),
+              child: Text(TranslationKeys.commonTryAgain.tr),
             ),
           ],
         ),

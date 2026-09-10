@@ -1,5 +1,6 @@
 // lib/patient/features/dashboard/controllers/patient_dashboard_controller.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/patient/features/dashboard/models/patient_summary.dart';
 import 'package:doctor/patient/features/dashboard/repositories/patient_dashboard_repository.dart';
@@ -49,7 +50,7 @@ class PatientDashboardController extends GetxController {
       }
     } catch (e) {
       hasError.value = true;
-      errorMessage.value = 'Failed to load dashboard data. Please try again.';
+      errorMessage.value = TranslationKeys.dashboardLoadFailed.tr;
       debugPrint('[PATIENT_DASHBOARD] Error loading data: $e');
     } finally {
       isLoading.value = false;

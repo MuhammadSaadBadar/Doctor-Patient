@@ -106,7 +106,7 @@ class DoctorPatientManagementScreen
               return GestureDetector(
                 onTap: () => controller.updateSearchQuery(''),
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 10),
+                  padding: const EdgeInsetsDirectional.only(end: 10),
                   child: Container(
                     width: 20,
                     height: 20,

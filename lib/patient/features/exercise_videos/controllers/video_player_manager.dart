@@ -2,13 +2,13 @@
 
 import 'dart:async';
 
+import 'package:doctor/core/localization/translation_keys.dart';
+import 'package:doctor/patient/features/exercise_videos/models/exercise_video.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
-
-import 'package:doctor/patient/features/exercise_videos/models/exercise_video.dart';
 
 enum VideoPlaybackStatus {
   idle,
@@ -37,18 +37,18 @@ extension VideoErrorTypeExtension on VideoErrorType {
   String get userMessage {
     switch (this) {
       case VideoErrorType.invalidUrl:
-        return 'This video URL is invalid or malformed.';
+        return TranslationKeys.exerciseInvalidUrl.tr;
       case VideoErrorType.cleartextBlocked:
-        return 'This video cannot be played due to security restrictions. Please try a different video.';
+        return TranslationKeys.exerciseSecurityError.tr;
       case VideoErrorType.networkError:
-        return 'Network error. Check your connection and try again.';
+        return TranslationKeys.exerciseNetworkError.tr;
       case VideoErrorType.codecError:
-        return 'This video format is not supported on your device.';
+        return TranslationKeys.exerciseUnsupportedFormat.tr;
       case VideoErrorType.corsBlocked:
-        return 'This video cannot be played in the browser due to access restrictions.';
+        return TranslationKeys.exerciseBrowserRestriction.tr;
       case VideoErrorType.unknown:
       case VideoErrorType.none:
-        return 'We couldn\'t load this video. Please try again.';
+        return TranslationKeys.exerciseLoadError.tr;
     }
   }
 }
@@ -73,11 +73,14 @@ class VideoPlayerManager extends GetxController {
 
   VideoSourceKind classify(String url) {
     final lower = url.toLowerCase();
-    final isDirect = lower.endsWith('.mp4') ||
+    final isDirect =
+        lower.endsWith('.mp4') ||
         lower.endsWith('.m3u8') ||
         lower.endsWith('.mov') ||
         lower.endsWith('.webm');
-    return isDirect ? VideoSourceKind.directFile : VideoSourceKind.externalWebPage;
+    return isDirect
+        ? VideoSourceKind.directFile
+        : VideoSourceKind.externalWebPage;
   }
 
   VideoErrorType classifyError(dynamic error, String url) {
@@ -125,7 +128,9 @@ class VideoPlayerManager extends GetxController {
       return;
     }
 
-    if (_currentId == video.id && _controller != null && _controller!.value.isInitialized) {
+    if (_currentId == video.id &&
+        _controller != null &&
+        _controller!.value.isInitialized) {
       return;
     }
 
@@ -184,7 +189,8 @@ class VideoPlayerManager extends GetxController {
 
       final classifiedError = classifyError(e, video.videoUrl);
 
-      if (_retryCount < _maxRetries && classifiedError == VideoErrorType.networkError) {
+      if (_retryCount < _maxRetries &&
+          classifiedError == VideoErrorType.networkError) {
         _retryCount++;
         final delay = Duration(milliseconds: 500 * _retryCount);
         await Future.delayed(delay);
@@ -284,16 +290,13 @@ class VideoPlayerManager extends GetxController {
   Future<void> _applyFullscreenLandscape() async {
     if (isFullscreen.value) return;
     try {
-      await SystemChrome.setEnabledSystemUIMode(
-        SystemUiMode.immersiveSticky,
-      );
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
       await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
       ]);
       isFullscreen.value = true;
-    } catch (_) {
-    }
+    } catch (_) {}
   }
 
   Future<void> _restoreOrientation() async {
@@ -305,9 +308,7 @@ class VideoPlayerManager extends GetxController {
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
       ]);
-      await SystemChrome.setEnabledSystemUIMode(
-        SystemUiMode.edgeToEdge,
-      );
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     } catch (_) {}
     isFullscreen.value = false;
   }

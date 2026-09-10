@@ -1,7 +1,9 @@
 // lib/patient/features/kick_counter/models/kick_session.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/kick_counter/models/kick_event.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class KickSession {
   final int id;
@@ -66,6 +68,7 @@ class KickSession {
       createdAt: createdAt ?? this.createdAt,
     );
   }
+
   String get duration {
     if (endedAt == null) {
       final diff = DateTime.now().difference(startedAt);
@@ -82,8 +85,8 @@ class KickSession {
   }
 
   String get statusLabel {
-    if (endedAt != null) return 'Completed';
-    return 'Active';
+    if (endedAt != null) return TranslationKeys.kickCounterCompleted.tr;
+    return TranslationKeys.kickCounterActive.tr;
   }
 
   Color get statusColor {

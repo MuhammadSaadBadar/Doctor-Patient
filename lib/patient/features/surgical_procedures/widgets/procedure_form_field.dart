@@ -76,7 +76,7 @@ class ProcedureFormField extends StatelessWidget {
             child: Row(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(left: 14),
+                  padding: const EdgeInsetsDirectional.only(start: 14),
                   child: Icon(icon, size: 20, color: colorScheme.primary),
                 ),
                 Expanded(

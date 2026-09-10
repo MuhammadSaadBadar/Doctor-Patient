@@ -1,6 +1,8 @@
 // lib/patient/features/kick_counter/widgets/kick_status_badge.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class KickStatusBadge extends StatelessWidget {
   final bool isActive;
@@ -30,7 +32,7 @@ class KickStatusBadge extends StatelessWidget {
             const SizedBox(width: 4),
             Flexible(
               child: Text(
-                'Session Complete',
+                TranslationKeys.kickCounterSessionComplete.tr,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -65,7 +67,7 @@ class KickStatusBadge extends StatelessWidget {
           const SizedBox(width: 6),
           Flexible(
             child: Text(
-              'Recording... ${kickCount ?? 0} kicks',
+              '${TranslationKeys.kickCounterRecording.tr} ${kickCount ?? 0} ${TranslationKeys.kickCounterKicks.tr}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(

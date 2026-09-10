@@ -60,8 +60,8 @@ class AppointmentCard extends StatelessWidget {
                       height: 40,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                          begin: AlignmentDirectional.topStart,
+                          end: AlignmentDirectional.bottomEnd,
                           colors: [
                             Color(0xFF4E5E81), // primary tint
                             Color(0xFF031635), // primary

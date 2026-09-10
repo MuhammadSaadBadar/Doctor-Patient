@@ -19,7 +19,7 @@ class PatientSettingsController extends GetxController {
 
   final isDarkMode = false.obs;
   final areNotificationsEnabled = true.obs;
-  final selectedLanguage = 'English'.obs;
+  final selectedLanguage = 'en_US'.obs;
 
   @override
   void onInit() {
@@ -36,8 +36,10 @@ class PatientSettingsController extends GetxController {
     areNotificationsEnabled.value = notifications ?? true;
 
     final language = _storage.getLanguage();
-    if (language != null) {
+    if (language != null && language != 'English' && language != 'Urdu') {
       selectedLanguage.value = language;
+    } else if (language == 'Urdu') {
+      selectedLanguage.value = 'ur_PK';
     }
   }
 
@@ -251,9 +253,15 @@ class PatientSettingsController extends GetxController {
     );
   }
 
-  void setLanguage(String language) {
-    selectedLanguage.value = language;
-    _storage.setLanguage(language);
+  void setLanguage(String languageCode) {
+    selectedLanguage.value = languageCode;
+    _storage.setLanguage(languageCode);
+    
+    if (languageCode == 'ur_PK') {
+      Get.updateLocale(const Locale('ur', 'PK'));
+    } else {
+      Get.updateLocale(const Locale('en', 'US'));
+    }
   }
 
   Future<void> logout() async {
@@ -275,30 +283,33 @@ class PatientSettingsController extends GetxController {
   }
 
   void showLanguageDialog() {
-    const languages = ['English', 'Urdu', 'Arabic'];
+    final languages = [
+      {'code': 'en_US', 'name': 'English'},
+      {'code': 'ur_PK', 'name': 'اردو'},
+    ];
 
     Get.dialog(
       AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Select Language'),
+        title: Text('settings.language'.tr),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: languages.map((language) {
-            return RadioListTile<String>(
-              title: Text(language),
-              value: language,
-              groupValue: selectedLanguage.value,
+          children: languages.map((lang) {
+            return Obx(() => RadioListTile<String>(
+              title: Text(lang['name']!),
+              value: lang['code']!,
+              groupValue: selectedLanguage.value == 'English' ? 'en_US' : selectedLanguage.value, // Fallback for old storage
               onChanged: (value) {
                 if (value != null) {
                   setLanguage(value);
                   Get.back();
                 }
               },
-            );
+            ));
           }).toList(),
         ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(onPressed: () => Get.back(), child: Text('common.cancel'.tr)),
         ],
       ),
     );

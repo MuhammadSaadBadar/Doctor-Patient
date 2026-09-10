@@ -1,6 +1,8 @@
 import 'package:doctor/core/services/storage_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
+import 'package:doctor/core/localization/app_translations.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/routes/routes.dart';
 import 'package:doctor/core/routes/app_routes.dart';
@@ -35,6 +37,18 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: initialThemeMode,
+      translations: AppTranslations(),
+      locale: StorageService.instance.getLocale() ?? const Locale('en', 'US'),
+      fallbackLocale: const Locale('en', 'US'),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', 'US'),
+        Locale('ur', 'PK'),
+      ],
       initialBinding: InitialBinding(),
       initialRoute: AppRoutes.splash,
       getPages: Routes.pages,

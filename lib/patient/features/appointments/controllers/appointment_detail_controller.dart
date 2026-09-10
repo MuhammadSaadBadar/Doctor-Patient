@@ -1,5 +1,6 @@
 // lib/patient/features/appointments/controllers/appointment_detail_controller.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/appointments/models/appointment.dart';
 import 'package:doctor/patient/features/appointments/models/appointment_payment.dart';
 import 'package:doctor/patient/features/appointments/models/doctor_contact.dart';
@@ -49,7 +50,7 @@ class AppointmentDetailController extends GetxController {
         }
       } else {
         hasError.value = true;
-        errorMessage.value = 'Appointment not found. Please try again.';
+        errorMessage.value = TranslationKeys.appointmentsNotFound.tr;
       }
     } catch (e) {
       hasError.value = true;
@@ -123,14 +124,14 @@ class AppointmentDetailController extends GetxController {
   }
 
   String get paymentStatusLabel {
-    if (payment == null) return 'No Payment';
+    if (payment == null) return TranslationKeys.appointmentsNoPayment.tr;
     switch (payment!.status) {
       case 'pending':
-        return 'Unpaid';
+        return TranslationKeys.appointmentsUnpaid.tr;
       case 'awaiting_verification':
-        return 'Awaiting Verification';
+        return TranslationKeys.appointmentsAwaitingVerification.tr;
       case 'confirmed':
-        return 'Paid';
+        return TranslationKeys.appointmentsPaid.tr;
       default:
         return payment!.status;
     }
@@ -151,14 +152,15 @@ class AppointmentDetailController extends GetxController {
   }
 
   String get paymentStatusDisplay {
-    if (payment == null) return 'No payment required';
+    if (payment == null)
+      return TranslationKeys.appointmentsNoPaymentRequired.tr;
     switch (payment!.status) {
       case 'pending':
-        return 'Payment pending';
+        return TranslationKeys.appointmentsPaymentPending.tr;
       case 'awaiting_verification':
         return 'Awaiting admin verification';
       case 'confirmed':
-        return 'Payment confirmed';
+        return TranslationKeys.appointmentsPaymentConfirmed.tr;
       default:
         return payment!.status;
     }
@@ -166,8 +168,7 @@ class AppointmentDetailController extends GetxController {
 
   bool get canCancel => isPending || isConfirmed;
   bool get canReschedule => isPending || isConfirmed;
-  bool get canPayNow =>
-      payment != null && payment!.isPending;
+  bool get canPayNow => payment != null && payment!.isPending;
   bool get canRate =>
       isCompleted && (appointment.value?.payment?.isConfirmed ?? false);
   bool get showDoctorContact => appointment.value?.showDoctorContact ?? false;

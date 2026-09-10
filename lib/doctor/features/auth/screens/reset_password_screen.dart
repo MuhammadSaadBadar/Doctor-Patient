@@ -246,7 +246,7 @@ class ResetPasswordScreen extends GetView<AuthController> {
                     size: 20,
                     color: AppColors.outline,
                   ),
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsetsDirectional.only(end: 8),
                   constraints: const BoxConstraints(),
                 ),
               ],

@@ -1,6 +1,8 @@
 // lib/patient/features/kick_counter/models/kick_daily_summary.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/kick_counter/models/kick_session.dart';
+import 'package:get/get.dart';
 
 class KickDailySummary {
   final String date;
@@ -46,8 +48,8 @@ class KickDailySummary {
 
     final date = DateTime(dateTime.year, dateTime.month, dateTime.day);
 
-    if (date == today) return 'Today';
-    if (date == yesterday) return 'Yesterday';
+    if (date == today) return TranslationKeys.commonToday.tr;
+    if (date == yesterday) return TranslationKeys.commonYesterday.tr;
 
     final months = [
       'Jan',

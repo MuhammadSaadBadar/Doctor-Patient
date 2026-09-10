@@ -1,5 +1,8 @@
 // lib/patient/features/vitals/models/vital_reading.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
+import 'package:get/get.dart';
+
 class BloodPressureReading {
   final int id;
   final int systolic;
@@ -30,10 +33,16 @@ class BloodPressureReading {
   }
 
   String get status {
-    if (systolic < 120 && diastolic < 80) return 'Normal';
-    if (systolic < 130 && diastolic < 80) return 'Elevated';
-    if (systolic < 140 || diastolic < 90) return 'High Stage 1';
-    return 'High Stage 2';
+    if (systolic < 120 && diastolic < 80) {
+      return TranslationKeys.vitalsNormal.tr;
+    }
+    if (systolic < 130 && diastolic < 80) {
+      return TranslationKeys.vitalsElevated.tr;
+    }
+    if (systolic < 140 || diastolic < 90) {
+      return TranslationKeys.vitalsHighStageOne.tr;
+    }
+    return TranslationKeys.vitalsHighStageTwo.tr;
   }
 
   bool get isNormal => systolic < 120 && diastolic < 80;
@@ -68,11 +77,11 @@ class BloodSugarReading {
   String get contextLabel {
     switch (readingContext) {
       case 'fasting':
-        return 'Fasting';
+        return TranslationKeys.vitalsFasting.tr;
       case 'post_meal':
-        return 'Post-Meal';
+        return TranslationKeys.vitalsPostMeal.tr;
       default:
-        return 'Random';
+        return TranslationKeys.vitalsRandom.tr;
     }
   }
 

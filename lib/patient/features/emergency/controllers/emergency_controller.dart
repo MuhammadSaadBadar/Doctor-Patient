@@ -1,3 +1,4 @@
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/emergency/models/nearby_hospital.dart';
 import 'package:doctor/patient/features/emergency/models/patient_sos_event.dart';
 import 'package:doctor/patient/features/emergency/repositories/emergency_repository.dart';
@@ -48,7 +49,7 @@ class EmergencyController extends GetxController {
       _sosPage++;
     } catch (e) {
       hasSosError.value = true;
-      sosError.value = 'Unable to load emergency records. Please try again.';
+      sosError.value = TranslationKeys.sosLoadError.tr;
       debugPrint('[EMERGENCY] SOS error: $e');
     } finally {
       isLoadingSos.value = false;
@@ -96,7 +97,7 @@ class EmergencyController extends GetxController {
           sosEvents.refresh();
         }
       } else {
-        throw Exception('The SOS update was rejected.');
+        throw Exception(TranslationKeys.sosUpdateRejected.tr);
       }
     } catch (e) {
       Get.snackbar('Error', e.toString().replaceFirst('Exception: ', ''));

@@ -1,3 +1,4 @@
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/emergency/repositories/emergency_repository.dart';
 import 'package:doctor/patient/features/emergency/services/location_service.dart';
 import 'package:flutter/material.dart';
@@ -19,14 +20,12 @@ class GenerateSosController extends GetxController {
     try {
       position.value = await _locationService.getCurrentPosition();
       if (position.value == null) {
-        locationMessage.value =
-            'Location unavailable. SOS can still be sent without it.';
+        locationMessage.value = TranslationKeys.sosLocationUnavailable.tr;
       } else {
-        locationMessage.value = 'Current location will be included.';
+        locationMessage.value = TranslationKeys.sosCurrentLocationIncluded.tr;
       }
     } catch (_) {
-      locationMessage.value =
-          'Location unavailable. SOS can still be sent without it.';
+        locationMessage.value = TranslationKeys.sosLocationUnavailable.tr;
     } finally {
       isLoadingLocation.value = false;
     }
@@ -41,12 +40,12 @@ class GenerateSosController extends GetxController {
         longitude: position.value?.longitude,
         notes: notesController.text,
       );
-      if (created == null) throw Exception('SOS could not be created.');
+      if (created == null) throw Exception(TranslationKeys.sosUnableToSend.tr);
       Get.back(result: true);
-      Get.snackbar('SOS sent', 'Your emergency alert has been sent.');
+      Get.snackbar(TranslationKeys.sosSent.tr, TranslationKeys.sosSentDesc.tr);
     } catch (e) {
       Get.snackbar(
-        'Unable to send SOS',
+        TranslationKeys.sosUnableToSend.tr,
         e.toString().replaceFirst('Exception: ', ''),
       );
     } finally {

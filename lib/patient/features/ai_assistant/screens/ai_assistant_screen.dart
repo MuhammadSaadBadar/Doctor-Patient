@@ -6,6 +6,7 @@ import 'package:doctor/patient/features/ai_assistant/widgets/typing_indicator.da
 import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:doctor/core/localization/translation_keys.dart';
 
 class AIAssistantScreen extends GetView<AIAssistantController> {
   const AIAssistantScreen({super.key});
@@ -62,7 +63,7 @@ class AIAssistantScreen extends GetView<AIAssistantController> {
               ),
               const SizedBox(width: 4),
               Text(
-                'Online',
+                TranslationKeys.aiOnline.tr,
                 style: TextStyle(
                   fontSize: 11,
                   color: colorScheme.onSurfaceVariant,
@@ -147,7 +148,7 @@ class AIAssistantScreen extends GetView<AIAssistantController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Start a conversation',
+              TranslationKeys.aiStartConversation.tr,
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -156,7 +157,7 @@ class AIAssistantScreen extends GetView<AIAssistantController> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Ask me anything about your pregnancy journey.',
+              TranslationKeys.aiAskAnything.tr,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -215,7 +216,7 @@ class AIAssistantScreen extends GetView<AIAssistantController> {
                     focusNode: controller.focusNode,
                     onSubmitted: (_) => controller.sendMessage(),
                     decoration: InputDecoration(
-                      hintText: 'Type a message...',
+                      hintText: TranslationKeys.aiTypeMessage.tr,
                       hintStyle: TextStyle(color: colorScheme.outline),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
@@ -327,7 +328,7 @@ class AIAssistantScreen extends GetView<AIAssistantController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              TranslationKeys.commonSomethingWentWrong.tr,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -357,7 +358,7 @@ class AIAssistantScreen extends GetView<AIAssistantController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Try Again'),
+              child: Text(TranslationKeys.commonTryAgain.tr),
             ),
           ],
         ),
@@ -392,7 +393,7 @@ class AIAssistantScreen extends GetView<AIAssistantController> {
                 Icons.add_circle_rounded,
                 color: colorScheme.primary,
               ),
-              title: const Text('New Chat'),
+              title: Text(TranslationKeys.aiNewChat.tr),
               onTap: () {
                 Get.back();
                 controller.createNewSession();
@@ -405,7 +406,7 @@ class AIAssistantScreen extends GetView<AIAssistantController> {
                   Icons.history_rounded,
                   color: colorScheme.secondary,
                 ),
-                title: const Text('Recent Chats'),
+                title: Text(TranslationKeys.aiRecentChats.tr),
                 trailing: Icon(
                   Icons.chevron_right_rounded,
                   color: colorScheme.onSurfaceVariant,
@@ -448,7 +449,7 @@ class AIAssistantScreen extends GetView<AIAssistantController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Recent Chats',
+              TranslationKeys.aiRecentChats.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
@@ -461,7 +462,7 @@ class AIAssistantScreen extends GetView<AIAssistantController> {
                 if (controller.sessions.isEmpty) {
                   return Center(
                     child: Text(
-                      'No recent chats',
+                      TranslationKeys.aiNoRecentChats.tr,
                       style: TextStyle(color: colorScheme.onSurfaceVariant),
                     ),
                   );
@@ -531,7 +532,7 @@ class AIAssistantScreen extends GetView<AIAssistantController> {
                 ),
                 minimumSize: const Size(double.infinity, 48),
               ),
-              child: const Text('+ New Chat'),
+              child: Text(TranslationKeys.aiPlusNewChat.tr),
             ),
           ],
         ),

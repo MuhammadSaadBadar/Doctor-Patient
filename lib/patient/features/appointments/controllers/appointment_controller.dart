@@ -1,3 +1,4 @@
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/patient/features/appointments/models/appointment.dart';
 import 'package:doctor/patient/features/appointments/models/paginated_appointment_list.dart';
@@ -155,13 +156,13 @@ class AppointmentController extends GetxController {
   String getFilterLabel(AppointmentFilter filter) {
     switch (filter) {
       case AppointmentFilter.all:
-        return 'All';
+        return TranslationKeys.appointmentsFilterAll.tr;
       case AppointmentFilter.pending:
-        return 'Pending';
+        return TranslationKeys.appointmentsFilterPending.tr;
       case AppointmentFilter.confirmed:
-        return 'Confirmed';
+        return TranslationKeys.appointmentsFilterConfirmed.tr;
       case AppointmentFilter.unpaid:
-        return 'Unpaid';
+        return TranslationKeys.appointmentsFilterUnpaid.tr;
     }
   }
 

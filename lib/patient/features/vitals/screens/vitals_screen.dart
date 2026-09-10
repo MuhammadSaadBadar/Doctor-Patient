@@ -1,9 +1,9 @@
 // lib/patient/features/vitals/screens/vitals_screen.dart
 
-import 'package:doctor/core/constants/color_constants.dart';
+import 'package:doctor/core/localization/translation_keys.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/vitals/controllers/vitals_controller.dart';
 import 'package:doctor/patient/features/vitals/models/vital_reading.dart';
-import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -16,9 +16,7 @@ class VitalsScreen extends GetView<VitalsController> {
 
     return Scaffold(
       backgroundColor: colorScheme.background,
-      appBar: PatientTopAppBar(
-        title: 'Vitals',
-      ),
+      appBar: PatientTopAppBar(title: TranslationKeys.vitalsTitle.tr),
       body: Column(
         children: [
           Obx(
@@ -35,13 +33,13 @@ class VitalsScreen extends GetView<VitalsController> {
                 child: Row(
                   children: [
                     _buildTabButton(
-                      'Blood Pressure',
+                      TranslationKeys.vitalsBloodPressure.tr,
                       0,
                       Icons.favorite_rounded,
                       colorScheme,
                     ),
                     _buildTabButton(
-                      'Blood Sugar',
+                      TranslationKeys.vitalsBloodSugar.tr,
                       1,
                       Icons.bloodtype_rounded,
                       colorScheme,
@@ -54,7 +52,8 @@ class VitalsScreen extends GetView<VitalsController> {
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value &&
-                  (controller.bpHistory.isEmpty && controller.sugarHistory.isEmpty)) {
+                  (controller.bpHistory.isEmpty &&
+                      controller.sugarHistory.isEmpty)) {
                 return _buildLoadingState(context);
               }
 
@@ -148,7 +147,7 @@ class VitalsScreen extends GetView<VitalsController> {
           const SizedBox(height: 16),
           _buildHistoryList(
             controller.bpHistory,
-            'Blood Pressure History',
+            TranslationKeys.vitalsBPHistory.tr,
             (bp) => _buildBPHistoryItem(bp, colorScheme),
             colorScheme,
           ),
@@ -171,7 +170,7 @@ class VitalsScreen extends GetView<VitalsController> {
           const SizedBox(height: 16),
           _buildHistoryList(
             controller.sugarHistory,
-            'Blood Sugar History',
+            TranslationKeys.vitalsSugarHistory.tr,
             (sugar) => _buildSugarHistoryItem(sugar, colorScheme),
             colorScheme,
           ),
@@ -210,7 +209,7 @@ class VitalsScreen extends GetView<VitalsController> {
             ),
             child: Center(
               child: Text(
-                'No readings yet',
+                TranslationKeys.vitalsNoReadings.tr,
                 style: TextStyle(color: colorScheme.onSurfaceVariant),
               ),
             ),
@@ -228,8 +227,8 @@ class VitalsScreen extends GetView<VitalsController> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
           colors: [
             (isNormal ? Colors.green : Colors.orange).withOpacity(0.12),
             (isNormal ? Colors.green : Colors.orange).withOpacity(0.04),
@@ -252,7 +251,7 @@ class VitalsScreen extends GetView<VitalsController> {
               ),
               const SizedBox(width: 8),
               Text(
-                'Latest Reading',
+                TranslationKeys.vitalsLatestReading.tr,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -287,19 +286,24 @@ class VitalsScreen extends GetView<VitalsController> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildVitalStat(
-                'Systolic',
+                TranslationKeys.vitalsSystolic.tr,
                 '${bp.systolic}',
-                'mmHg',
+                TranslationKeys.vitalsMillimetersHg.tr,
                 colorScheme,
               ),
               _buildVitalStat(
-                'Diastolic',
+                TranslationKeys.vitalsDiastolic.tr,
                 '${bp.diastolic}',
-                'mmHg',
+                TranslationKeys.vitalsMillimetersHg.tr,
                 colorScheme,
               ),
               if (bp.pulse != null)
-                _buildVitalStat('Pulse', '${bp.pulse}', 'bpm', colorScheme),
+                _buildVitalStat(
+                  TranslationKeys.vitalsPulse.tr,
+                  '${bp.pulse}',
+                  TranslationKeys.vitalsBeatsPerMinute.tr,
+                  colorScheme,
+                ),
             ],
           ),
           const SizedBox(height: 12),
@@ -322,8 +326,8 @@ class VitalsScreen extends GetView<VitalsController> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
           colors: [
             (isNormal ? Colors.green : Colors.red).withOpacity(0.12),
             (isNormal ? Colors.green : Colors.red).withOpacity(0.04),
@@ -346,7 +350,7 @@ class VitalsScreen extends GetView<VitalsController> {
               ),
               const SizedBox(width: 8),
               Text(
-                'Latest Reading',
+                TranslationKeys.vitalsLatestReading.tr,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -366,7 +370,9 @@ class VitalsScreen extends GetView<VitalsController> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  isNormal ? 'Normal' : 'High',
+                  isNormal
+                      ? TranslationKeys.vitalsNormal.tr
+                      : TranslationKeys.vitalsHigh.tr,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -488,7 +494,7 @@ class VitalsScreen extends GetView<VitalsController> {
                   ),
                 ),
                 Text(
-                  '${bp.pulse != null ? '♥ ${bp.pulse} bpm • ' : ''}${_formatDateTime(bp.recordedAt)}',
+                  '${bp.pulse != null ? '♥ ${bp.pulse} ${TranslationKeys.vitalsBeatsPerMinute.tr} • ' : ''}${_formatDateTime(bp.recordedAt)}',
                   style: TextStyle(
                     fontSize: 12,
                     color: colorScheme.onSurfaceVariant,
@@ -577,7 +583,9 @@ class VitalsScreen extends GetView<VitalsController> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              isNormal ? 'Normal' : 'High',
+              isNormal
+                  ? TranslationKeys.vitalsNormal.tr
+                  : TranslationKeys.vitalsHigh.tr,
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
@@ -601,7 +609,7 @@ class VitalsScreen extends GetView<VitalsController> {
 
       Get.dialog(
         AlertDialog(
-          title: const Text('Log Blood Pressure'),
+          title: Text(TranslationKeys.vitalsLogBP.tr),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -611,8 +619,8 @@ class VitalsScreen extends GetView<VitalsController> {
                     child: TextField(
                       controller: systolicController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Systolic',
+                      decoration: InputDecoration(
+                        labelText: TranslationKeys.vitalsSystolic.tr,
                         hintText: '120',
                       ),
                     ),
@@ -622,8 +630,8 @@ class VitalsScreen extends GetView<VitalsController> {
                     child: TextField(
                       controller: diastolicController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Diastolic',
+                      decoration: InputDecoration(
+                        labelText: TranslationKeys.vitalsDiastolic.tr,
                         hintText: '80',
                       ),
                     ),
@@ -634,8 +642,8 @@ class VitalsScreen extends GetView<VitalsController> {
               TextField(
                 controller: pulseController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Pulse (optional)',
+                decoration: InputDecoration(
+                  labelText: TranslationKeys.vitalsPulseOptional.tr,
                   hintText: '72',
                 ),
               ),
@@ -644,7 +652,7 @@ class VitalsScreen extends GetView<VitalsController> {
           actions: [
             TextButton(
               onPressed: () => Get.back(),
-              child: const Text('Cancel'),
+              child: Text(TranslationKeys.vitalsCancel.tr),
             ),
             ElevatedButton(
               onPressed: () {
@@ -660,7 +668,7 @@ class VitalsScreen extends GetView<VitalsController> {
                   );
                 }
               },
-              child: const Text('Save'),
+              child: Text(TranslationKeys.vitalsSave.tr),
             ),
           ],
         ),
@@ -671,29 +679,37 @@ class VitalsScreen extends GetView<VitalsController> {
 
       Get.dialog(
         AlertDialog(
-          title: const Text('Log Blood Sugar'),
+          title: Text(TranslationKeys.vitalsLogSugar.tr),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: valueController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Value (mg/dL)',
+                decoration: InputDecoration(
+                  labelText: TranslationKeys.vitalsSugarValue.tr,
                   hintText: '95',
                 ),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: selectedContext,
-                decoration: const InputDecoration(labelText: 'Context'),
-                items: const [
-                  DropdownMenuItem(value: 'fasting', child: Text('Fasting')),
+                decoration: InputDecoration(
+                  labelText: TranslationKeys.vitalsContext.tr,
+                ),
+                items: [
+                  DropdownMenuItem(
+                    value: 'fasting',
+                    child: Text(TranslationKeys.vitalsFasting.tr),
+                  ),
                   DropdownMenuItem(
                     value: 'post_meal',
-                    child: Text('Post-Meal'),
+                    child: Text(TranslationKeys.vitalsPostMeal.tr),
                   ),
-                  DropdownMenuItem(value: 'random', child: Text('Random')),
+                  DropdownMenuItem(
+                    value: 'random',
+                    child: Text(TranslationKeys.vitalsRandom.tr),
+                  ),
                 ],
                 onChanged: (v) => selectedContext = v!,
               ),
@@ -702,7 +718,7 @@ class VitalsScreen extends GetView<VitalsController> {
           actions: [
             TextButton(
               onPressed: () => Get.back(),
-              child: const Text('Cancel'),
+              child: Text(TranslationKeys.vitalsCancel.tr),
             ),
             ElevatedButton(
               onPressed: () {
@@ -715,7 +731,7 @@ class VitalsScreen extends GetView<VitalsController> {
                   );
                 }
               },
-              child: const Text('Save'),
+              child: Text(TranslationKeys.vitalsSave.tr),
             ),
           ],
         ),
@@ -741,7 +757,7 @@ class VitalsScreen extends GetView<VitalsController> {
           CircularProgressIndicator(color: colorScheme.primary),
           const SizedBox(height: 16),
           Text(
-            'Loading...',
+            TranslationKeys.commonLoading.tr,
             style: TextStyle(color: colorScheme.onSurfaceVariant),
           ),
         ],
@@ -764,7 +780,7 @@ class VitalsScreen extends GetView<VitalsController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Failed to load',
+              TranslationKeys.vitalsFailedToLoad.tr,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -780,7 +796,7 @@ class VitalsScreen extends GetView<VitalsController> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: controller.refreshData,
-              child: const Text('Retry'),
+              child: Text(TranslationKeys.commonRetry.tr),
             ),
           ],
         ),

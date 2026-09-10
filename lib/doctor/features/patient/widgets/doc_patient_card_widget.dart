@@ -102,7 +102,7 @@ class PatientCardWidget extends StatelessWidget {
                               if (_isHighRisk)
                                 Container(
                                   padding: const EdgeInsets.all(3),
-                                  margin: const EdgeInsets.only(left: 6),
+                                  margin: const EdgeInsetsDirectional.only(start: 6),
                                   decoration: BoxDecoration(
                                     color: colorScheme.error,
                                     shape: BoxShape.circle,

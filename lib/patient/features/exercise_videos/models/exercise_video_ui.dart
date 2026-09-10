@@ -1,7 +1,9 @@
 // lib/patient/features/exercise_videos/models/exercise_video_ui.dart
 
-import 'package:flutter/material.dart';
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/exercise_videos/models/exercise_video.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 /// Presentation-only helpers. Kept out of the data class so the model
 /// stays free of UI concerns.
@@ -9,10 +11,10 @@ extension ExerciseVideoUI on ExerciseVideo {
   String get categoryLabel {
     switch (category) {
       case 'breathing':
-        return 'Breathing';
+        return TranslationKeys.exerciseBreathing.tr;
       case 'exercise':
       default:
-        return 'Exercise';
+        return TranslationKeys.exerciseExercise.tr;
     }
   }
 
@@ -23,8 +25,11 @@ extension ExerciseVideoUI on ExerciseVideo {
   }
 
   String get trimesterLabel {
-    if (trimester == null) return 'All Trimesters';
-    return 'Trimester $trimester';
+    if (trimester == null) return TranslationKeys.exerciseAllTrimesters.tr;
+    return TranslationKeys.exerciseTrimester.tr.replaceAll(
+      '@number',
+      trimester.toString(),
+    );
   }
 
   Color get trimesterColor {
@@ -43,6 +48,9 @@ extension ExerciseVideoUI on ExerciseVideo {
 
   String get durationDisplay {
     if (durationMinutes == null) return '';
-    return '$durationMinutes min';
+    return TranslationKeys.exerciseMinutes.tr.replaceAll(
+      '@count',
+      durationMinutes.toString(),
+    );
   }
 }

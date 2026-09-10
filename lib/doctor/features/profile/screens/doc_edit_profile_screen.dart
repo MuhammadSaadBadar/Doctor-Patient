@@ -499,8 +499,8 @@ class DoctorEditProfileScreen extends GetView<DoctorEditProfileController> {
                     child: AnimatedAlign(
                       duration: const Duration(milliseconds: 200),
                       alignment: controller.isAcceptingPatients.value
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
+                          ? AlignmentDirectional.centerEnd
+                          : AlignmentDirectional.centerStart,
                       child: Container(
                         width: 20,
                         height: 20,
@@ -823,7 +823,7 @@ class DoctorEditProfileScreen extends GetView<DoctorEditProfileController> {
             ),
             if (error.value.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 4, left: 12),
+                padding: const EdgeInsetsDirectional.only(top: 4, start: 12),
                 child: Text(
                   error.value,
                   style: AppTheme.bodySmall.copyWith(

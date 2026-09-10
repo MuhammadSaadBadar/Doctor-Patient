@@ -92,21 +92,21 @@
 
 //   // ── Gradients ─────────────────────────────────────────────────────────────
 //   static const LinearGradient primaryGradient = LinearGradient(
-//     begin: Alignment.topLeft,
-//     end: Alignment.bottomRight,
+//     begin: AlignmentDirectional.topStart,
+//     end: AlignmentDirectional.bottomEnd,
 //     colors: [Color(0xFF0A2040), Color(0xFF0F2D56), Color(0xFF1A4A80)],
 //     stops: [0.0, 0.55, 1.0],
 //   );
 
 //   static const LinearGradient accentGradient = LinearGradient(
-//     begin: Alignment.topLeft,
-//     end: Alignment.bottomRight,
+//     begin: AlignmentDirectional.topStart,
+//     end: AlignmentDirectional.bottomEnd,
 //     colors: [Color(0xFF1A6FC4), Color(0xFF2589E0)],
 //   );
 
 //   static const LinearGradient saveBarGradient = LinearGradient(
-//     begin: Alignment.centerLeft,
-//     end: Alignment.centerRight,
+//     begin: AlignmentDirectional.centerStart,
+//     end: AlignmentDirectional.centerEnd,
 //     colors: [Color(0xFF2589E0), Color(0xFF4AA8FF)],
 //   );
 // }
@@ -204,21 +204,21 @@ class AppColors {
 
   // ── Gradients ─────────────────────────────────────────────────────────────
   static const LinearGradient primaryGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
+    begin: AlignmentDirectional.topStart,
+    end: AlignmentDirectional.bottomEnd,
     colors: [Color(0xFF003737), Color(0xFF008080), Color(0xFF009B9B)],
     stops: [0.0, 0.55, 1.0],
   );
 
   static const LinearGradient accentGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
+    begin: AlignmentDirectional.topStart,
+    end: AlignmentDirectional.bottomEnd,
     colors: [Color(0xFF00C6C6), Color(0xFF009B9B)],
   );
 
   static const LinearGradient saveBarGradient = LinearGradient(
-    begin: Alignment.centerLeft,
-    end: Alignment.centerRight,
+    begin: AlignmentDirectional.centerStart,
+    end: AlignmentDirectional.centerEnd,
     colors: [Color(0xFF009B9B), Color(0xFF00C6C6)],
   );
 }

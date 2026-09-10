@@ -1,5 +1,6 @@
 // lib/patient/features/vitals/controllers/vitals_controller.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/vitals/models/vital_reading.dart';
 import 'package:doctor/patient/features/vitals/repositories/vitals_repository.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +38,7 @@ class VitalsController extends GetxController {
       sugarHistory.value = sugar;
     } catch (e) {
       hasError.value = true;
-      errorMessage.value = 'Failed to load vitals data.';
+      errorMessage.value = TranslationKeys.vitalsLoadFailed.tr;
       debugPrint('[VITALS] Error: $e');
     } finally {
       isLoading.value = false;
@@ -60,12 +61,15 @@ class VitalsController extends GetxController {
       bpHistory.insert(0, reading);
       justUpdatedVitals.value = true; // ✅ Set flag when vitals are logged
       Get.snackbar(
-        'Logged',
-        'Blood pressure recorded',
+        TranslationKeys.commonSuccess.tr,
+        TranslationKeys.vitalsBloodPressureRecorded.tr,
         duration: const Duration(seconds: 2),
       );
     } else {
-      Get.snackbar('Error', 'Failed to log blood pressure');
+      Get.snackbar(
+        TranslationKeys.commonError.tr,
+        TranslationKeys.vitalsBloodPressureFailed.tr,
+      );
     }
   }
 
@@ -83,12 +87,15 @@ class VitalsController extends GetxController {
       sugarHistory.insert(0, reading);
       justUpdatedVitals.value = true; // ✅ Set flag when vitals are logged
       Get.snackbar(
-        'Logged',
-        'Blood sugar recorded',
+        TranslationKeys.commonSuccess.tr,
+        TranslationKeys.vitalsBloodSugarRecorded.tr,
         duration: const Duration(seconds: 2),
       );
     } else {
-      Get.snackbar('Error', 'Failed to log blood sugar');
+      Get.snackbar(
+        TranslationKeys.commonError.tr,
+        TranslationKeys.vitalsBloodSugarFailed.tr,
+      );
     }
   }
 

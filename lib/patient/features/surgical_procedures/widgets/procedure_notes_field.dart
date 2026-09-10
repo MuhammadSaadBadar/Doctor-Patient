@@ -54,7 +54,7 @@ class ProcedureNotesField extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 14, top: 14),
+                padding: const EdgeInsetsDirectional.only(start: 14, top: 14),
                 child: Icon(
                   Icons.edit_note_rounded,
                   size: 20,

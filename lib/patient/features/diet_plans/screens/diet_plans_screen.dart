@@ -3,6 +3,7 @@
 import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/diet_plans/controllers/diet_plan_list_controller.dart';
 import 'package:doctor/patient/features/diet_plans/models/diet_plan.dart';
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -14,7 +15,7 @@ class DietPlansScreen extends GetView<DietPlanListController> {
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: colors.background,
-      appBar: const PatientTopAppBar(title: 'Diet Plans'),
+      appBar: PatientTopAppBar(title: TranslationKeys.dietPlansTitle.tr),
       body: Obx(() {
         if (controller.isLoading.value && controller.plans.isEmpty) {
           return _LoadingState(colors: colors);
@@ -113,9 +114,9 @@ class _DietPlanCard extends StatelessWidget {
                 height: 3,
                 decoration: BoxDecoration(
                   color: colors.tertiary,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
+                  borderRadius: const BorderRadiusDirectional.only(
+                    topStart: Radius.circular(16),
+                    topEnd: Radius.circular(16),
                   ),
                 ),
               ),
@@ -154,7 +155,10 @@ class _DietPlanCard extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                'Diet Plan ${plan.planNumber}',
+                                TranslationKeys.dietPlanNumber.tr.replaceAll(
+                                  '@number',
+                                  plan.planNumber.toString(),
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -176,7 +180,10 @@ class _DietPlanCard extends StatelessWidget {
                             Expanded(
                               child: _MetaChip(
                                 icon: Icons.set_meal_rounded,
-                                label: '${plan.mealCount} meals',
+                                label: TranslationKeys.dietMeals.tr.replaceAll(
+                                  '@count',
+                                  plan.mealCount.toString(),
+                                ),
                                 colors: colors,
                               ),
                             ),
@@ -233,7 +240,7 @@ class _ActiveBadge extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            'Active',
+            TranslationKeys.dietActive.tr,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -307,7 +314,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            'No diet plans yet',
+            TranslationKeys.dietNoPlans.tr,
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -316,7 +323,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Your doctor will add a personalised\ndiet plan for you here.',
+            TranslationKeys.dietNoPlansDesc.tr,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
@@ -386,7 +393,7 @@ class _ErrorState extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: const Text('Retry'),
+              label: Text(TranslationKeys.commonRetry.tr),
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.primary,
                 foregroundColor: colors.onPrimary,

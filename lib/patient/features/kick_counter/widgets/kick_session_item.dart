@@ -1,7 +1,9 @@
 // lib/patient/features/kick_counter/widgets/kick_session_item.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/kick_counter/models/kick_session.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class KickSessionItem extends StatelessWidget {
   final KickSession session;
@@ -56,7 +58,7 @@ class KickSessionItem extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          '${session.kickCount} kicks',
+                          '${session.kickCount} ${TranslationKeys.kickCounterKicks.tr}',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -77,7 +79,7 @@ class KickSessionItem extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
-                            'Active',
+                            TranslationKeys.kickCounterActive.tr,
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,

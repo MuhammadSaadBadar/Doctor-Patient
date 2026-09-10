@@ -300,7 +300,7 @@
 //             ),
 
 //             Align(
-//               alignment: Alignment.centerRight,
+//               alignment: AlignmentDirectional.centerEnd,
 //               child: TextButton(
 //                 onPressed: () => Get.toNamed(AppRoutes.forgotPassword),
 //                 style: TextButton.styleFrom(
@@ -533,7 +533,7 @@
 //             if (hasError) ...[
 //               const SizedBox(height: 6),
 //               Padding(
-//                 padding: const EdgeInsets.only(left: 4),
+//                 padding: const EdgeInsetsDirectional.only(start: 4),
 //                 child: Row(
 //                   children: [
 //                     const Icon(
@@ -727,7 +727,7 @@ class _HeroPanel extends StatelessWidget {
             ),
             child: Align(
               key: ValueKey(role),
-              alignment: Alignment.centerLeft,
+              alignment: AlignmentDirectional.centerStart,
               child: Text(
                 isDoctor
                     ? 'Sign in to manage your patients\nand appointments.'
@@ -916,7 +916,7 @@ class _LoginCardState extends State<_LoginCard> {
             ),
 
             Align(
-              alignment: Alignment.centerRight,
+              alignment: AlignmentDirectional.centerEnd,
               child: TextButton(
                 onPressed: () => Get.toNamed(AppRoutes.forgotPassword),
                 style: TextButton.styleFrom(
@@ -1249,7 +1249,7 @@ class _AppTextField extends StatelessWidget {
             if (hasError) ...[
               const SizedBox(height: 6),
               Padding(
-                padding: const EdgeInsets.only(left: 4),
+                padding: const EdgeInsetsDirectional.only(start: 4),
                 child: Row(
                   children: [
                     const Icon(

@@ -2,6 +2,7 @@
 
 import 'package:dio/dio.dart';
 import 'package:doctor/core/constants/api_constants.dart';
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/core/network/api_client.dart';
 import 'package:doctor/core/network/api_error_mapper.dart';
 import 'package:doctor/patient/features/symptoms/models/symptom_log.dart';
@@ -28,7 +29,7 @@ class SymptomsRepository {
     } on DioException catch (e) {
       final apiException = ApiErrorMapper.mapDioException(
         e,
-        defaultMessage: 'Failed to load symptoms.',
+        defaultMessage: TranslationKeys.symptomsLoadFailed.tr,
       );
       debugPrint('[SYMPTOMS] Error: ${apiException.message}');
       return [];
@@ -61,7 +62,7 @@ class SymptomsRepository {
     } on DioException catch (e) {
       final apiException = ApiErrorMapper.mapDioException(
         e,
-        defaultMessage: 'Failed to save symptom log.',
+        defaultMessage: TranslationKeys.symptomsSaveFailed.tr,
       );
       debugPrint('[SYMPTOMS] Error saving: ${apiException.message}');
       return null;
@@ -70,5 +71,4 @@ class SymptomsRepository {
       return null;
     }
   }
-
 }

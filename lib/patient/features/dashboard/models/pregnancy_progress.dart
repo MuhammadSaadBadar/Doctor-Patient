@@ -1,5 +1,8 @@
 // lib/patient/features/dashboard/models/pregnancy_progress.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
+import 'package:get/get.dart';
+
 class PregnancyProgress {
   final String lmpDate;
   final String eddDate;
@@ -34,11 +37,11 @@ class PregnancyProgress {
   String get trimesterLabel {
     switch (trimester) {
       case 1:
-        return '1st Trimester';
+        return TranslationKeys.dashboardFirstTrimester.tr;
       case 2:
-        return '2nd Trimester';
+        return TranslationKeys.dashboardSecondTrimester.tr;
       case 3:
-        return '3rd Trimester';
+        return TranslationKeys.dashboardThirdTrimester.tr;
       default:
         return '';
     }

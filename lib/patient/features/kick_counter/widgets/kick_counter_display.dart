@@ -1,6 +1,8 @@
 // lib/patient/features/kick_counter/widgets/kick_counter_display.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class KickCounterDisplay extends StatelessWidget {
   final int kickCount;
@@ -53,7 +55,7 @@ class KickCounterDisplay extends StatelessWidget {
             children: [
               Flexible(
                 child: Text(
-                  'Current Kicks',
+                  TranslationKeys.kickCounterCurrent.tr,
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
@@ -77,7 +79,9 @@ class KickCounterDisplay extends StatelessWidget {
                         strokeWidth: 5,
                         backgroundColor: colorScheme.primary.withOpacity(0.1),
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          isActive ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                          isActive
+                              ? colorScheme.primary
+                              : colorScheme.onSurfaceVariant,
                         ),
                         strokeCap: StrokeCap.round,
                       ),
@@ -144,7 +148,9 @@ class KickCounterDisplay extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: isAdd
-              ? (enabled ? colorScheme.primary : colorScheme.primary.withOpacity(0.3))
+              ? (enabled
+                    ? colorScheme.primary
+                    : colorScheme.primary.withOpacity(0.3))
               : colorScheme.surfaceContainer,
           boxShadow: isAdd && enabled
               ? [
@@ -158,8 +164,12 @@ class KickCounterDisplay extends StatelessWidget {
         child: Icon(
           icon,
           color: isAdd
-              ? (enabled ? colorScheme.onPrimary : colorScheme.onPrimary.withOpacity(0.4))
-              : (enabled ? colorScheme.primary : colorScheme.primary.withOpacity(0.4)),
+              ? (enabled
+                    ? colorScheme.onPrimary
+                    : colorScheme.onPrimary.withOpacity(0.4))
+              : (enabled
+                    ? colorScheme.primary
+                    : colorScheme.primary.withOpacity(0.4)),
           size: size * 0.5,
         ),
       ),

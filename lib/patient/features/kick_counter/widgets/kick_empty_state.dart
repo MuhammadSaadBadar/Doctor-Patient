@@ -1,5 +1,6 @@
 // lib/patient/features/kick_counter/widgets/kick_empty_state.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -33,7 +34,7 @@ class KickEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'No Kick Sessions Yet',
+              TranslationKeys.kickCounterNoSessionsYet.tr,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -42,7 +43,7 @@ class KickEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Start tracking your baby\'s movements today!',
+              TranslationKeys.kickCounterStartTracking.tr,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -63,7 +64,7 @@ class KickEmptyState extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Start a Session'),
+              child: Text(TranslationKeys.kickCounterStartSession.tr),
             ),
           ],
         ),

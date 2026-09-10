@@ -47,19 +47,19 @@ class DoctorPatientManagementController extends GetxController {
 
   void _filterPatients() {
     if (searchQuery.value.isEmpty) {
-      filteredPatients.value = allPatients.value;
+      filteredPatients.assignAll(allPatients);
       return;
     }
 
     final query = searchQuery.value.toLowerCase();
-    filteredPatients.value = allPatients
-        .where(
-          (patient) =>
-              patient.fullName.toLowerCase().contains(query) ||
-              patient.patientId.toLowerCase().contains(query) ||
-              patient.email.toLowerCase().contains(query),
-        )
-        .toList();
+    filteredPatients.assignAll(
+      allPatients.where(
+        (patient) =>
+            patient.fullName.toLowerCase().contains(query) ||
+            patient.patientId.toLowerCase().contains(query) ||
+            patient.email.toLowerCase().contains(query),
+      ).toList(),
+    );
   }
 
   void updateSearchQuery(String query) {

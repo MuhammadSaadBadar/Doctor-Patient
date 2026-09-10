@@ -1,10 +1,12 @@
 // lib/patient/features/appointments/models/appointment.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/appointments/models/appointment_payment.dart';
 import 'package:doctor/patient/features/appointments/models/brief_user.dart';
 import 'package:doctor/patient/features/appointments/models/doctor_contact.dart';
 import 'package:doctor/patient/features/appointments/models/doctor_payout.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class Appointment {
   final int id;
@@ -63,7 +65,9 @@ class Appointment {
           ? AppointmentPayment.fromJson(json['payment'])
           : null,
       doctorContact: json['doctor_contact'] != null
-          ? DoctorContact.fromJson(json['doctor_contact'] as Map<String, dynamic>)
+          ? DoctorContact.fromJson(
+              json['doctor_contact'] as Map<String, dynamic>,
+            )
           : null,
       doctorPayout: json['doctor_payout'] != null
           ? DoctorPayout.fromJson(json['doctor_payout'] as Map<String, dynamic>)
@@ -92,15 +96,15 @@ class Appointment {
   String get statusLabel {
     switch (status) {
       case 'pending':
-        return 'Pending';
+        return TranslationKeys.appointmentsStatusPending.tr;
       case 'confirmed':
-        return 'Confirmed';
+        return TranslationKeys.appointmentsStatusConfirmed.tr;
       case 'completed':
-        return 'Completed';
+        return TranslationKeys.appointmentsStatusCompleted.tr;
       case 'cancelled':
-        return 'Cancelled';
+        return TranslationKeys.appointmentsStatusCancelled.tr;
       case 'no_show':
-        return 'No Show';
+        return TranslationKeys.appointmentsStatusNoShow.tr;
       default:
         return status;
     }
@@ -124,14 +128,14 @@ class Appointment {
   }
 
   String get paymentStatusLabel {
-    if (payment == null) return 'No Payment';
+    if (payment == null) return TranslationKeys.appointmentsNoPayment.tr;
     switch (payment!.status) {
       case 'pending':
-        return 'Unpaid';
+        return TranslationKeys.appointmentsUnpaid.tr;
       case 'awaiting_verification':
-        return 'Awaiting Verification';
+        return TranslationKeys.appointmentsAwaitingVerification.tr;
       case 'confirmed':
-        return 'Paid';
+        return TranslationKeys.appointmentsPaid.tr;
       default:
         return payment!.status;
     }
@@ -195,8 +199,8 @@ class Appointment {
 
   String get typeLabel {
     return appointmentType == 'video_consultation'
-        ? 'Video Consultation'
-        : 'In-Person Visit';
+        ? TranslationKeys.appointmentsTypeVideo.tr
+        : TranslationKeys.appointmentsTypeInPerson.tr;
   }
 
   IconData get typeIcon {

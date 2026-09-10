@@ -70,7 +70,7 @@ class AddProcedureSheet extends GetView<AddProcedureController> {
                       errorText: controller.dateError.value,
                       onTap: () => controller.pickDate(context),
                       suffix: Padding(
-                        padding: const EdgeInsets.only(right: 14),
+                        padding: const EdgeInsetsDirectional.only(end: 14),
                         child: Icon(
                           Icons.arrow_drop_down_rounded,
                           color: colorScheme.onSurfaceVariant,

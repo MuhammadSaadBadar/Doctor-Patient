@@ -9,6 +9,7 @@ import 'package:doctor/patient/features/medicine_reminders/widgets/reminder_stat
 import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:doctor/core/localization/translation_keys.dart';
 
 class MedicineRemindersScreen extends GetView<MedicineReminderController> {
   const MedicineRemindersScreen({super.key});
@@ -20,11 +21,11 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
     return Scaffold(
       backgroundColor: colorScheme.background,
       appBar: PatientTopAppBar(
-        title: 'Medicine Reminders',
+        title: TranslationKeys.medicineRemindersTitle.tr,
         showBackButton: true,
         trailingActions: [
           Container(
-            margin: const EdgeInsets.only(right: 8),
+            margin: const EdgeInsetsDirectional.only(end: 8),
             child: GestureDetector(
               onTap: controller.navigateToAddReminder,
               child: Container(
@@ -127,7 +128,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
         Expanded(
           child: ReminderStatCard(
             value: '${controller.activeCount}',
-            label: 'Active',
+            label: TranslationKeys.medicineActive.tr,
             icon: Icons.medication_rounded,
             iconColor: colorScheme.primary,
             backgroundColor: colorScheme.primary.withOpacity(0.1),
@@ -137,7 +138,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
         Expanded(
           child: ReminderStatCard(
             value: '${controller.todayDoses}',
-            label: 'Today',
+            label: TranslationKeys.medicineToday.tr,
             icon: Icons.schedule_rounded,
             iconColor: colorScheme.secondary,
             backgroundColor: colorScheme.secondary.withOpacity(0.1),
@@ -147,7 +148,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
         Expanded(
           child: ReminderStatCard(
             value: '${controller.overallAdherence.toInt()}%',
-            label: 'Adherence',
+            label: TranslationKeys.medicineAdherence.tr,
             icon: Icons.monitor_rounded,
             iconColor: colorScheme.tertiary,
             backgroundColor: colorScheme.tertiary.withOpacity(0.1),
@@ -164,7 +165,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Your Schedule',
+          TranslationKeys.medicineYourSchedule.tr,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -181,7 +182,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Text(
-                'All (${controller.reminders.length})',
+                '${TranslationKeys.medicineAll.tr} (${controller.reminders.length})',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -254,7 +255,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
           ),
           const SizedBox(width: 6),
           Text(
-            'Showing ${controller.reminders.length} active medication reminders',
+            TranslationKeys.medicineShowingActive.tr.replaceAll('@count', '${controller.reminders.length}'),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -276,9 +277,9 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       icon: Icon(Icons.add_rounded, size: 22),
-      label: const Text(
-        'Add Reminder',
-        style: TextStyle(fontWeight: FontWeight.w600),
+      label: Text(
+        TranslationKeys.medicineAddReminder.tr,
+        style: const TextStyle(fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -304,7 +305,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Loading reminders...',
+            TranslationKeys.medicineLoading.tr,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -339,7 +340,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              TranslationKeys.commonSomethingWentWrong.tr,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -369,7 +370,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Try Again'),
+              child: Text(TranslationKeys.commonTryAgain.tr),
             ),
           ],
         ),

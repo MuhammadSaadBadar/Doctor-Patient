@@ -1,7 +1,9 @@
 // lib/patient/features/kick_counter/widgets/kick_daily_summary_card.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/kick_counter/models/kick_daily_summary.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class KickDailySummaryCard extends StatelessWidget {
   final KickDailySummary summary;
@@ -86,7 +88,7 @@ class KickDailySummaryCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'Active',
+                          TranslationKeys.kickCounterActive.tr,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
@@ -107,7 +109,7 @@ class KickDailySummaryCard extends StatelessWidget {
                 Expanded(
                   child: _buildStatItem(
                     context,
-                    label: 'Total Kicks',
+                    label: TranslationKeys.kickCounterTotalKicks.tr,
                     value: '${summary.totalKicks}',
                     icon: Icons.favorite_rounded,
                     color: colorScheme.primary,
@@ -117,7 +119,7 @@ class KickDailySummaryCard extends StatelessWidget {
                 Expanded(
                   child: _buildStatItem(
                     context,
-                    label: 'Sessions',
+                    label: TranslationKeys.kickCounterHistory.tr,
                     value: '${summary.sessionCount}',
                     icon: Icons.history_rounded,
                     color: colorScheme.secondary,

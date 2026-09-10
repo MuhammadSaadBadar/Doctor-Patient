@@ -1,5 +1,7 @@
 // lib/patient/features/appointments/screens/book_appointment_screen.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/appointments/controllers/book_appointment_controller.dart';
 import 'package:doctor/patient/features/appointments/widgets/booking_doctor_card.dart';
 import 'package:doctor/patient/features/appointments/widgets/booking_fee_summary.dart';
@@ -8,7 +10,6 @@ import 'package:doctor/patient/features/appointments/widgets/booking_selection_c
 import 'package:doctor/patient/features/appointments/widgets/booking_time_slot.dart';
 import 'package:doctor/patient/features/appointments/widgets/booking_type_option.dart';
 import 'package:doctor/patient/features/doctors/widgets/doctor_address_card.dart';
-import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -23,7 +24,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
     return Scaffold(
       backgroundColor: colorScheme.background,
       appBar: PatientTopAppBar(
-        title: 'Book Appointment',
+        title: TranslationKeys.bookingBookAppointment.tr,
         trailingActions: [
           IconButton(
             icon: Icon(
@@ -32,8 +33,8 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
             ),
             onPressed: () {
               Get.snackbar(
-                'Booking Help',
-                'Fill in all required fields to book an appointment.',
+                TranslationKeys.bookingHelp.tr,
+                TranslationKeys.bookingHelpDesc.tr,
                 snackPosition: SnackPosition.BOTTOM,
                 duration: const Duration(seconds: 3),
               );
@@ -71,10 +72,20 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                     Obx(
                       () => controller.selectedType.value == 'in_person'
                           ? DoctorAddressCard(
-                              area: controller.doctor.value?.doctorProfile?.area,
-                              city: controller.doctor.value?.doctorProfile?.city,
-                              latitude: controller.doctor.value?.doctorProfile?.latitude,
-                              longitude: controller.doctor.value?.doctorProfile?.longitude,
+                              area:
+                                  controller.doctor.value?.doctorProfile?.area,
+                              city:
+                                  controller.doctor.value?.doctorProfile?.city,
+                              latitude: controller
+                                  .doctor
+                                  .value
+                                  ?.doctorProfile
+                                  ?.latitude,
+                              longitude: controller
+                                  .doctor
+                                  .value
+                                  ?.doctorProfile
+                                  ?.longitude,
                             )
                           : const SizedBox.shrink(),
                     ),
@@ -110,7 +121,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'You will receive a confirmation notification once booked.',
+                              TranslationKeys.appointmentsConfirmationNotice.tr,
                               style: TextStyle(
                                 fontSize: textScale.scale(11).clamp(9.0, 12.0),
                                 color: colorScheme.onSurfaceVariant,
@@ -139,7 +150,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         BookingSectionHeader(
-          title: 'Appointment Type',
+          title: TranslationKeys.appointmentsAppointmentType.tr,
           icon: Icons.event_available_rounded,
         ),
         const SizedBox(height: 12),
@@ -149,7 +160,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
               Expanded(
                 child: BookingTypeOption(
                   type: 'in_person',
-                  label: 'In-Person Visit',
+                  label: TranslationKeys.bookingInPerson.tr,
                   icon: Icons.local_hospital_rounded,
                   color: Colors.blue.shade600,
                   isSelected: controller.selectedType.value == 'in_person',
@@ -160,7 +171,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
               Expanded(
                 child: BookingTypeOption(
                   type: 'video_consultation',
-                  label: 'Video Consultation',
+                  label: TranslationKeys.bookingVideo.tr,
                   icon: Icons.videocam_rounded,
                   color: Colors.purple.shade600,
                   isSelected:
@@ -186,7 +197,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         BookingSectionHeader(
-          title: 'Select Date',
+          title: TranslationKeys.bookingSelectDate.tr,
           icon: Icons.calendar_today_rounded,
         ),
         const SizedBox(height: 12),
@@ -199,8 +210,8 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                      begin: AlignmentDirectional.topStart,
+                      end: AlignmentDirectional.bottomEnd,
                       colors: [
                         colorScheme.primary,
                         colorScheme.primary.withValues(alpha: 0.7),
@@ -251,7 +262,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
       mainAxisSize: MainAxisSize.min, // ✅ Added
       children: [
         BookingSectionHeader(
-          title: 'Select Time',
+          title: TranslationKeys.bookingSelectTime.tr,
           icon: Icons.access_time_rounded,
         ),
         const SizedBox(height: 12),
@@ -264,8 +275,8 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                      begin: AlignmentDirectional.topStart,
+                      end: AlignmentDirectional.bottomEnd,
                       colors: [
                         colorScheme.primary,
                         colorScheme.primary.withValues(alpha: 0.7),
@@ -303,7 +314,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
         ),
         const SizedBox(height: 14),
         Text(
-          'Available Time Slots',
+          TranslationKeys.appointmentsAvailableTimeSlots.tr,
           style: TextStyle(
             fontSize: textScale.scale(12).clamp(10.0, 13.0),
             fontWeight: FontWeight.w600,
@@ -348,7 +359,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         BookingSectionHeader(
-          title: 'Reason (Optional)',
+          title: TranslationKeys.bookingReason.tr,
           icon: Icons.note_rounded,
         ),
         const SizedBox(height: 12),
@@ -360,7 +371,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
             color: colorScheme.onSurface,
           ),
           decoration: InputDecoration(
-            hintText: 'e.g., Routine checkup, specific concern...',
+            hintText: TranslationKeys.bookingReasonHint.tr,
             hintStyle: TextStyle(
               fontSize: textScale.scale(12).clamp(10.0, 14.0),
               color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
@@ -458,7 +469,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              'Confirm Booking',
+                              TranslationKeys.appointmentsConfirmBooking.tr,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
@@ -623,7 +634,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Try Again'),
+              child: Text(TranslationKeys.commonTryAgain.tr),
             ),
           ],
         ),
@@ -686,7 +697,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Back to Search'),
+              child: Text(TranslationKeys.appointmentsBackToSearch.tr),
             ),
           ],
         ),

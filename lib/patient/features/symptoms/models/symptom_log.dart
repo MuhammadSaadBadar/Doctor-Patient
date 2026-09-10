@@ -1,4 +1,6 @@
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/dashboard/models/symptom.dart';
+import 'package:get/get.dart';
 
 class SymptomLog {
   final int id;
@@ -34,12 +36,12 @@ class SymptomLog {
   }
 
   String get dateLabel {
-    if (isToday) return 'Today';
+    if (isToday) return TranslationKeys.commonToday.tr;
     final yesterday = DateTime.now().subtract(const Duration(days: 1));
     if (logDate.year == yesterday.year &&
         logDate.month == yesterday.month &&
         logDate.day == yesterday.day) {
-      return 'Yesterday';
+      return TranslationKeys.commonYesterday.tr;
     }
     return '${logDate.day}/${logDate.month}/${logDate.year}';
   }

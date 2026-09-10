@@ -5,6 +5,8 @@ import 'package:doctor/patient/features/ai_assistant/models/chat_message.dart';
 import 'package:doctor/patient/features/ai_assistant/models/chat_session.dart';
 import 'package:doctor/patient/features/ai_assistant/repositories/ai_assistant_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:doctor/core/localization/translation_keys.dart';
+
 import 'package:get/get.dart';
 
 class AIAssistantController extends GetxController {
@@ -84,8 +86,8 @@ class AIAssistantController extends GetxController {
 
     try {
       final session = await _repository.createSession(
-        language: 'en',
-        title: 'New Chat',
+        language: Get.locale?.languageCode ?? 'en',
+        title: TranslationKeys.aiNewChat.tr,
       );
 
       if (session != null) {
@@ -197,7 +199,9 @@ class AIAssistantController extends GetxController {
           final newTitle = content.length > 30
               ? '${content.substring(0, 30)}...'
               : content;
-          currentSession.value = currentSession.value?.copyWith(title: newTitle);
+          currentSession.value = currentSession.value?.copyWith(
+            title: newTitle,
+          );
 
           final sessionIndex = sessions.indexWhere(
             (s) => s.id == currentSession.value?.id,
@@ -242,8 +246,7 @@ class AIAssistantController extends GetxController {
     messageController.clear();
   }
 
-  bool get canSend =>
-      inputText.value.trim().isNotEmpty && !isSending.value;
+  bool get canSend => inputText.value.trim().isNotEmpty && !isSending.value;
 
   void _showErrorSnackbar(String message) {
     Get.snackbar(

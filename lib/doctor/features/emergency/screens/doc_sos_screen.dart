@@ -127,7 +127,7 @@ class DoctorSosScreen extends GetView<DoctorSosController> {
                     vertical: 16,
                     horizontal: 4,
                   ),
-                  margin: const EdgeInsets.only(right: 32),
+                  margin: const EdgeInsetsDirectional.only(end: 32),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(

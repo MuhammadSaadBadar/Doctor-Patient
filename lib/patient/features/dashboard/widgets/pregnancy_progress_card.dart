@@ -1,7 +1,9 @@
 // lib/patient/features/dashboard/widgets/pregnancy_progress_card.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/dashboard/models/pregnancy_progress.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class PregnancyProgressCard extends StatelessWidget {
   final PregnancyProgress progress;
@@ -21,8 +23,8 @@ class PregnancyProgressCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
           colors: [
             cs.primary.withOpacity(0.10),
             cs.primaryContainer.withOpacity(0.06),
@@ -59,7 +61,9 @@ class PregnancyProgressCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Week ${progress.currentWeek} · Day ${progress.currentDay}',
+                  TranslationKeys.dashboardWeekDay.tr
+                      .replaceAll('@week', progress.currentWeek.toString())
+                      .replaceAll('@day', progress.currentDay.toString()),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -141,7 +145,7 @@ class PregnancyProgressCard extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'days remaining',
+                            TranslationKeys.dashboardDaysRemaining.tr,
                             style: TextStyle(
                               fontSize: 11,
                               color: cs.onSurfaceVariant,
@@ -196,7 +200,12 @@ class PregnancyProgressCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Baby is the size of ${babySize!['size_comparison'] ?? 'a fruit'}',
+                    TranslationKeys.dashboardBabySize.tr.replaceAll(
+                      '@size',
+                      (babySize!['size_comparison'] ??
+                              TranslationKeys.dashboardBabySizeDefault.tr)
+                          .toString(),
+                    ),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -214,7 +223,7 @@ class PregnancyProgressCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '${babySize!['length_cm'] ?? ''} cm',
+                    '${babySize!['length_cm'] ?? ''} ${TranslationKeys.dashboardCentimeters.tr}',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,

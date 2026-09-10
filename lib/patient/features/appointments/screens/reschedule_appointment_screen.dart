@@ -1,8 +1,9 @@
 // lib/patient/features/appointments/screens/reschedule_appointment_screen.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/appointments/controllers/reschedule_appointment_controller.dart';
 import 'package:doctor/patient/features/appointments/models/appointment.dart';
-import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -16,7 +17,7 @@ class RescheduleAppointmentScreen
 
     return Scaffold(
       backgroundColor: colorScheme.background,
-      appBar: PatientTopAppBar(title: 'Reschedule Appointment'),
+      appBar: PatientTopAppBar(title: TranslationKeys.bookingReschedule.tr),
       body: Obx(() {
         if (controller.isLoading.value &&
             controller.appointment.value == null) {
@@ -107,7 +108,7 @@ class RescheduleAppointmentScreen
                   mainAxisSize: MainAxisSize.min, // ✅ Added
                   children: [
                     Text(
-                      'Current Appointment',
+                      TranslationKeys.appointmentsCurrent.tr,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -133,21 +134,21 @@ class RescheduleAppointmentScreen
           _buildDetailRow(
             context,
             Icons.calendar_today_rounded,
-            'Date',
+            TranslationKeys.appointmentsDate.tr,
             appointment.formattedDate,
           ),
           const SizedBox(height: 8),
           _buildDetailRow(
             context,
             Icons.access_time_rounded,
-            'Time',
+            TranslationKeys.appointmentsTime.tr,
             appointment.timeRange,
           ),
           const SizedBox(height: 8),
           _buildDetailRow(
             context,
             Icons.timer_rounded,
-            'Duration',
+            TranslationKeys.appointmentsDuration.tr,
             appointment.formattedDuration,
           ),
         ],
@@ -195,7 +196,7 @@ class RescheduleAppointmentScreen
       mainAxisSize: MainAxisSize.min, // ✅ Added
       children: [
         Text(
-          'New Date',
+          TranslationKeys.appointmentsNewDate.tr,
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
@@ -263,7 +264,7 @@ class RescheduleAppointmentScreen
       mainAxisSize: MainAxisSize.min, // ✅ Added
       children: [
         Text(
-          'New Time',
+          TranslationKeys.appointmentsNewTime.tr,
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
@@ -321,7 +322,7 @@ class RescheduleAppointmentScreen
         ),
         const SizedBox(height: 12),
         Text(
-          'Or select from available slots:',
+          TranslationKeys.appointmentsAvailableSlots.tr,
           style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 8),
@@ -414,7 +415,7 @@ class RescheduleAppointmentScreen
               mainAxisSize: MainAxisSize.min, // ✅ Added
               children: [
                 Text(
-                  'Important',
+                  TranslationKeys.appointmentsRescheduleImportant.tr,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -423,8 +424,7 @@ class RescheduleAppointmentScreen
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Rescheduling is only allowed for pending or confirmed appointments. '
-                  'The new time must be at least 24 hours from now.',
+                  TranslationKeys.appointmentsRescheduleWarning.tr,
                   style: TextStyle(
                     fontSize: 11,
                     color: colorScheme.onSurfaceVariant,
@@ -484,7 +484,7 @@ class RescheduleAppointmentScreen
                       ),
                     )
                   : Text(
-                      'Confirm Reschedule',
+                      TranslationKeys.bookingConfirmReschedule.tr,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -579,7 +579,7 @@ class RescheduleAppointmentScreen
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Try Again'),
+              child: Text(TranslationKeys.commonTryAgain.tr),
             ),
           ],
         ),
@@ -632,7 +632,7 @@ class RescheduleAppointmentScreen
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Back to Appointments'),
+              child: Text(TranslationKeys.appointmentsBackToAppointments.tr),
             ),
           ],
         ),

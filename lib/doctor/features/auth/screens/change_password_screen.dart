@@ -247,7 +247,7 @@ class ChangePasswordScreen extends GetView<AuthController> {
                         ? AppColors.onSurfaceVariant
                         : AppColors.secondary,
                   ),
-                  padding: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsetsDirectional.only(end: 12),
                   constraints: const BoxConstraints(),
                 ),
               ],

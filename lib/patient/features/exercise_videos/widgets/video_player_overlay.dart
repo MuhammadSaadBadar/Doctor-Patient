@@ -1,5 +1,6 @@
 // lib/patient/features/exercise_videos/widgets/video_player_overlay.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/exercise_videos/controllers/video_player_manager.dart';
 import 'package:doctor/patient/features/exercise_videos/models/exercise_video.dart';
 import 'package:doctor/patient/features/exercise_videos/models/exercise_video_ui.dart';
@@ -396,7 +397,7 @@ class _VideoPlayerOverlayState extends State<VideoPlayerOverlay> {
               ElevatedButton.icon(
                 onPressed: _manager.replay,
                 icon: const Icon(Icons.replay_rounded),
-                label: const Text('Watch Again'),
+                label: Text(TranslationKeys.exerciseWatchAgain.tr),
               ),
             ],
           ),
@@ -429,7 +430,7 @@ class _VideoPlayerOverlayState extends State<VideoPlayerOverlay> {
             ElevatedButton.icon(
               onPressed: () => _manager.load(widget.video),
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try Again'),
+                label: Text(TranslationKeys.exerciseTryAgain.tr),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white24,
                 foregroundColor: Colors.white,

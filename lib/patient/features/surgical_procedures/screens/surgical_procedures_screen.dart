@@ -127,7 +127,7 @@ class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
           final count = controller.getCategoryCount(category);
 
           return Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsetsDirectional.only(end: 8),
             child: GestureDetector(
               onTap: () => controller.setCategory(category),
               child: Container(

@@ -1,10 +1,11 @@
 // lib/patient/features/kick_counter/screens/kick_history_screen.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/kick_counter/controllers/kick_history_controller.dart';
 import 'package:doctor/patient/features/kick_counter/widgets/kick_daily_summary_card.dart';
 import 'package:doctor/patient/features/kick_counter/widgets/kick_empty_state.dart';
 import 'package:doctor/patient/features/kick_counter/widgets/kick_session_item.dart';
-import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -18,7 +19,7 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
     return Scaffold(
       backgroundColor: colorScheme.background,
       appBar: PatientTopAppBar(
-        title: 'Kick History',
+        title: TranslationKeys.kickCounterHistory.tr,
         trailingActions: [
           IconButton(
             icon: Icon(Icons.child_care_rounded, color: colorScheme.primary),
@@ -57,7 +58,11 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.fromLTRB(
-                  16, 16, 16, MediaQuery.of(context).padding.bottom + 20),
+                16,
+                16,
+                16,
+                MediaQuery.of(context).padding.bottom + 20,
+              ),
               itemCount: _getTotalItemCount(),
               itemBuilder: (context, index) {
                 return _buildItemAtIndex(index, context);
@@ -109,7 +114,11 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
       for (final session in sessions) {
         if (index == currentIndex) {
           return Padding(
-            padding: const EdgeInsets.only(left: 16, bottom: 4, right: 16),
+            padding: const EdgeInsetsDirectional.only(
+              start: 16,
+              bottom: 4,
+              end: 16,
+            ),
             child: KickSessionItem(
               session: session,
               onTap: () => controller.navigateToSessionDetail(session.id),
@@ -168,7 +177,7 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Loading history...',
+            TranslationKeys.kickCounterLoadingHistory.tr,
             style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
           ),
         ],
@@ -229,7 +238,7 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Try Again'),
+              child: Text(TranslationKeys.commonTryAgain.tr),
             ),
           ],
         ),

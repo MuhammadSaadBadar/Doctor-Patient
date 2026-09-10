@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 
 class StorageService extends GetxService {
   static StorageService? _instance;
@@ -93,6 +94,13 @@ class StorageService extends GetxService {
   String? getLanguage() => _getString('language');
   Future<void> setLanguage(String language) async =>
       await _setString('language', language);
+
+  Locale? getLocale() {
+    final lang = getLanguage();
+    if (lang == 'ur_PK') return const Locale('ur', 'PK');
+    if (lang == 'en_US') return const Locale('en', 'US');
+    return null;
+  }
 
   // ==================== CLEAR METHODS ====================
 

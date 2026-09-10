@@ -68,15 +68,15 @@ class SosEventCard extends StatelessWidget {
                           height: 40,
                           decoration: BoxDecoration(
                             color: AppColors.error,
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              bottomLeft: Radius.circular(12),
+                            borderRadius: const BorderRadiusDirectional.only(
+                              topStart: Radius.circular(12),
+                              bottomStart: Radius.circular(12),
                             ),
                           ),
                         ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsets.only(left: isActive ? 12 : 0),
+                          padding: EdgeInsetsDirectional.only(start: isActive ? 12 : 0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,

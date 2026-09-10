@@ -1,9 +1,10 @@
 // lib/patient/features/doctors/screens/find_doctors_screen.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/doctors/controllers/doctor_controller.dart';
 import 'package:doctor/patient/features/doctors/widgets/doctor_card.dart';
 import 'package:doctor/patient/features/doctors/widgets/specialization_chip.dart';
-import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -18,7 +19,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: PatientTopAppBar(
-        title: 'Find Doctors',
+        title: TranslationKeys.doctorsFindDoctors.tr,
         onNotificationTap: controller.navigateToNotifications,
       ),
       body: Obx(() {
@@ -63,7 +64,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
           ),
         );
       }),
-      bottomNavigationBar: _buildBottomNav(context),
+      // bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
@@ -76,7 +77,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Find Expert Care',
+          TranslationKeys.doctorsFindExpertCare.tr,
           style: TextStyle(
             fontSize: textScale.scale(24).clamp(18.0, 32.0),
             fontWeight: FontWeight.w700,
@@ -85,7 +86,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Your journey deserves the best medical guidance.',
+          TranslationKeys.doctorsCareSubtitle.tr,
           style: TextStyle(
             fontSize: textScale.scale(14).clamp(12.0, 18.0),
             color: colorScheme.onSurfaceVariant,
@@ -103,7 +104,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
       () => TextField(
         onChanged: controller.setSearchQuery,
         decoration: InputDecoration(
-          hintText: 'Search by doctor or specialty...',
+          hintText: TranslationKeys.doctorsSearchHint.tr,
           hintStyle: TextStyle(
             color: colorScheme.outline.withValues(alpha: 0.6),
           ),
@@ -145,7 +146,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
             final isSelected = controller.selectedSpecialization.value == spec;
 
             return Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsetsDirectional.only(end: 8),
               child: SpecializationChip(
                 label: spec,
                 isSelected: isSelected,
@@ -203,7 +204,10 @@ class FindDoctorsScreen extends GetView<DoctorController> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Text(
-                'Showing all ${controller.totalCount.value} available experts in your area.',
+                TranslationKeys.doctorsShowingExperts.tr.replaceAll(
+                  '@count',
+                  controller.totalCount.value.toString(),
+                ),
                 style: TextStyle(
                   fontSize: textScale.scale(12).clamp(10.0, 16.0),
                   color: colorScheme.onSurfaceVariant,
@@ -232,7 +236,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No doctors found',
+            TranslationKeys.doctorsNoResults.tr,
             style: TextStyle(
               fontSize: textScale.scale(14).clamp(12.0, 18.0),
               fontWeight: FontWeight.w600,
@@ -241,7 +245,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Try adjusting your search or filters',
+            TranslationKeys.doctorsAdjustFilters.tr,
             style: TextStyle(
               fontSize: textScale.scale(12).clamp(10.0, 16.0),
               color: colorScheme.onSurfaceVariant,
@@ -257,131 +261,131 @@ class FindDoctorsScreen extends GetView<DoctorController> {
                 borderRadius: BorderRadius.circular(30),
               ),
             ),
-            child: const Text('Clear Filters'),
+            child: Text(TranslationKeys.doctorsClearFilters.tr),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBottomNav(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+  // Widget _buildBottomNav(BuildContext context) {
+  //   final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.9),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Expanded(
-                child: _buildNavItem(
-                  context,
-                  icon: Icons.home_rounded,
-                  label: 'Home',
-                  onTap: controller.navigateToHome,
-                  isActive: false,
-                ),
-              ),
-              Expanded(
-                child: _buildNavItem(
-                  context,
-                  icon: Icons.event_rounded,
-                  label: 'Booking',
-                  onTap: () {},
-                  isActive: true,
-                ),
-              ),
-              Expanded(
-                child: _buildNavItem(
-                  context,
-                  icon: Icons.description_rounded,
-                  label: 'Reports',
-                  onTap: controller.navigateToReports,
-                  isActive: false,
-                ),
-              ),
-              Expanded(
-                child: _buildNavItem(
-                  context,
-                  icon: Icons.history_rounded,
-                  label: 'History',
-                  onTap: controller.navigateToHistory,
-                  isActive: false,
-                ),
-              ),
-              Expanded(
-                child: _buildNavItem(
-                  context,
-                  icon: Icons.person_rounded,
-                  label: 'Profile',
-                  onTap: controller.navigateToProfile,
-                  isActive: false,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  //   return Container(
+  //     decoration: BoxDecoration(
+  //       color: colorScheme.surface.withValues(alpha: 0.9),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: colorScheme.shadow.withValues(alpha: 0.05),
+  //           blurRadius: 20,
+  //           offset: const Offset(0, -4),
+  //         ),
+  //       ],
+  //       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+  //     ),
+  //     child: SafeArea(
+  //       child: Padding(
+  //         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+  //         child: Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //           children: [
+  //             Expanded(
+  //               child: _buildNavItem(
+  //                 context,
+  //                 icon: Icons.home_rounded,
+  //                 label: 'Home',
+  //                 onTap: controller.navigateToHome,
+  //                 isActive: false,
+  //               ),
+  //             ),
+  //             Expanded(
+  //               child: _buildNavItem(
+  //                 context,
+  //                 icon: Icons.event_rounded,
+  //                 label: 'Booking',
+  //                 onTap: () {},
+  //                 isActive: true,
+  //               ),
+  //             ),
+  //             Expanded(
+  //               child: _buildNavItem(
+  //                 context,
+  //                 icon: Icons.description_rounded,
+  //                 label: 'Reports',
+  //                 onTap: controller.navigateToReports,
+  //                 isActive: false,
+  //               ),
+  //             ),
+  //             Expanded(
+  //               child: _buildNavItem(
+  //                 context,
+  //                 icon: Icons.history_rounded,
+  //                 label: 'History',
+  //                 onTap: controller.navigateToHistory,
+  //                 isActive: false,
+  //               ),
+  //             ),
+  //             Expanded(
+  //               child: _buildNavItem(
+  //                 context,
+  //                 icon: Icons.person_rounded,
+  //                 label: 'Profile',
+  //                 onTap: controller.navigateToProfile,
+  //                 isActive: false,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  Widget _buildNavItem(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required bool isActive,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textScale = MediaQuery.textScalerOf(context);
+  // Widget _buildNavItem(
+  //   BuildContext context, {
+  //   required IconData icon,
+  //   required String label,
+  //   required VoidCallback onTap,
+  //   required bool isActive,
+  // }) {
+  //   final colorScheme = Theme.of(context).colorScheme;
+  //   final textScale = MediaQuery.textScalerOf(context);
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: textScale.scale(8).clamp(4.0, 12.0),
-          vertical: textScale.scale(4).clamp(2.0, 8.0),
-        ),
-        decoration: BoxDecoration(
-          color: isActive
-              ? colorScheme.primaryContainer.withValues(alpha: 0.15)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isActive ? colorScheme.primary : colorScheme.outline,
-              size: 26,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: textScale.scale(9).clamp(7.0, 12.0),
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                color: isActive ? colorScheme.primary : colorScheme.outline,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  //   return GestureDetector(
+  //     onTap: onTap,
+  //     child: Container(
+  //       padding: EdgeInsets.symmetric(
+  //         horizontal: textScale.scale(8).clamp(4.0, 12.0),
+  //         vertical: textScale.scale(4).clamp(2.0, 8.0),
+  //       ),
+  //       decoration: BoxDecoration(
+  //         color: isActive
+  //             ? colorScheme.primaryContainer.withValues(alpha: 0.15)
+  //             : Colors.transparent,
+  //         borderRadius: BorderRadius.circular(12),
+  //       ),
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           Icon(
+  //             icon,
+  //             color: isActive ? colorScheme.primary : colorScheme.outline,
+  //             size: 26,
+  //           ),
+  //           const SizedBox(height: 2),
+  //           Text(
+  //             label,
+  //             style: TextStyle(
+  //               fontSize: textScale.scale(9).clamp(7.0, 12.0),
+  //               fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+  //               color: isActive ? colorScheme.primary : colorScheme.outline,
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildLoadingState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -404,7 +408,7 @@ class FindDoctorsScreen extends GetView<DoctorController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Finding experts...',
+            TranslationKeys.doctorsFindingExperts.tr,
             style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
           ),
         ],

@@ -528,7 +528,7 @@ class DoctorPatientDetailScreen extends GetView<DoctorPatientDetailController> {
         const SizedBox(height: 16),
         Obx(
           () => UpcomingAppointmentCard(
-            appointments: controller.upcomingAppointments.value,
+            appointments: controller.upcomingAppointments,
             isLoading: controller.isLoadingAppointments.value,
           ),
         ),
@@ -623,8 +623,8 @@ class DoctorPatientDetailScreen extends GetView<DoctorPatientDetailController> {
                   height: 68,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                      begin: AlignmentDirectional.topStart,
+                      end: AlignmentDirectional.bottomEnd,
                       colors: [
                         colorScheme.primary,
                         colorScheme.primary.withOpacity(0.75),
@@ -712,7 +712,7 @@ class DoctorPatientDetailScreen extends GetView<DoctorPatientDetailController> {
   Widget _buildSymptomsSection(Patient patient) {
     final colorScheme = Theme.of(Get.context!).colorScheme;
     return SymptomList(
-      symptoms: controller.symptoms.value,
+      symptoms: controller.symptoms,
       isLoading: controller.isLoadingSymptoms.value,
     );
   }

@@ -1,5 +1,6 @@
 // lib/patient/features/emergency/screens/emergency_screen.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/emergency/controllers/emergency_controller.dart';
@@ -16,7 +17,7 @@ class EmergencyScreen extends GetView<EmergencyController> {
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: colors.background,
-      appBar: const PatientTopAppBar(title: 'Emergency'),
+      appBar: PatientTopAppBar(title: TranslationKeys.sosTitle.tr),
       body: Column(
         children: [
           // ── Tab switcher ──────────────────────────────────────────────
@@ -32,8 +33,18 @@ class EmergencyScreen extends GetView<EmergencyController> {
                 ),
                 child: Row(
                   children: [
-                    _tab(context, 'SOS', Icons.emergency_rounded, 0),
-                    _tab(context, 'Hospitals', Icons.local_hospital_rounded, 1),
+                    _tab(
+                      context,
+                      TranslationKeys.sosTab.tr,
+                      Icons.emergency_rounded,
+                      0,
+                    ),
+                    _tab(
+                      context,
+                      TranslationKeys.sosHospitals.tr,
+                      Icons.local_hospital_rounded,
+                      1,
+                    ),
                   ],
                 ),
               ),
@@ -61,8 +72,8 @@ class EmergencyScreen extends GetView<EmergencyController> {
                 foregroundColor: colors.onError,
                 elevation: 3,
                 icon: const Icon(Icons.sos_rounded),
-                label: const Text(
-                  'Generate SOS',
+                label: Text(
+                  TranslationKeys.sosGenerate.tr,
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
               )
@@ -146,7 +157,7 @@ class EmergencyScreen extends GetView<EmergencyController> {
           children: [
             _sectionHeader(
               context,
-              'Active SOS',
+              TranslationKeys.sosActive.tr,
               controller.activeEvents.length,
               isActive: true,
             ),
@@ -155,8 +166,8 @@ class EmergencyScreen extends GetView<EmergencyController> {
               _emptyState(
                 context,
                 icon: Icons.check_circle_outline_rounded,
-                message: 'No active emergency alerts.',
-                submessage: 'You\'re all clear.',
+                message: TranslationKeys.sosNoActive.tr,
+                submessage: TranslationKeys.sosAllClear.tr,
               )
             else
               ...controller.activeEvents.map(
@@ -165,7 +176,7 @@ class EmergencyScreen extends GetView<EmergencyController> {
             const SizedBox(height: 24),
             _sectionHeader(
               context,
-              'Previous SOS',
+              TranslationKeys.sosPrevious.tr,
               controller.previousEvents.length,
               isActive: false,
             ),
@@ -174,8 +185,8 @@ class EmergencyScreen extends GetView<EmergencyController> {
               _emptyState(
                 context,
                 icon: Icons.history_rounded,
-                message: 'No previous emergency alerts.',
-                submessage: 'Your SOS history will appear here.',
+                message: TranslationKeys.sosNoPrevious.tr,
+                submessage: TranslationKeys.sosHistory.tr,
               )
             else
               ...controller.previousEvents.map(
@@ -224,9 +235,9 @@ class EmergencyScreen extends GetView<EmergencyController> {
               height: 3,
               decoration: BoxDecoration(
                 color: colors.error,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+                borderRadius: const BorderRadiusDirectional.only(
+                  topStart: Radius.circular(16),
+                  topEnd: Radius.circular(16),
                 ),
               ),
             ),
@@ -330,13 +341,13 @@ class EmergencyScreen extends GetView<EmergencyController> {
                   Divider(height: 1, color: colors.outlineVariant),
                   const SizedBox(height: 10),
                   Align(
-                    alignment: Alignment.centerRight,
+                    alignment: AlignmentDirectional.centerEnd,
                     child: OutlinedButton.icon(
                       onPressed: controller.isResolving.value
                           ? null
                           : () => controller.resolveSos(event, 'false_alarm'),
                       icon: const Icon(Icons.cancel_outlined, size: 15),
-                      label: const Text('Cancel alert'),
+                      label: Text(TranslationKeys.sosCancelAlert.tr),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: colors.error,
                         side: BorderSide(color: colors.error.withOpacity(0.45)),
@@ -423,8 +434,8 @@ class EmergencyScreen extends GetView<EmergencyController> {
               _emptyState(
                 context,
                 icon: Icons.local_hospital_outlined,
-                message: 'No nearby hospitals found.',
-                submessage: 'Try again or check your location permissions.',
+                message: TranslationKeys.sosNoHospitals.tr,
+                submessage: TranslationKeys.sosCheckLocation.tr,
               ),
             ],
           ),
@@ -481,15 +492,15 @@ class EmergencyScreen extends GetView<EmergencyController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-Text(
-                      hospital.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  Text(
+                    hospital.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 4),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -665,7 +676,7 @@ Text(
             ElevatedButton.icon(
               onPressed: retry,
               icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: const Text('Retry'),
+              label: Text(TranslationKeys.commonRetry.tr),
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.primary,
                 foregroundColor: colors.onPrimary,

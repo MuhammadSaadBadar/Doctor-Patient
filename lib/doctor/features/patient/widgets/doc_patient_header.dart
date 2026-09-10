@@ -68,8 +68,8 @@ class PatientHeader extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
                 colors: [primary.withOpacity(0.07), primary.withOpacity(0.0)],
               ),
               borderRadius: BorderRadius.circular(12),

@@ -385,9 +385,9 @@ class DoctorProfileScreen extends GetView<DoctorProfileController> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: AppColors.surfaceContainerLow,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
+                borderRadius: const BorderRadiusDirectional.only(
+                  topStart: Radius.circular(12),
+                  topEnd: Radius.circular(12),
                 ),
                 border: Border(
                   bottom: BorderSide(
@@ -546,7 +546,7 @@ class DoctorProfileScreen extends GetView<DoctorProfileController> {
   Widget _buildDivider() {
     return Container(
       height: 1,
-      margin: const EdgeInsets.only(left: 44),
+      margin: const EdgeInsetsDirectional.only(start: 44),
       color: AppColors.surfaceContainer,
     );
   }

@@ -1,5 +1,6 @@
 // lib/patient/features/exercise_videos/controllers/exercise_video_controller.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/core/network/api_exceptions.dart';
 import 'package:doctor/patient/features/exercise_videos/models/exercise_video.dart';
 import 'package:doctor/patient/features/exercise_videos/repositories/exercise_video_repository.dart';
@@ -17,7 +18,7 @@ class _FilterIds {
 
 class ExerciseVideoController extends GetxController {
   ExerciseVideoController({ExerciseVideoRepository? repository})
-      : _repository = repository ?? Get.find<ExerciseVideoRepository>();
+    : _repository = repository ?? Get.find<ExerciseVideoRepository>();
 
   final ExerciseVideoRepository _repository;
 
@@ -33,30 +34,34 @@ class ExerciseVideoController extends GetxController {
   final selectedFilter = _FilterIds.all.obs;
   final searchQuery = ''.obs;
   final filters = <Map<String, dynamic>>[
-    {'id': _FilterIds.all, 'label': 'All', 'icon': Icons.grid_view_rounded},
+    {
+      'id': _FilterIds.all,
+      'label': TranslationKeys.exerciseAll,
+      'icon': Icons.grid_view_rounded,
+    },
     {
       'id': _FilterIds.exercise,
-      'label': 'Exercise',
+      'label': TranslationKeys.exerciseExercise,
       'icon': Icons.fitness_center_rounded,
     },
     {
       'id': _FilterIds.breathing,
-      'label': 'Breathing',
+      'label': TranslationKeys.exerciseBreathing,
       'icon': Icons.air_rounded,
     },
     {
       'id': _FilterIds.trimester(1),
-      'label': 'Trimester 1',
+      'label': TranslationKeys.exerciseTrimester,
       'icon': Icons.spa_rounded,
     },
     {
       'id': _FilterIds.trimester(2),
-      'label': 'Trimester 2',
+      'label': TranslationKeys.exerciseTrimester,
       'icon': Icons.spa_rounded,
     },
     {
       'id': _FilterIds.trimester(3),
-      'label': 'Trimester 3',
+      'label': TranslationKeys.exerciseTrimester,
       'icon': Icons.spa_rounded,
     },
   ];
@@ -98,7 +103,7 @@ class ExerciseVideoController extends GetxController {
     } catch (e) {
       debugPrint('[EXERCISE] Unexpected error: $e');
       hasError.value = true;
-      errorMessage.value = 'Something went wrong. Please try again.';
+      errorMessage.value = TranslationKeys.exerciseLoadFailed.tr;
     } finally {
       isLoading.value = false;
     }
@@ -121,7 +126,9 @@ class ExerciseVideoController extends GetxController {
   }
 
   void _applyFilter() {
-    filteredVideos.assignAll(_filter(videos, selectedFilter.value, searchQuery.value));
+    filteredVideos.assignAll(
+      _filter(videos, selectedFilter.value, searchQuery.value),
+    );
   }
 
   List<ExerciseVideo> _filter(

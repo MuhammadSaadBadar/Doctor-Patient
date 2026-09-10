@@ -15,8 +15,8 @@ class HydrationCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
           colors: [
             const Color(0xFF8BA7E8).withOpacity(0.15),
             colorScheme.surfaceContainerLowest,

@@ -355,8 +355,8 @@ class DoctorSendMessageScreen extends GetView<DoctorSendMessageController> {
                 child: AnimatedAlign(
                   duration: const Duration(milliseconds: 200),
                   alignment: controller.isUrgent.value
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
+                      ? AlignmentDirectional.centerEnd
+                      : AlignmentDirectional.centerStart,
                   child: Container(
                     width: 20,
                     height: 20,

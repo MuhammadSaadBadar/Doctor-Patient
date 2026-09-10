@@ -3,6 +3,7 @@
 import 'package:doctor/patient/features/symptoms/controllers/symptoms_controller.dart';
 import 'package:doctor/patient/features/symptoms/models/symptom_log.dart';
 import 'package:doctor/core/widgets/patient_top_app_bar.dart';
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,13 +13,10 @@ class SymptomsScreen extends GetView<SymptomsController> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textScale = MediaQuery.textScalerOf(context);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: PatientTopAppBar(
-        title: 'Symptoms Tracker',
-      ),
+      appBar: PatientTopAppBar(title: TranslationKeys.symptomsTracker.tr),
       body: Obx(() {
         if (controller.isLoading.value && controller.symptomLogs.isEmpty) {
           return _buildLoadingState(context);
@@ -36,8 +34,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize:
-                  MainAxisSize.min, // ✅ Prevents unbounded height issues
+              mainAxisSize: MainAxisSize.min,
               children: [
                 _buildLogSymptomsCard(context),
                 const SizedBox(height: 24),
@@ -65,7 +62,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // ✅ Prevents unbounded height issues
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
@@ -82,9 +79,10 @@ class SymptomsScreen extends GetView<SymptomsController> {
                 ),
               ),
               const SizedBox(width: 12),
-              Expanded(
+              // ✅ Replaced Expanded with Flexible to avoid layout errors
+              Flexible(
                 child: Text(
-                  'Log Today\'s Symptoms',
+                  TranslationKeys.symptomsLogTodaySymptom.tr,
                   style: TextStyle(
                     fontSize: textScale.scale(14).clamp(12.0, 18.0),
                     fontWeight: FontWeight.w600,
@@ -96,8 +94,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
           ),
           const SizedBox(height: 16),
           Text(
-            // ✅ Removed Flexible wrapper
-            'How are you feeling today?',
+            TranslationKeys.symptomsFeelingToday.tr,
             style: TextStyle(
               fontSize: textScale.scale(12).clamp(10.0, 16.0),
               color: colorScheme.onSurfaceVariant,
@@ -133,7 +130,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
             controller: controller.notesController,
             maxLines: 3,
             decoration: InputDecoration(
-              hintText: 'Additional notes (optional)',
+              hintText: TranslationKeys.symptomsNotesOptional.tr,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: colorScheme.outlineVariant),
@@ -171,7 +168,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
                         ),
                       )
                     : Text(
-                        'Save Symptoms',
+                        TranslationKeys.symptomsSaveSymptoms.tr,
                         style: TextStyle(
                           fontSize: textScale.scale(14).clamp(12.0, 18.0),
                           fontWeight: FontWeight.w600,
@@ -191,10 +188,10 @@ class SymptomsScreen extends GetView<SymptomsController> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min, // ✅ Prevents unbounded height issues
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Recent Logs',
+          TranslationKeys.symptomsRecentLogs.tr,
           style: TextStyle(
             fontSize: textScale.scale(16).clamp(14.0, 20.0),
             fontWeight: FontWeight.w700,
@@ -215,7 +212,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
               ),
               child: Center(
                 child: Column(
-                  mainAxisSize: MainAxisSize.min, // ✅ Added
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.sick_rounded,
@@ -226,7 +223,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'No symptoms logged yet',
+                      TranslationKeys.symptomsNoSymptomsLogged.tr,
                       style: TextStyle(
                         fontSize: textScale.scale(14).clamp(12.0, 18.0),
                         color: colorScheme.onSurfaceVariant,
@@ -234,8 +231,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      // ✅ Removed Flexible wrapper
-                      'Tap above to log how you\'re feeling',
+                      TranslationKeys.symptomsTapToLog.tr,
                       style: TextStyle(
                         fontSize: textScale.scale(11).clamp(9.0, 15.0),
                         color: colorScheme.onSurfaceVariant.withValues(
@@ -250,7 +246,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
           }
 
           return Column(
-            mainAxisSize: MainAxisSize.min, // ✅ Added
+            mainAxisSize: MainAxisSize.min,
             children: controller.symptomLogs
                 .map((log) => _buildSymptomLogCard(context, log))
                 .toList(),
@@ -276,17 +272,19 @@ class SymptomsScreen extends GetView<SymptomsController> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // ✅ Prevents unbounded height issues
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
-              Text(
-                // ✅ Removed Flexible wrapper
-                log.dateLabel,
-                style: TextStyle(
-                  fontSize: textScale.scale(12).clamp(10.0, 16.0),
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
+              // ✅ Replaced Expanded with Flexible for the date label
+              Flexible(
+                child: Text(
+                  log.dateLabel,
+                  style: TextStyle(
+                    fontSize: textScale.scale(12).clamp(10.0, 16.0),
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
               if (log.isToday) ...[
@@ -301,7 +299,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    'TODAY',
+                    TranslationKeys.commonToday.tr.toUpperCase(),
                     style: TextStyle(
                       fontSize: textScale.scale(9).clamp(7.0, 12.0),
                       fontWeight: FontWeight.w600,
@@ -340,7 +338,6 @@ class SymptomsScreen extends GetView<SymptomsController> {
           if (log.notes != null && log.notes!.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              // ✅ Removed Flexible wrapper
               log.notes!,
               style: TextStyle(
                 fontSize: textScale.scale(11).clamp(9.0, 15.0),
@@ -358,11 +355,12 @@ class SymptomsScreen extends GetView<SymptomsController> {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           CircularProgressIndicator(color: colorScheme.primary),
           const SizedBox(height: 16),
           Text(
-            'Loading symptoms...',
+            TranslationKeys.symptomsLoadingSymptoms.tr,
             style: TextStyle(
               fontSize: MediaQuery.textScalerOf(
                 context,
@@ -383,7 +381,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min, // ✅ Prevents unbounded height issues
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.error_outline_rounded,
@@ -392,7 +390,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Failed to load',
+              TranslationKeys.vitalsFailedToLoad.tr,
               style: TextStyle(
                 fontSize: textScale.scale(16).clamp(14.0, 20.0),
                 fontWeight: FontWeight.w600,
@@ -401,7 +399,6 @@ class SymptomsScreen extends GetView<SymptomsController> {
             ),
             const SizedBox(height: 8),
             Text(
-              // ✅ Removed Flexible wrapper
               controller.errorMessage.value,
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -412,7 +409,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: controller.refreshData,
-              child: const Text('Retry'),
+              child: Text(TranslationKeys.commonRetry.tr),
             ),
           ],
         ),

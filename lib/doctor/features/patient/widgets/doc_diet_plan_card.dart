@@ -86,7 +86,7 @@ class DietPlanCard extends StatelessWidget {
               // Delete button or Arrow icon
               if (showDelete && onDelete != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 8, left: 8),
+                  padding: const EdgeInsetsDirectional.only(top: 8, start: 8),
                   child: Material(
                     color: colorScheme.errorContainer,
                     shape: const CircleBorder(),

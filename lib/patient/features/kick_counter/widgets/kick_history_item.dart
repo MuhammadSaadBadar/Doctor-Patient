@@ -1,7 +1,9 @@
 // lib/patient/features/kick_counter/widgets/kick_history_item.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/kick_counter/models/kick_session.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class KickHistoryItem extends StatelessWidget {
   final KickSession session;
@@ -67,7 +69,7 @@ class KickHistoryItem extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      'Active',
+                      TranslationKeys.kickCounterActive.tr,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -79,7 +81,7 @@ class KickHistoryItem extends StatelessWidget {
                   ),
                 const SizedBox(width: 8),
                 Text(
-                  '${session.kickCount} Kicks',
+                  '${session.kickCount} ${TranslationKeys.kickCounterKicks.tr}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -113,12 +115,12 @@ class KickHistoryItem extends StatelessWidget {
     if (date.year == today.year &&
         date.month == today.month &&
         date.day == today.day) {
-      return 'Today';
+      return TranslationKeys.commonToday.tr;
     }
     if (date.year == yesterday.year &&
         date.month == yesterday.month &&
         date.day == yesterday.day) {
-      return 'Yesterday';
+      return TranslationKeys.commonYesterday.tr;
     }
 
     final weekdays = [

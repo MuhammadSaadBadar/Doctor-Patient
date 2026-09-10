@@ -11,6 +11,7 @@ import 'package:doctor/patient/features/settings/widgets/settings_tile.dart';
 import 'package:doctor/patient/features/settings/widgets/settings_toggle_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:doctor/core/localization/translation_keys.dart';
 
 class PatientSettingsScreen extends GetView<PatientSettingsController> {
   const PatientSettingsScreen({super.key});
@@ -21,7 +22,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
       backgroundColor: Theme.of(context).colorScheme.background,
       body: Column(
         children: [
-          PatientTopAppBar(title: 'Settings', showBackButton: true),
+          PatientTopAppBar(title: TranslationKeys.settingsTitle.tr, showBackButton: true),
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
@@ -74,13 +75,13 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: AppColors.primary),
-          SizedBox(height: 16),
-          Text('Loading settings...'),
+          const CircularProgressIndicator(color: AppColors.primary),
+          const SizedBox(height: 16),
+          Text(TranslationKeys.settingsLoading.tr),
         ],
       ),
     );
@@ -128,7 +129,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text('Retry'),
+                child: Text(TranslationKeys.commonRetry.tr),
               ),
             ),
           ],
@@ -194,7 +195,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
                         borderRadius: BorderRadius.circular(9999),
                       ),
                       child: Text(
-                        'Patient',
+                        TranslationKeys.settingsPatientBadge.tr,
                         style: AppTheme.labelMedium.copyWith(
                           color: AppColors.onSecondaryContainer,
                           fontWeight: FontWeight.w600,
@@ -221,12 +222,12 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
       final profile = controller.profileData.value;
 
       return SettingsSection(
-        title: 'Account & Profile',
+        title: TranslationKeys.settingsAccountProfile.tr,
         children: [
           SettingsTile(
             icon: 'person',
-            title: 'Edit Personal Info',
-            subtitle: 'Name, email, phone number',
+            title: TranslationKeys.settingsEditPersonalInfo.tr,
+            subtitle: TranslationKeys.settingsEditPersonalInfoDesc.tr,
             onTap: () => Get.toNamed('/patient/profile/edit')?.then((result) {
               if (result == true) {
                 controller.refreshProfile();
@@ -236,14 +237,14 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
           ),
           SettingsTile(
             icon: 'lock_outline',
-            title: 'Change Password',
-            subtitle: 'Update your password',
+            title: TranslationKeys.settingsChangePassword.tr,
+            subtitle: TranslationKeys.settingsChangePasswordDesc.tr,
             onTap: controller.showChangePasswordDialog,
           ),
           SettingsTile(
             icon: 'medical_services',
-            title: 'Patient Profile',
-            subtitle: 'Pregnancy, emergency contact, medical info',
+            title: TranslationKeys.settingsPatientProfile.tr,
+            subtitle: TranslationKeys.settingsPatientProfileDesc.tr,
             onTap: () => Get.toNamed('/patient/profile/edit')?.then((result) {
               if (result == true) {
                 controller.refreshProfile();
@@ -261,39 +262,47 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
       final patientProfile = controller.profileData.value?.patientProfile;
 
       return SettingsSection(
-        title: 'Patient Profile',
+        title: TranslationKeys.settingsPatientProfile.tr,
         children: [
           SettingsTile(
             icon: 'calendar_today',
-            title: 'Date of Birth',
+            title: TranslationKeys.settingsDateOfBirth.tr,
             subtitle: patientProfile?.dateOfBirth != null
                 ? '${patientProfile!.dateOfBirth!.day}/${patientProfile.dateOfBirth!.month}/${patientProfile.dateOfBirth!.year}'
-                : 'Not set',
+                : TranslationKeys.settingsNotSet.tr,
             onTap: () => _showDateOfBirthDialog(),
             isFirst: true,
           ),
           SettingsTile(
             icon: 'pregnant_woman',
-            title: 'Pregnancy Dates',
+            title: TranslationKeys.settingsLmpDate.tr,
+            subtitle: patientProfile?.lmpDate != null
+                ? '${patientProfile!.lmpDate!.day}/${patientProfile.lmpDate!.month}/${patientProfile.lmpDate!.year}'
+                : TranslationKeys.settingsNotSet.tr,
+            onTap: () => _showLmpDateDialog(),
+          ),
+          SettingsTile(
+            icon: 'pregnant_woman',
+            title: TranslationKeys.settingsPregnancyDates.tr,
             subtitle: _buildPregnancySubtitle(patientProfile),
             onTap: () => _showPregnancyDatesDialog(),
           ),
           SettingsTile(
             icon: 'bloodtype',
-            title: 'Blood Group',
-            subtitle: patientProfile?.bloodGroupDisplay ?? 'Not set',
+            title: TranslationKeys.settingsBloodGroup.tr,
+            subtitle: patientProfile?.bloodGroupDisplay ?? TranslationKeys.settingsNotSet.tr,
             onTap: () => _showBloodGroupDialog(),
           ),
           SettingsTile(
             icon: 'contact_emergency',
-            title: 'Emergency Contact',
-            subtitle: patientProfile?.emergencyContactDisplay ?? 'Not set',
+            title: TranslationKeys.settingsEmergencyContact.tr,
+            subtitle: patientProfile?.emergencyContactDisplay ?? TranslationKeys.settingsNotSet.tr,
             onTap: () => _showEmergencyContactDialog(),
           ),
           SettingsTile(
             icon: 'location_on',
-            title: 'Address',
-            subtitle: patientProfile?.addressDisplay ?? 'Not set',
+            title: TranslationKeys.settingsAddress.tr,
+            subtitle: patientProfile?.addressDisplay ?? TranslationKeys.settingsNotSet.tr,
             onTap: () => _showAddressDialog(),
             isLast: true,
           ),
@@ -303,7 +312,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
   }
 
   String _buildPregnancySubtitle(PatientProfile? profile) {
-    if (profile == null) return 'Not set';
+    if (profile == null) return TranslationKeys.settingsNotSet.tr;
     final parts = <String>[];
     if (profile.lmpDate != null) {
       parts.add('LMP: ${profile.formattedLmpDate}');
@@ -314,7 +323,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
     if (profile.pregnancyWeek != null) {
       parts.add(profile.pregnancyWeek!);
     }
-    return parts.isEmpty ? 'Not set' : parts.join(' • ');
+    return parts.isEmpty ? TranslationKeys.settingsNotSet.tr : parts.join(' • ');
   }
 
   Widget _buildHealthSettingsSection() {
@@ -350,26 +359,26 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
 
   Widget _buildAppPreferencesSection() {
     return SettingsSection(
-      title: 'App Preferences',
+      title: TranslationKeys.settingsAppPreferences.tr,
       children: [
         SettingsToggleTile(
           icon: 'dark_mode',
-          title: 'Dark Mode',
+          title: TranslationKeys.settingsDarkMode.tr,
           value: controller.isDarkMode.value,
           onChanged: controller.toggleTheme,
           isFirst: true,
         ),
         SettingsToggleTile(
           icon: 'notifications_active',
-          title: 'Push Notifications',
-          subtitle: 'Receive appointment and health reminders',
+          title: TranslationKeys.settingsPushNotifications.tr,
+          subtitle: TranslationKeys.settingsPushNotificationsDesc.tr,
           value: controller.areNotificationsEnabled.value,
           onChanged: controller.toggleNotifications,
         ),
         SettingsTile(
           icon: 'language',
-          title: 'Language',
-          subtitle: controller.selectedLanguage.value,
+          title: TranslationKeys.settingsLanguage.tr,
+          subtitle: controller.selectedLanguage.value == 'ur_PK' ? 'اردو' : 'English',
           onTap: controller.showLanguageDialog,
           isLast: true,
         ),
@@ -435,7 +444,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
       ),
       child: SettingsTile(
         icon: 'logout',
-        title: 'Logout',
+        title: TranslationKeys.settingsLogout.tr,
         textColor: AppColors.error,
         iconColor: AppColors.error,
         onTap: controller.showLogoutDialog,
@@ -463,6 +472,79 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
     });
   }
 
+  void _showLmpDateDialog() {
+    final profile = controller.profileData.value?.patientProfile;
+    final lmpController = TextEditingController(
+      text: profile?.lmpDate != null
+          ? '${profile!.lmpDate!.day}/${profile.lmpDate!.month}/${profile.lmpDate!.year}'
+          : '',
+    );
+
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Last Menstrual Period Date'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'LMP',
+              style: AppTheme.bodySmall.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 4),
+            TextField(
+              controller: lmpController,
+              readOnly: true,
+              decoration: const InputDecoration(
+                labelText: 'LMP Date (Last Menstrual Period)',
+                hintText: 'DD/MM/YYYY',
+                prefixIcon: Icon(Icons.calendar_today),
+                border: OutlineInputBorder(),
+              ),
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: Get.context!,
+                  initialDate: profile?.lmpDate ?? DateTime.now(),
+                  firstDate: DateTime.now().subtract(const Duration(days: 365 * 40)),
+                  lastDate: DateTime.now(),
+                );
+                if (picked != null) {
+                  lmpController.text = '${picked.day}/${picked.month}/${picked.year}';
+                }
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: Text(TranslationKeys.commonCancel.tr)),
+          ElevatedButton(
+            onPressed: () {
+              DateTime? lmpDate;
+              if (lmpController.text.isNotEmpty) {
+                final parts = lmpController.text.split('/');
+                if (parts.length == 3) {
+                  lmpDate = DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
+                }
+              }
+              Get.back();
+              if (lmpDate != null) {
+                controller.updatePatientProfile(lmpDate: lmpDate);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.onPrimary,
+            ),
+            child: Text(TranslationKeys.commonSave.tr),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showPregnancyDatesDialog() {
     final profile = controller.profileData.value?.patientProfile;
     final lmpController = TextEditingController(
@@ -483,6 +565,14 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text(
+              'LMP',
+              style: AppTheme.bodySmall.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 4),
             TextField(
               controller: lmpController,
               readOnly: true,
@@ -506,6 +596,14 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
               },
             ),
             const SizedBox(height: 12),
+            Text(
+              'EDD',
+              style: AppTheme.bodySmall.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 4),
             TextField(
               controller: eddController,
               readOnly: true,
@@ -533,7 +631,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(onPressed: () => Get.back(), child: Text(TranslationKeys.commonCancel.tr)),
           ElevatedButton(
             onPressed: () {
               DateTime? lmpDate;
@@ -570,7 +668,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.onPrimary,
             ),
-            child: const Text('Save'),
+            child: Text(TranslationKeys.commonSave.tr),
           ),
         ],
       ),
@@ -602,7 +700,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
           }).toList(),
         ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(onPressed: () => Get.back(), child: Text(TranslationKeys.commonCancel.tr)),
         ],
       ),
     );
@@ -643,7 +741,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(onPressed: () => Get.back(), child: Text(TranslationKeys.commonCancel.tr)),
           ElevatedButton(
             onPressed: () {
               Get.back();
@@ -660,7 +758,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.onPrimary,
             ),
-            child: const Text('Save'),
+            child: Text(TranslationKeys.commonSave.tr),
           ),
         ],
       ),
@@ -685,7 +783,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(onPressed: () => Get.back(), child: Text(TranslationKeys.commonCancel.tr)),
           ElevatedButton(
             onPressed: () {
               Get.back();
@@ -699,7 +797,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.onPrimary,
             ),
-            child: const Text('Save'),
+            child: Text(TranslationKeys.commonSave.tr),
           ),
         ],
       ),

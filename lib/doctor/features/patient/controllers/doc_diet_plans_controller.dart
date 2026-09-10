@@ -96,7 +96,7 @@ class DoctorDietPlansController extends GetxController {
   }
 
   void _applyFilters() {
-    var filtered = List<DietPlan>.from(plans.value);
+    var filtered = List<DietPlan>.from(plans);
 
     // Apply status filter
     if (selectedFilter.value != null) {
@@ -144,7 +144,7 @@ class DoctorDietPlansController extends GetxController {
       // Remove from local list and renumber
       plans.removeWhere((p) => p.id == planId);
       // Renumber remaining plans
-      final sortedPlans = List<DietPlan>.from(plans.value)
+      final sortedPlans = List<DietPlan>.from(plans)
         ..sort((a, b) => int.parse(a.id).compareTo(int.parse(b.id)));
       for (int i = 0; i < sortedPlans.length; i++) {
         sortedPlans[i].setPlanNumber(i + 1);

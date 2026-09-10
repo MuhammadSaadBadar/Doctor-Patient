@@ -1,12 +1,13 @@
 // lib/patient/features/doctors/screens/doctor_detail_screen.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/doctors/controllers/doctor_detail_controller.dart';
 import 'package:doctor/patient/features/doctors/widgets/doctor_availability_card.dart';
 import 'package:doctor/patient/features/doctors/widgets/doctor_header_card.dart';
 import 'package:doctor/patient/features/doctors/widgets/doctor_location_card.dart';
 import 'package:doctor/patient/features/doctors/widgets/doctor_practice_details.dart';
 import 'package:doctor/patient/features/doctors/widgets/doctor_stats_row.dart';
-import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -21,7 +22,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: PatientTopAppBar(
-        title: 'Doctor Profile',
+        title: TranslationKeys.doctorsProfile.tr,
         trailingActions: [
           IconButton(
             icon: Icon(
@@ -101,7 +102,10 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'About ${doctor.firstName}',
+            TranslationKeys.doctorsAboutName.tr.replaceAll(
+              '@name',
+              doctor.firstName,
+            ),
             style: TextStyle(
               fontSize: textScale.scale(16).clamp(14.0, 20.0),
               fontWeight: FontWeight.w600,
@@ -160,7 +164,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Consultation Fee',
+                        TranslationKeys.doctorsConsultationFee.tr,
                         style: TextStyle(
                           fontSize: textScale.scale(10).clamp(8.0, 14.0),
                           fontWeight: FontWeight.w500,
@@ -196,7 +200,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
                     elevation: 4,
                   ),
                   child: Text(
-                    'Book Appointment',
+                    TranslationKeys.appointmentsBookAppointment.tr,
                     style: TextStyle(
                       fontSize: textScale.scale(14).clamp(12.0, 18.0),
                       fontWeight: FontWeight.w700,
@@ -232,7 +236,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Loading doctor profile...',
+            TranslationKeys.doctorsLoadingProfile.tr,
             style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
           ),
         ],
@@ -320,7 +324,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Doctor Not Found',
+              TranslationKeys.doctorsNotFound.tr,
               style: TextStyle(
                 fontSize: textScale.scale(16).clamp(14.0, 20.0),
                 fontWeight: FontWeight.w600,
@@ -330,7 +334,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
             const SizedBox(height: 8),
             Flexible(
               child: Text(
-                'The doctor you\'re looking for could not be found.',
+                TranslationKeys.doctorsNotFoundDesc.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: textScale.scale(12).clamp(10.0, 16.0),
@@ -352,7 +356,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Back to Search'),
+              child: Text(TranslationKeys.doctorsBackToSearch.tr),
             ),
           ],
         ),

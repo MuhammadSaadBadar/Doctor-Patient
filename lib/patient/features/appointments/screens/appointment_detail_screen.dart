@@ -1,11 +1,12 @@
 // lib/patient/features/appointments/screens/appointment_detail_screen.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/widgets/doctor_avatar.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/appointments/controllers/appointment_detail_controller.dart';
 import 'package:doctor/patient/features/appointments/models/appointment.dart';
 import 'package:doctor/patient/features/doctors/widgets/doctor_address_card.dart';
-import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,9 +20,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
 
     return Scaffold(
       backgroundColor: colorScheme.background,
-      appBar: PatientTopAppBar(
-        title: 'Appointment Details',
-      ),
+      appBar: PatientTopAppBar(title: TranslationKeys.bookingDetails.tr),
       body: Obx(() {
         if (controller.isLoading.value) {
           return _buildLoadingState(context);
@@ -227,7 +226,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
         mainAxisSize: MainAxisSize.min, // ✅ Added
         children: [
           Text(
-            'Appointment Details',
+            TranslationKeys.bookingDetails.tr,
             style: TextStyle(
               fontSize: textScale.scale(14).clamp(12.0, 16.0),
               fontWeight: FontWeight.w700,
@@ -238,21 +237,21 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
           _buildDetailRow(
             context,
             Icons.calendar_today_rounded,
-            'Date',
+            TranslationKeys.appointmentsDate.tr,
             appointment.formattedDate,
           ),
           const SizedBox(height: 12),
           _buildDetailRow(
             context,
             Icons.access_time_rounded,
-            'Time',
+            TranslationKeys.appointmentsTime.tr,
             appointment.timeRange,
           ),
           const SizedBox(height: 12),
           _buildDetailRow(
             context,
             Icons.timer_rounded,
-            'Duration',
+            TranslationKeys.appointmentsDuration.tr,
             appointment.formattedDuration,
           ),
           if (appointment.appointmentType == 'in_person') ...[
@@ -273,8 +272,8 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
             _buildDetailRow(
               context,
               Icons.video_call_rounded,
-              'Meeting Link',
-              'Tap to join',
+              TranslationKeys.appointmentsMeetingLink.tr,
+              TranslationKeys.appointmentsTapToJoin.tr,
             ),
           ],
           if (appointment.reason != null && appointment.reason!.isNotEmpty) ...[
@@ -282,7 +281,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
             _buildDetailRow(
               context,
               Icons.note_rounded,
-              'Reason',
+              TranslationKeys.appointmentsReason.tr,
               appointment.reason!,
             ),
           ],
@@ -370,7 +369,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
           Row(
             children: [
               Text(
-                'Payment',
+                TranslationKeys.appointmentsPayment.tr,
                 style: TextStyle(
                   fontSize: textScale.scale(14).clamp(12.0, 16.0),
                   fontWeight: FontWeight.w700,
@@ -401,19 +400,19 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
           const SizedBox(height: 16),
           _buildPaymentRow(
             context,
-            'Consultation Fee',
+            TranslationKeys.appointmentsConsultationFee.tr,
             payment.formattedDoctorFee,
           ),
           const SizedBox(height: 8),
           _buildPaymentRow(
             context,
-            'Platform Fee',
+            TranslationKeys.appointmentsPlatformFee.tr,
             payment.formattedCommission,
           ),
           const Divider(height: 24),
           _buildPaymentRow(
             context,
-            'Total Amount',
+            TranslationKeys.appointmentsTotalAmount.tr,
             payment.formattedTotal,
             isTotal: true,
           ),
@@ -428,7 +427,10 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
           if (payment.paymentReference.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              'Ref: ${payment.paymentReference}',
+              TranslationKeys.appointmentsReference.tr.replaceAll(
+                '@reference',
+                payment.paymentReference,
+              ),
               style: TextStyle(
                 fontSize: textScale.scale(11).clamp(9.0, 12.0),
                 color: colorScheme.onSurfaceVariant,
@@ -503,7 +505,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
               Icon(Icons.contact_phone_rounded, color: Colors.green, size: 20),
               const SizedBox(width: 8),
               Text(
-                'Doctor Contact',
+                TranslationKeys.appointmentsDoctorContact.tr,
                 style: TextStyle(
                   fontSize: textScale.scale(14).clamp(12.0, 16.0),
                   fontWeight: FontWeight.w700,
@@ -564,7 +566,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
               ),
               const SizedBox(width: 8),
               Text(
-                'Doctor Notes',
+                TranslationKeys.appointmentsDoctorNotes.tr,
                 style: TextStyle(
                   fontSize: textScale.scale(14).clamp(12.0, 16.0),
                   fontWeight: FontWeight.w700,
@@ -609,7 +611,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
               Icon(Icons.cancel_rounded, color: Colors.red, size: 20),
               const SizedBox(width: 8),
               Text(
-                'Cancellation Reason',
+                TranslationKeys.appointmentsCancellationReason.tr,
                 style: TextStyle(
                   fontSize: textScale.scale(14).clamp(12.0, 16.0),
                   fontWeight: FontWeight.w700,
@@ -641,7 +643,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
         Expanded(
           child: OutlinedButton.icon(
             icon: const Icon(Icons.cancel_rounded, size: 20),
-            label: const Text('Cancel'),
+            label: Text(TranslationKeys.appointmentsCancel.tr),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.red,
               side: const BorderSide(color: Colors.red, width: 1.5),
@@ -662,7 +664,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
         Expanded(
           child: OutlinedButton.icon(
             icon: const Icon(Icons.schedule_rounded, size: 20),
-            label: const Text('Reschedule'),
+            label: Text(TranslationKeys.bookingReschedule.tr),
             style: OutlinedButton.styleFrom(
               foregroundColor: colorScheme.primary,
               side: BorderSide(color: colorScheme.primary, width: 1.5),
@@ -683,7 +685,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
         Expanded(
           child: ElevatedButton.icon(
             icon: const Icon(Icons.payment_rounded, size: 20),
-            label: const Text('Pay Now'),
+            label: Text(TranslationKeys.appointmentsPayNow.tr),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.amber.shade700,
               foregroundColor: Colors.white,
@@ -704,7 +706,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
         Expanded(
           child: OutlinedButton.icon(
             icon: const Icon(Icons.star_rounded, size: 20),
-            label: const Text('Rate'),
+            label: Text(TranslationKeys.appointmentsRate.tr),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.amber.shade700,
               side: BorderSide(color: Colors.amber.shade700, width: 1.5),
@@ -745,7 +747,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Loading appointment...',
+            TranslationKeys.appointmentsLoadingDetail.tr,
             style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
           ),
         ],
@@ -808,7 +810,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Try Again'),
+              child: Text(TranslationKeys.commonTryAgain.tr),
             ),
           ],
         ),
@@ -863,7 +865,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Back to Appointments'),
+              child: Text(TranslationKeys.appointmentsBackToAppointments.tr),
             ),
           ],
         ),
@@ -876,7 +878,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     final reasonController = TextEditingController();
 
     Get.defaultDialog(
-      title: 'Cancel Appointment',
+      title: TranslationKeys.appointmentsCancelTitle.tr,
       titleStyle: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w700,
@@ -895,7 +897,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
             controller: reasonController,
             decoration: InputDecoration(
               labelText: 'Reason (optional)',
-              hintText: 'e.g., scheduling conflict, feeling better',
+              hintText: TranslationKeys.appointmentsCancelHint.tr,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -938,7 +940,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     final commentController = TextEditingController();
 
     Get.defaultDialog(
-      title: 'Rate Your Appointment',
+      title: TranslationKeys.appointmentsRateTitle.tr,
       titleStyle: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w700,
@@ -979,7 +981,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
             controller: commentController,
             decoration: InputDecoration(
               labelText: 'Comment (optional)',
-              hintText: 'Share your experience...',
+              hintText: TranslationKeys.appointmentsRateHint.tr,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

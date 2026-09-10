@@ -25,11 +25,11 @@ class SettingsToggleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.only(
-      topLeft: isFirst ? const Radius.circular(12) : Radius.zero,
-      topRight: isFirst ? const Radius.circular(12) : Radius.zero,
-      bottomLeft: isLast ? const Radius.circular(12) : Radius.zero,
-      bottomRight: isLast ? const Radius.circular(12) : Radius.zero,
+    final borderRadius = BorderRadiusDirectional.only(
+      topStart: isFirst ? const Radius.circular(12) : Radius.zero,
+      topEnd: isFirst ? const Radius.circular(12) : Radius.zero,
+      bottomStart: isLast ? const Radius.circular(12) : Radius.zero,
+      bottomEnd: isLast ? const Radius.circular(12) : Radius.zero,
     );
 
     return Container(

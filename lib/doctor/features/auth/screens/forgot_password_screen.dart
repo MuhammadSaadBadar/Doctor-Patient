@@ -44,8 +44,8 @@ class ForgotPasswordScreen extends GetView<AuthController> {
             height: 800,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
                 colors: [
                   AppColors.surfaceContainerLowest,
                   AppColors.surfaceContainerHigh.withOpacity(0.5),
@@ -71,8 +71,8 @@ class ForgotPasswordScreen extends GetView<AuthController> {
             height: 600,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.bottomRight,
-                end: Alignment.topLeft,
+                begin: AlignmentDirectional.bottomEnd,
+                end: AlignmentDirectional.topStart,
                 colors: [
                   AppColors.primaryFixed.withOpacity(0.3),
                   AppColors.surfaceContainerLowest.withOpacity(0.1),

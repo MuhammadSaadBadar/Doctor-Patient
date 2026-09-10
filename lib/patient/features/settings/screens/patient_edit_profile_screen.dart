@@ -4,6 +4,7 @@ import 'package:doctor/core/widgets/material_symbol_icon.dart';
 import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/settings/controllers/patient_settings_controller.dart';
 import 'package:doctor/patient/features/settings/models/patient_profile_model.dart';
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -162,7 +163,7 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
         return Column(
           children: [
             PatientTopAppBar(
-              title: 'Edit Profile',
+              title: TranslationKeys.profileEdit.tr,
               showBackButton: true,
             ),
             Expanded(
@@ -296,7 +297,7 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
         ),
         const SizedBox(height: 16),
         _buildTextField(
-          label: 'Phone Number',
+          label: TranslationKeys.profilePhone.tr,
           controller: _phoneController,
           icon: 'phone',
           keyboardType: TextInputType.phone,

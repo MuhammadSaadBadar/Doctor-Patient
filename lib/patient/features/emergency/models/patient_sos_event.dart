@@ -1,4 +1,6 @@
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class PatientSosEvent {
   final int id;
@@ -40,11 +42,11 @@ class PatientSosEvent {
   String get statusLabel {
     switch (status) {
       case 'false_alarm':
-        return 'False alarm';
+        return TranslationKeys.sosStatusFalseAlarm.tr;
       case 'resolved':
-        return 'Resolved';
+        return TranslationKeys.sosStatusResolved.tr;
       default:
-        return 'Active';
+        return TranslationKeys.sosStatusActive.tr;
     }
   }
 

@@ -1,5 +1,6 @@
 // lib/patient/features/kick_counter/controllers/kick_history_controller.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/patient/features/kick_counter/models/kick_daily_summary.dart';
 import 'package:doctor/patient/features/kick_counter/models/kick_session.dart';
 import 'package:doctor/patient/features/kick_counter/models/paginated_kick_session.dart';
@@ -114,11 +115,11 @@ class KickHistoryController extends GetxController {
         );
       } else {
         hasError.value = true;
-        errorMessage.value = 'Failed to load kick history. Please try again.';
+        errorMessage.value = TranslationKeys.commonTryAgain.tr;
       }
     } catch (e) {
       hasError.value = true;
-      errorMessage.value = 'Something went wrong. Please try again.';
+      errorMessage.value = TranslationKeys.commonTryAgain.tr;
       debugPrint('[KICK_HISTORY] Error: $e');
     } finally {
       isLoading.value = false;
@@ -172,12 +173,12 @@ class KickHistoryController extends GetxController {
     if (date.year == today.year &&
         date.month == today.month &&
         date.day == today.day) {
-      return 'Today';
+      return TranslationKeys.commonToday.tr;
     }
     if (date.year == yesterday.year &&
         date.month == yesterday.month &&
         date.day == yesterday.day) {
-      return 'Yesterday';
+      return TranslationKeys.commonYesterday.tr;
     }
 
     final months = [
@@ -257,7 +258,7 @@ class KickHistoryController extends GetxController {
           ),
           const SizedBox(height: 20),
           Text(
-            'Session Details',
+            TranslationKeys.kickCounterSessionDetails.tr,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
@@ -265,19 +266,38 @@ class KickHistoryController extends GetxController {
             ),
           ),
           const SizedBox(height: 16),
-          _buildDetailRow('Date', _formatLogDate(session.logDate)),
-          _buildDetailRow('Start Time', formatTime(session.startedAt)),
           _buildDetailRow(
-            'End Time',
-            session.endedAt != null ? formatTime(session.endedAt!) : 'Active',
+            TranslationKeys.appointmentsDate.tr,
+            _formatLogDate(session.logDate),
           ),
-          _buildDetailRow('Duration', session.duration),
-          _buildDetailRow('Kick Count', '${session.kickCount} kicks'),
-          _buildDetailRow('Status', session.isActive ? 'Active' : 'Completed'),
+          _buildDetailRow(
+            TranslationKeys.kickCounterStartTime.tr,
+            formatTime(session.startedAt),
+          ),
+          _buildDetailRow(
+            TranslationKeys.kickCounterEndTime.tr,
+            session.endedAt != null
+                ? formatTime(session.endedAt!)
+                : TranslationKeys.kickCounterActive.tr,
+          ),
+          _buildDetailRow(
+            TranslationKeys.appointmentsDuration.tr,
+            session.duration,
+          ),
+          _buildDetailRow(
+            TranslationKeys.kickCounterKickCount.tr,
+            '${session.kickCount} ${TranslationKeys.kickCounterKicks.tr}',
+          ),
+          _buildDetailRow(
+            TranslationKeys.kickCounterStatus.tr,
+            session.isActive
+                ? TranslationKeys.kickCounterActive.tr
+                : TranslationKeys.kickCounterCompleted.tr,
+          ),
           if (session.events.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(
-              'Kick Timeline',
+              TranslationKeys.kickCounterTimeline.tr,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -307,7 +327,10 @@ class KickHistoryController extends GetxController {
                       ),
                     ),
                     title: Text(
-                      'Kick #${index + 1}',
+                      TranslationKeys.kickCounterKickNumber.tr.replaceAll(
+                        '@number',
+                        '${index + 1}',
+                      ),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -339,7 +362,7 @@ class KickHistoryController extends GetxController {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Close'),
+              child: Text(TranslationKeys.commonClose.tr),
             ),
           ),
           const SizedBox(height: 16),

@@ -1,10 +1,11 @@
 // lib/patient/features/water_intake/screens/water_intake_screen.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
+import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/water_intake/controllers/water_intake_controller.dart';
 import 'package:doctor/patient/features/water_intake/widgets/glass_counter.dart';
 import 'package:doctor/patient/features/water_intake/widgets/hydration_tip_card.dart';
 import 'package:doctor/patient/features/water_intake/widgets/weekly_history_chart.dart';
-import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -21,7 +22,7 @@ class WaterIntakeScreen extends GetView<WaterIntakeController> {
     return Scaffold(
       backgroundColor: colorScheme.background,
       appBar: PatientTopAppBar(
-        title: 'Water Intake',
+        title: TranslationKeys.waterIntakeTitle.tr,
         trailingActions: [
           IconButton(
             icon: Icon(Icons.history_rounded, color: colorScheme.onSurface),
@@ -46,7 +47,11 @@ class WaterIntakeScreen extends GetView<WaterIntakeController> {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.fromLTRB(
-              16, 8, 16, MediaQuery.of(context).padding.bottom + 20),
+              16,
+              8,
+              16,
+              MediaQuery.of(context).padding.bottom + 20,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -64,7 +69,7 @@ class WaterIntakeScreen extends GetView<WaterIntakeController> {
           ),
         );
       }),
-      bottomNavigationBar: _buildBottomNav(context),
+      // bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
@@ -77,7 +82,7 @@ class WaterIntakeScreen extends GetView<WaterIntakeController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Hydration Tracker',
+            TranslationKeys.waterHydrationTracker.tr,
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w700,
@@ -282,114 +287,114 @@ class WaterIntakeScreen extends GetView<WaterIntakeController> {
     );
   }
 
-  Widget _buildBottomNav(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+  // Widget _buildBottomNav(BuildContext context) {
+  //   final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface.withOpacity(0.9),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                context,
-                icon: Icons.home_rounded,
-                label: 'Home',
-                onTap: controller.navigateToHome,
-                isActive: false,
-              ),
-              _buildNavItem(
-                context,
-                icon: Icons.event_rounded,
-                label: 'Booking',
-                onTap: controller.navigateToBooking,
-                isActive: false,
-              ),
-              _buildNavItem(
-                context,
-                icon: Icons.local_drink_rounded,
-                label: 'Hydrate',
-                onTap: () {},
-                isActive: true,
-              ),
-              _buildNavItem(
-                context,
-                icon: Icons.description_rounded,
-                label: 'Reports',
-                onTap: controller.navigateToReports,
-                isActive: false,
-              ),
-              _buildNavItem(
-                context,
-                icon: Icons.person_rounded,
-                label: 'Profile',
-                onTap: controller.navigateToProfile,
-                isActive: false,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  //   return Container(
+  //     decoration: BoxDecoration(
+  //       color: colorScheme.surface.withOpacity(0.9),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: colorScheme.shadow.withOpacity(0.05),
+  //           blurRadius: 20,
+  //           offset: const Offset(0, -4),
+  //         ),
+  //       ],
+  //       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+  //     ),
+  //     child: SafeArea(
+  //       child: Padding(
+  //         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+  //         child: Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //           children: [
+  //             _buildNavItem(
+  //               context,
+  //               icon: Icons.home_rounded,
+  //               label: 'Home',
+  //               onTap: controller.navigateToHome,
+  //               isActive: false,
+  //             ),
+  //             _buildNavItem(
+  //               context,
+  //               icon: Icons.event_rounded,
+  //               label: 'Booking',
+  //               onTap: controller.navigateToBooking,
+  //               isActive: false,
+  //             ),
+  //             _buildNavItem(
+  //               context,
+  //               icon: Icons.local_drink_rounded,
+  //               label: 'Hydrate',
+  //               onTap: () {},
+  //               isActive: true,
+  //             ),
+  //             _buildNavItem(
+  //               context,
+  //               icon: Icons.description_rounded,
+  //               label: 'Reports',
+  //               onTap: controller.navigateToReports,
+  //               isActive: false,
+  //             ),
+  //             _buildNavItem(
+  //               context,
+  //               icon: Icons.person_rounded,
+  //               label: 'Profile',
+  //               onTap: controller.navigateToProfile,
+  //               isActive: false,
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  Widget _buildNavItem(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required bool isActive,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
+  // Widget _buildNavItem(
+  //   BuildContext context, {
+  //   required IconData icon,
+  //   required String label,
+  //   required VoidCallback onTap,
+  //   required bool isActive,
+  // }) {
+  //   final colorScheme = Theme.of(context).colorScheme;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: isActive
-              ? colorScheme.secondaryContainer.withOpacity(0.15)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isActive ? colorScheme.secondary : colorScheme.outline,
-              size: 24,
-            ),
-            const SizedBox(height: 2),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                  color: isActive ? colorScheme.secondary : colorScheme.outline,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  //   return GestureDetector(
+  //     onTap: onTap,
+  //     child: Container(
+  //       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+  //       decoration: BoxDecoration(
+  //         color: isActive
+  //             ? colorScheme.secondaryContainer.withOpacity(0.15)
+  //             : Colors.transparent,
+  //         borderRadius: BorderRadius.circular(12),
+  //       ),
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           Icon(
+  //             icon,
+  //             color: isActive ? colorScheme.secondary : colorScheme.outline,
+  //             size: 24,
+  //           ),
+  //           const SizedBox(height: 2),
+  //           Flexible(
+  //             child: Text(
+  //               label,
+  //               maxLines: 1,
+  //               overflow: TextOverflow.ellipsis,
+  //               style: TextStyle(
+  //                 fontSize: 10,
+  //                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+  //                 color: isActive ? colorScheme.secondary : colorScheme.outline,
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildLoadingState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -412,7 +417,7 @@ class WaterIntakeScreen extends GetView<WaterIntakeController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Loading...',
+            TranslationKeys.commonLoading.tr,
             style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
           ),
         ],
@@ -443,7 +448,7 @@ class WaterIntakeScreen extends GetView<WaterIntakeController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              TranslationKeys.commonSomethingWentWrong.tr,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -473,7 +478,7 @@ class WaterIntakeScreen extends GetView<WaterIntakeController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Try Again'),
+              child: Text(TranslationKeys.commonTryAgain.tr),
             ),
           ],
         ),

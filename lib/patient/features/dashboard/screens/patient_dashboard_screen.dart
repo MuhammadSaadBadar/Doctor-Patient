@@ -12,6 +12,7 @@ import 'package:doctor/patient/features/dashboard/widgets/symptom_summary.dart';
 import 'package:doctor/patient/features/dashboard/widgets/vital_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:doctor/core/localization/translation_keys.dart';
 
 class PatientDashboardScreen extends GetView<PatientDashboardController> {
   const PatientDashboardScreen({super.key});
@@ -23,7 +24,7 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
     return Scaffold(
       backgroundColor: cs.background,
       appBar: PatientTopAppBar(
-        title: 'Gynae Hub',
+        title: TranslationKeys.appTitle.tr,
         showBackButton: false,
         onNotificationTap: () => Get.toNamed('/notifications'),
       ),
@@ -50,12 +51,15 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                     babySize: controller.babySize.value,
                   ),
                   const SizedBox(height: 16),
+                ] else ...[
+                  _buildLmpInstructionCard(context),
+                  const SizedBox(height: 16),
                 ],
 
                 // Vitals Summary
                 if (summary.latestBloodPressure != null ||
                     summary.latestBloodSugar != null) ...[
-                  _sectionHeader(context, 'Vitals'),
+                  _sectionHeader(context, TranslationKeys.dashboardVitals.tr),
                   const SizedBox(height: 8),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -90,31 +94,31 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                 ],
 
                 // Quick Actions
-                _sectionHeader(context, 'Quick Actions'),
+                _sectionHeader(context, TranslationKeys.dashboardQuickActions.tr),
                 const SizedBox(height: 10),
 
                 QuickActionGrid(
                   actions: [
                     QuickAction(
-                      label: 'Log\nSymptoms',
+                      label: TranslationKeys.dashboardLogSymptoms.tr,
                       icon: Icons.sick_rounded,
                       color: Colors.pink,
                       onTap: controller.navigateToSymptoms,
                     ),
                     QuickAction(
-                      label: 'Water\nIntake',
+                      label: TranslationKeys.dashboardWaterIntake.tr,
                       icon: Icons.water_drop_rounded,
                       color: Colors.blue,
                       onTap: controller.navigateToWaterIntake,
                     ),
                     QuickAction(
-                      label: 'Kick\nCount',
+                      label: TranslationKeys.dashboardKickCount.tr,
                       icon: Icons.child_care_rounded,
                       color: Colors.purple,
                       onTap: controller.navigateToKickCount,
                     ),
                     QuickAction(
-                      label: 'Log\nVitals',
+                      label: TranslationKeys.dashboardLogVitals.tr,
                       icon: Icons.favorite_rounded,
                       color: Colors.red,
                       onTap: controller.navigateToVitals,
@@ -126,26 +130,26 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                 QuickActionGrid(
                   actions: [
                     QuickAction(
-                      label: 'My\nAppointments',
+                      label: TranslationKeys.dashboardMyAppointments.tr,
                       icon: Icons.calendar_month_rounded,
                       color: Colors.deepPurple,
                       onTap: controller.navigateToAppointments,
                     ),
                     QuickAction(
-                      label: 'Medicine\nReminder',
+                      label: TranslationKeys.dashboardMedicineReminder.tr,
                       icon: Icons.medication_rounded,
                       color: Colors.teal,
                       onTap: controller.navigateToMedicineReminders,
                     ),
                     QuickAction(
-                      label: 'Surgical\nProcedures',
+                      label: TranslationKeys.dashboardSurgicalProcedures.tr,
                       icon: Icons.local_hospital_rounded,
                       color: Colors.cyan,
                       onTap: controller.navigateToSurgicalProcedures,
                     ),
 
                     QuickAction(
-                      label: 'Book\nAppointment',
+                      label: TranslationKeys.dashboardBookAppointment.tr,
                       icon: Icons.medical_services_rounded,
                       color: Colors.green,
                       onTap: controller.navigateToFindDoctors,
@@ -157,31 +161,31 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                 QuickActionGrid(
                   actions: [
                     QuickAction(
-                      label: 'Diet\nPlan',
+                      label: TranslationKeys.dashboardDietPlan.tr,
                       icon: Icons.restaurant_menu_rounded,
                       color: Colors.orange,
                       onTap: controller.navigateToDietPlan,
                     ),
                     QuickAction(
-                      label: 'AI\nAssistant',
+                      label: TranslationKeys.dashboardAiAssistant.tr,
                       icon: Icons.auto_awesome_rounded,
                       color: Colors.indigo,
                       onTap: controller.navigateToAIAssistant,
                     ),
                     QuickAction(
-                      label: 'Exercise\nVideos',
+                      label: TranslationKeys.dashboardExerciseVideos.tr,
                       icon: Icons.self_improvement_rounded,
                       color: const Color(0xFF8BA7E8),
                       onTap: controller.navigateToExerciseVideos,
                     ),
                     QuickAction(
-                      label: 'Emergency',
+                      label: TranslationKeys.dashboardEmergency.tr,
                       icon: Icons.emergency_rounded,
                       color: Colors.red,
                       onTap: controller.navigateToEmergency,
                     ),
                     QuickAction(
-                      label: 'Settings',
+                      label: TranslationKeys.dashboardSettings.tr,
                       icon: Icons.settings_rounded,
                       color: Colors.teal,
                       onTap: controller.navigateToSettings,
@@ -203,7 +207,7 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                 if (summary.hasUpcomingAppointments) ...[
                   _sectionHeader(
                     context,
-                    'Upcoming Appointments',
+                    TranslationKeys.dashboardUpcomingAppointments.tr,
                     onViewAll: controller.navigateToAppointments,
                   ),
                   const SizedBox(height: 10),
@@ -224,7 +228,7 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                 if (summary.hasRecentSymptoms) ...[
                   _sectionHeader(
                     context,
-                    'Recent Symptoms',
+                    TranslationKeys.dashboardRecentSymptoms.tr,
                     onViewAll: controller.navigateToSymptoms,
                   ),
                   const SizedBox(height: 10),
@@ -281,7 +285,7 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'View All',
+                    TranslationKeys.dashboardViewAll.tr,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -323,7 +327,7 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Loading your health data...',
+            TranslationKeys.dashboardLoadingHealthData.tr,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -358,7 +362,7 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              TranslationKeys.commonSomethingWentWrong.tr,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -386,10 +390,83 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                 ),
                 elevation: 0,
               ),
-              child: const Text('Try Again'),
+              child: Text(TranslationKeys.commonTryAgain.tr),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLmpInstructionCard(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
+          colors: [
+            cs.primary.withOpacity(0.10),
+            cs.primaryContainer.withOpacity(0.06),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cs.primary.withOpacity(0.12)),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: cs.primary.withOpacity(0.14),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  Icons.pregnant_woman,
+                  size: 16,
+                  color: cs.primary,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Pregnancy Progress',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Center(
+            child: Text(
+              TranslationKeys.dashboardLmpInstruction.tr,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: cs.onSurface,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -417,7 +494,7 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Welcome to Gynae Hub!',
+              TranslationKeys.dashboardWelcome.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
@@ -427,7 +504,7 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Complete your profile to start tracking your pregnancy journey.',
+              TranslationKeys.dashboardCompleteProfileDesc.tr,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -450,7 +527,7 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                 ),
                 elevation: 0,
               ),
-              child: const Text('Complete Profile'),
+              child: Text(TranslationKeys.dashboardCompleteProfileBtn.tr),
             ),
           ],
         ),

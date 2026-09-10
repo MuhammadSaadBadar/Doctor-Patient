@@ -101,8 +101,8 @@ class AddMedicineReminderScreen extends GetView<AddMedicineReminderController> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
           colors: [
             colorScheme.primary.withOpacity(0.04),
             colorScheme.primary.withOpacity(0.01),

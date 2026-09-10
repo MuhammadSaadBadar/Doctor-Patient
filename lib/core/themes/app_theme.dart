@@ -461,8 +461,8 @@ import 'package:flutter/material.dart';
 //     final isDark = Theme.of(context).brightness == Brightness.dark;
 //     if (isDark) {
 //       return LinearGradient(
-//         begin: Alignment.topLeft,
-//         end: Alignment.bottomRight,
+//         begin: AlignmentDirectional.topStart,
+//         end: AlignmentDirectional.bottomEnd,
 //         colors: [
 //           Theme.of(context).colorScheme.surface,
 //           Theme.of(context).colorScheme.surfaceContainerLow,
@@ -1029,8 +1029,8 @@ class AppTheme {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     if (isDark) {
       return LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
+        begin: AlignmentDirectional.topStart,
+        end: AlignmentDirectional.bottomEnd,
         colors: [
           Theme.of(context).colorScheme.surface,
           Theme.of(context).colorScheme.surfaceContainerLow,

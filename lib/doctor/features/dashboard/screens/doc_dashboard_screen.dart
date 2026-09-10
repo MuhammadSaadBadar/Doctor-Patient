@@ -60,9 +60,9 @@ class DoctorDashboardScreen extends GetView<DoctorDashboardController> {
                       onRefresh: () async => controller.refreshDashboard(),
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        padding: EdgeInsets.only(
-                          left: isDesktop ? 32.0 : 16.0,
-                          right: isDesktop ? 32.0 : 16.0,
+                        padding: EdgeInsetsDirectional.only(
+                          start: isDesktop ? 32.0 : 16.0,
+                          end: isDesktop ? 32.0 : 16.0,
                           top: 0,
                           bottom: 32.0,
                         ),

@@ -1,9 +1,9 @@
 // lib/patient/features/appointments/screens/appointments_screen.dart
 
-import 'package:doctor/patient/features/appointments/controllers/appointment_controller.dart';
-import 'package:doctor/patient/features/appointments/models/appointment.dart';
-import 'package:doctor/patient/features/appointments/widgets/appointment_card.dart';
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/core/widgets/patient_top_app_bar.dart';
+import 'package:doctor/patient/features/appointments/controllers/appointment_controller.dart';
+import 'package:doctor/patient/features/appointments/widgets/appointment_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -17,13 +17,13 @@ class AppointmentsScreen extends GetView<AppointmentController> {
     return Scaffold(
       backgroundColor: cs.surfaceContainerLow,
       appBar: PatientTopAppBar(
-        title: 'Appointments',
-        trailingActions: [
-          Container(
-            margin: const EdgeInsets.only(right: 8),
-            child: _buildBookButton(context),
-          ),
-        ],
+        title: TranslationKeys.appointmentsTitle.tr,
+        // trailingActions: [
+        //   Container(
+        //     margin: const EdgeInsetsDirectional.only(end: 8),
+        //     child: _buildBookButton(context),
+        //   ),
+        // ],
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.allAppointments.isEmpty) {
@@ -66,8 +66,8 @@ class AppointmentsScreen extends GetView<AppointmentController> {
           ),
         );
       }),
-      floatingActionButton: _buildFAB(context),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      // floatingActionButton: _buildFAB(context),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -82,7 +82,7 @@ class AppointmentsScreen extends GetView<AppointmentController> {
       mainAxisSize: MainAxisSize.min, // ✅ Added
       children: [
         Text(
-          'Your Appointments',
+          TranslationKeys.appointmentsYourAppointments.tr,
           style: TextStyle(
             fontSize: textScale.scale(22).clamp(18.0, 26.0),
             fontWeight: FontWeight.w700,
@@ -92,7 +92,7 @@ class AppointmentsScreen extends GetView<AppointmentController> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Stay on top of your care — all visits in one place.',
+          TranslationKeys.appointmentsSubtitle.tr,
           style: TextStyle(
             fontSize: textScale.scale(13).clamp(11.0, 14.0),
             color: cs.onSurfaceVariant,
@@ -104,37 +104,37 @@ class AppointmentsScreen extends GetView<AppointmentController> {
 
   // ==================== BOOK BUTTON ====================
 
-  Widget _buildBookButton(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  // Widget _buildBookButton(BuildContext context) {
+  //   final cs = Theme.of(context).colorScheme;
 
-    return GestureDetector(
-      onTap: controller.navigateToBookAppointment,
-      child: Container(
-        height: 34,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: cs.onPrimary.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: cs.onPrimary.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.add_rounded, size: 16, color: cs.onPrimary),
-            const SizedBox(width: 4),
-            Text(
-              'Book New',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: cs.onPrimary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  //   return GestureDetector(
+  //     onTap: controller.navigateToBookAppointment,
+  //     child: Container(
+  //       height: 34,
+  //       padding: const EdgeInsets.symmetric(horizontal: 12),
+  //       decoration: BoxDecoration(
+  //         color: cs.onPrimary.withValues(alpha: 0.15),
+  //         borderRadius: BorderRadius.circular(30),
+  //         border: Border.all(color: cs.onPrimary.withValues(alpha: 0.3)),
+  //       ),
+  //       child: Row(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           Icon(Icons.add_rounded, size: 16, color: cs.onPrimary),
+  //           const SizedBox(width: 4),
+  //           Text(
+  //             TranslationKeys.appointmentsBookNew.tr,
+  //             style: TextStyle(
+  //               fontSize: 12,
+  //               fontWeight: FontWeight.w600,
+  //               color: cs.onPrimary,
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // ==================== FILTER CHIPS ====================
 
@@ -155,7 +155,7 @@ class AppointmentsScreen extends GetView<AppointmentController> {
           final count = controller.getFilterCount(filter);
 
           return Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsetsDirectional.only(end: 8),
             child: GestureDetector(
               onTap: () => controller.setFilter(filter),
               child: AnimatedContainer(
@@ -278,7 +278,9 @@ class AppointmentsScreen extends GetView<AppointmentController> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Text(
-              'Showing ${appointments.length} of ${controller.totalCount.value} appointments',
+              TranslationKeys.appointmentsShowingCount.tr
+                  .replaceAll('@shown', '${appointments.length}')
+                  .replaceAll('@total', '${controller.totalCount.value}'),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
             ),
@@ -330,7 +332,7 @@ class AppointmentsScreen extends GetView<AppointmentController> {
           ElevatedButton.icon(
             onPressed: controller.navigateToBookAppointment,
             icon: const Icon(Icons.add_rounded, size: 18),
-            label: const Text('Book Appointment'),
+            label: Text(TranslationKeys.appointmentsBookAppointment.tr),
             style: ElevatedButton.styleFrom(
               backgroundColor: cs.primary,
               foregroundColor: cs.onPrimary,
@@ -369,7 +371,7 @@ class AppointmentsScreen extends GetView<AppointmentController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Loading appointments...',
+            TranslationKeys.appointmentsLoading.tr,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -408,7 +410,7 @@ class AppointmentsScreen extends GetView<AppointmentController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              TranslationKeys.commonSomethingWentWrong.tr,
               style: TextStyle(
                 fontSize: textScale.scale(16).clamp(14.0, 18.0),
                 fontWeight: FontWeight.w600,
@@ -439,7 +441,7 @@ class AppointmentsScreen extends GetView<AppointmentController> {
                 ),
                 elevation: 0,
               ),
-              child: const Text('Try Again'),
+              child: Text(TranslationKeys.commonTryAgain.tr),
             ),
           ],
         ),
@@ -449,22 +451,22 @@ class AppointmentsScreen extends GetView<AppointmentController> {
 
   // ==================== FLOATING ACTION BUTTON ====================
 
-  Widget _buildFAB(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  // Widget _buildFAB(BuildContext context) {
+  //   final cs = Theme.of(context).colorScheme;
 
-    return FloatingActionButton.extended(
-      onPressed: controller.navigateToBookAppointment,
-      backgroundColor: cs.primary,
-      foregroundColor: cs.onPrimary,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-      icon: const Icon(Icons.add_circle_rounded, size: 20),
-      label: const Text(
-        'Book Appointment',
-        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-      ),
-    );
-  }
+  //   return FloatingActionButton.extended(
+  //     onPressed: controller.navigateToBookAppointment,
+  //     backgroundColor: cs.primary,
+  //     foregroundColor: cs.onPrimary,
+  //     elevation: 4,
+  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+  //     icon: const Icon(Icons.add_circle_rounded, size: 20),
+  //     label: Text(
+  //       TranslationKeys.appointmentsBookAppointment.tr,
+  //       style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+  //     ),
+  //   );
+  // }
 
   // ==================== HELPERS ====================
 
@@ -486,30 +488,30 @@ class AppointmentsScreen extends GetView<AppointmentController> {
   String _getEmptyTitle() {
     switch (controller.selectedFilter.value) {
       case AppointmentFilter.all:
-        return 'No appointments found';
+        return TranslationKeys.appointmentsNoFound.tr;
       case AppointmentFilter.pending:
-        return 'No pending appointments';
+        return TranslationKeys.appointmentsNoPending.tr;
       case AppointmentFilter.confirmed:
-        return 'No confirmed appointments';
+        return TranslationKeys.appointmentsNoConfirmed.tr;
       case AppointmentFilter.unpaid:
-        return 'No unpaid appointments';
+        return TranslationKeys.appointmentsNoUnpaid.tr;
       default:
-        return 'No appointments found';
+        return TranslationKeys.appointmentsNoFound.tr;
     }
   }
 
   String _getEmptySubtitle() {
     switch (controller.selectedFilter.value) {
       case AppointmentFilter.all:
-        return 'Your appointments will appear here';
+        return TranslationKeys.appointmentsSubAll.tr;
       case AppointmentFilter.pending:
-        return 'You have no appointments waiting for confirmation';
+        return TranslationKeys.appointmentsSubPending.tr;
       case AppointmentFilter.confirmed:
-        return 'You have no confirmed appointments';
+        return TranslationKeys.appointmentsSubConfirmed.tr;
       case AppointmentFilter.unpaid:
-        return 'All your appointments are paid';
+        return TranslationKeys.appointmentsSubUnpaid.tr;
       default:
-        return 'Your appointments will appear here';
+        return TranslationKeys.appointmentsSubAll.tr;
     }
   }
 }
