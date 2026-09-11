@@ -33,9 +33,16 @@ class VitalCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
+        gradient: LinearGradient(
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
+          colors: [
+            cs.primary.withOpacity(0.10),
+            cs.primaryContainer.withOpacity(0.06),
+          ],
+        ),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: statusColor.withOpacity(0.25)),
+        border: Border.all(color: cs.primary.withOpacity(0.12)),
         boxShadow: [
           BoxShadow(
             color: cs.shadow.withOpacity(0.05),
@@ -117,9 +124,16 @@ class VitalCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
+        gradient: LinearGradient(
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
+          colors: [
+            cs.primary.withOpacity(0.10),
+            cs.primaryContainer.withOpacity(0.06),
+          ],
+        ),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: statusColor.withOpacity(0.25)),
+        border: Border.all(color: cs.primary.withOpacity(0.12)),
         boxShadow: [
           BoxShadow(
             color: cs.shadow.withOpacity(0.05),
@@ -137,13 +151,13 @@ class VitalCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.12),
+                  color: cs.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   Icons.bloodtype_rounded,
                   size: 14,
-                  color: Colors.blue.shade600,
+                  color: cs.primary,
                 ),
               ),
               const SizedBox(width: 6),

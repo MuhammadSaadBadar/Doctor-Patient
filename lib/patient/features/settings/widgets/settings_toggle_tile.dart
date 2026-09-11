@@ -44,7 +44,7 @@ class SettingsToggleTile extends StatelessWidget {
             MaterialSymbolIcon(
               icon,
               size: 24,
-              color: AppColors.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -54,7 +54,7 @@ class SettingsToggleTile extends StatelessWidget {
                   Text(
                     title,
                     style: AppTheme.bodyMedium.copyWith(
-                      color: AppColors.onSurface,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -63,7 +63,7 @@ class SettingsToggleTile extends StatelessWidget {
                     Text(
                       subtitle!,
                       style: AppTheme.bodySmall.copyWith(
-                        color: AppColors.onSurfaceVariant,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -74,9 +74,9 @@ class SettingsToggleTile extends StatelessWidget {
               value: value,
               onChanged: onChanged,
               activeColor: AppColors.primary,
-              activeTrackColor: AppColors.primary.withOpacity(0.4),
-              inactiveTrackColor: AppColors.surfaceDim,
-              inactiveThumbColor: AppColors.surface,
+              activeTrackColor: Theme.of(context).colorScheme.primary.withOpacity(0.12),
+              inactiveTrackColor: Theme.of(context).colorScheme.surfaceVariant,
+              inactiveThumbColor: Theme.of(context).colorScheme.surface,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ],

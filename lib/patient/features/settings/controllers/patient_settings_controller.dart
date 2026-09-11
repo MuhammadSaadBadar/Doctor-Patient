@@ -21,6 +21,15 @@ class PatientSettingsController extends GetxController {
   final areNotificationsEnabled = true.obs;
   final selectedLanguage = 'en_US'.obs;
 
+  // Password validation
+  final isLengthValid = false.obs;
+  final hasUppercase = false.obs;
+  final hasLowercase = false.obs;
+  final hasSpecial = false.obs;
+
+  // Change password error
+  final changePasswordError = ''.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -189,6 +198,7 @@ class PatientSettingsController extends GetxController {
     required String newPassword,
   }) async {
     isLoading.value = true;
+    changePasswordError.value = '';
     try {
       final errorMessage = await _repository.changePassword(
         oldPassword: oldPassword,
@@ -205,6 +215,7 @@ class PatientSettingsController extends GetxController {
         );
         return true;
       } else {
+        changePasswordError.value = errorMessage;
         Get.snackbar(
           'Error',
           errorMessage,
@@ -215,6 +226,7 @@ class PatientSettingsController extends GetxController {
         return false;
       }
     } catch (e) {
+      changePasswordError.value = 'An error occurred. Please try again.';
       Get.snackbar(
         'Error',
         'An error occurred. Please try again.',
@@ -226,6 +238,13 @@ class PatientSettingsController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void validatePasswordStrength(String password) {
+    isLengthValid.value = password.length >= 8;
+    hasUppercase.value = RegExp(r'[A-Z]').hasMatch(password);
+    hasLowercase.value = RegExp(r'[a-z]').hasMatch(password);
+    hasSpecial.value = RegExp(r'[^A-Za-z0-9]').hasMatch(password);
   }
 
   void toggleTheme(bool value) {
@@ -424,97 +443,7 @@ class PatientSettingsController extends GetxController {
     );
   }
 
-  void showChangePasswordDialog() {
-    final oldPasswordController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Change Password'),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: oldPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Current Password',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your current password';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: newPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'New Password',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a new password';
-                  }
-                  if (value.length < 8) {
-                    return 'Password must be at least 8 characters';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: confirmPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Confirm New Password',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please confirm your new password';
-                  }
-                  if (value != newPasswordController.text) {
-                    return 'Passwords do not match';
-                  }
-                  return null;
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              if (formKey.currentState?.validate() ?? false) {
-                Get.back();
-                await changePassword(
-                  oldPassword: oldPasswordController.text,
-                  newPassword: newPasswordController.text,
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimary,
-            ),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-  }
-
+  @override
   @override
   void onClose() {
     super.onClose();

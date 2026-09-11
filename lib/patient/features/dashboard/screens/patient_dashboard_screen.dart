@@ -1,5 +1,6 @@
 // lib/patient/features/dashboard/screens/dashboard_screen.dart
 
+import 'package:doctor/core/localization/translation_keys.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/dashboard/controllers/patient_dashboard_controller.dart';
@@ -12,7 +13,6 @@ import 'package:doctor/patient/features/dashboard/widgets/symptom_summary.dart';
 import 'package:doctor/patient/features/dashboard/widgets/vital_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:doctor/core/localization/translation_keys.dart';
 
 class PatientDashboardScreen extends GetView<PatientDashboardController> {
   const PatientDashboardScreen({super.key});
@@ -94,7 +94,10 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                 ],
 
                 // Quick Actions
-                _sectionHeader(context, TranslationKeys.dashboardQuickActions.tr),
+                _sectionHeader(
+                  context,
+                  TranslationKeys.dashboardQuickActions.tr,
+                ),
                 const SizedBox(height: 10),
 
                 QuickActionGrid(
@@ -166,12 +169,12 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                       color: Colors.orange,
                       onTap: controller.navigateToDietPlan,
                     ),
-                    QuickAction(
-                      label: TranslationKeys.dashboardAiAssistant.tr,
-                      icon: Icons.auto_awesome_rounded,
-                      color: Colors.indigo,
-                      onTap: controller.navigateToAIAssistant,
-                    ),
+                    // QuickAction(
+                    //   label: TranslationKeys.dashboardAiAssistant.tr,
+                    //   icon: Icons.auto_awesome_rounded,
+                    //   color: Colors.indigo,
+                    //   onTap: controller.navigateToAIAssistant,
+                    // ),
                     QuickAction(
                       label: TranslationKeys.dashboardExerciseVideos.tr,
                       icon: Icons.self_improvement_rounded,
@@ -433,11 +436,7 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                   color: cs.primary.withOpacity(0.14),
                   borderRadius: BorderRadius.circular(9),
                 ),
-                child: Icon(
-                  Icons.pregnant_woman,
-                  size: 16,
-                  color: cs.primary,
-                ),
+                child: Icon(Icons.pregnant_woman, size: 16, color: cs.primary),
               ),
               const SizedBox(width: 10),
               Expanded(

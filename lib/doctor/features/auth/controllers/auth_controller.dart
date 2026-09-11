@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/constants/user_role.dart';
+import 'package:doctor/core/network/api_exceptions.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/doctor/features/auth/repositories/auth_repository.dart';
 import 'package:doctor/doctor/features/profile/models/doc_edit_profile_model.dart';
@@ -257,8 +258,8 @@ class AuthController extends GetxController {
   Future<void> forgotPassword(String email) async {
     isLoading.value = true;
     try {
-      final success = await _repository.resetPassword(email);
-      if (success) {
+      final error = await _repository.resetPassword(email);
+      if (error == null) {
         Get.toNamed(
           AppRoutes.otpVerification,
           arguments: {'email': email, 'purpose': 'reset'},
@@ -273,12 +274,25 @@ class AuthController extends GetxController {
       } else {
         Get.snackbar(
           'Error',
-          'Failed to send reset instructions. Please try again.',
+          error,
           snackPosition: SnackPosition.TOP,
           backgroundColor: AppColors.error,
           colorText: AppColors.onError,
         );
       }
+    } on NetworkException {
+      Get.toNamed(
+        AppRoutes.otpVerification,
+        arguments: {'email': email, 'purpose': 'reset'},
+      );
+      Get.snackbar(
+        'Reset request status unknown',
+        'The request may have been processed. Check your email for a code before trying again.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: AppColors.error,
+        colorText: AppColors.onError,
+        duration: const Duration(seconds: 7),
+      );
     } finally {
       isLoading.value = false;
     }
@@ -290,8 +304,8 @@ class AuthController extends GetxController {
     try {
       final purpose = Get.arguments?['purpose'] as String? ?? 'reset';
       if (purpose == 'registration') {
-        final verified = await _repository.verifyEmail(email, otp);
-        if (verified) {
+        final error = await _repository.verifyEmail(email, otp);
+        if (error == null) {
           _timer?.cancel();
           Get.offAllNamed(AppRoutes.login);
           Get.snackbar(
@@ -302,20 +316,26 @@ class AuthController extends GetxController {
             colorText: AppColors.onPrimary,
           );
         } else {
-          throw Exception('Invalid verification code');
+          Get.snackbar(
+            'Verification Failed',
+            error,
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: AppColors.error,
+            colorText: AppColors.onError,
+          );
         }
         return;
       }
 
-      final result = await _repository.verifyOtpForReset(email, otp);
-      if (result) {
+      final error = await _repository.verifyOtpForReset(email, otp);
+      if (error == null) {
         resetToken.value = _repository.getResetToken ?? '';
         _timer?.cancel();
         Get.toNamed(AppRoutes.resetPassword);
       } else {
         Get.snackbar(
-          'Invalid OTP',
-          'Please enter the correct verification code',
+          'Verification Failed',
+          error,
           snackPosition: SnackPosition.TOP,
           backgroundColor: AppColors.error,
           colorText: AppColors.onError,
@@ -340,10 +360,10 @@ class AuthController extends GetxController {
     isLoading.value = true;
     try {
       final purpose = Get.arguments?['purpose'] as String? ?? 'reset';
-      final success = purpose == 'registration'
+      final error = purpose == 'registration'
           ? await _repository.resendVerification(email)
           : await _repository.resendResetOtp(email);
-      if (success) {
+      if (error == null) {
         _startTimer();
         Get.snackbar(
           'OTP Sent',
@@ -361,7 +381,7 @@ class AuthController extends GetxController {
       } else {
         Get.snackbar(
           'Error',
-          'Failed to resend OTP. Please try again.',
+          error,
           snackPosition: SnackPosition.TOP,
           backgroundColor: AppColors.error,
           colorText: AppColors.onError,
@@ -393,17 +413,17 @@ class AuthController extends GetxController {
   Future<void> resetPasswordWithToken(String token, String newPassword) async {
     isLoading.value = true;
     try {
-      final success = await _repository.resetPasswordWithToken(
+      final error = await _repository.resetPasswordWithToken(
         token,
         newPassword,
       );
-      if (success) {
+      if (error == null) {
         resetToken.value = '';
         Get.offAllNamed(AppRoutes.passwordResetSuccess);
       } else {
         Get.snackbar(
           'Error',
-          'Failed to reset password. Please try again.',
+          error,
           snackPosition: SnackPosition.TOP,
           backgroundColor: AppColors.error,
           colorText: AppColors.onError,
@@ -432,11 +452,8 @@ class AuthController extends GetxController {
   Future<void> changePassword(String oldPassword, String newPassword) async {
     isLoading.value = true;
     try {
-      final success = await _repository.changePassword(
-        oldPassword,
-        newPassword,
-      );
-      if (success) {
+      final error = await _repository.changePassword(oldPassword, newPassword);
+      if (error == null) {
         Get.back();
         Get.snackbar(
           'Success',
@@ -453,7 +470,7 @@ class AuthController extends GetxController {
       } else {
         Get.snackbar(
           'Error',
-          'Failed to change password. Please try again.',
+          error,
           snackPosition: SnackPosition.TOP,
           backgroundColor: AppColors.error,
           colorText: AppColors.onError,

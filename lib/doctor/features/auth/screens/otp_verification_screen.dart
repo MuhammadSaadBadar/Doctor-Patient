@@ -1,3 +1,5 @@
+// lib/doctor/features/auth/screens/otp_verification_screen.dart
+
 import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/themes/app_theme.dart';
@@ -35,6 +37,7 @@ class OtpVerificationScreen extends GetView<AuthController> {
                   constraints: const BoxConstraints(maxWidth: 400),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min, // ✅ Added
                     children: [
                       // Brand Icon
                       _buildBrandIcon(),
@@ -78,7 +81,7 @@ class OtpVerificationScreen extends GetView<AuthController> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // OTP Input Fields — wrapped in Expanded/Flexible to prevent overflow
+          // OTP Input Fields — ✅ FIXED: Removed Expanded, using SizedBox instead
           _buildOtpInputFields(),
           const SizedBox(height: 24),
           // Timer & Resend
@@ -92,15 +95,18 @@ class OtpVerificationScreen extends GetView<AuthController> {
   }
 
   Widget _buildOtpInputFields() {
-    return Expanded(
+    // ✅ FIXED: Removed Expanded, using SizedBox with fixed height
+    return SizedBox(
+      height: 56, // Fixed height for the OTP row
       child: FittedBox(
         fit: BoxFit.scaleDown,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: List.generate(6, (index) {
-            return Flexible(
-              fit: FlexFit.tight,
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               child: SizedBox(
+                width: 48, // Fixed width for each OTP box
                 height: 56,
                 child: TextFormField(
                   controller: controller.otpControllers[index],
@@ -184,9 +190,7 @@ class OtpVerificationScreen extends GetView<AuthController> {
           if (controller.timerSeconds.value <= 0) ...[
             const SizedBox(width: 16),
             TextButton(
-              onPressed: controller.isLoading.value
-                  ? null
-                  : _handleResendOtp,
+              onPressed: controller.isLoading.value ? null : _handleResendOtp,
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.primary,
                 textStyle: AppTheme.labelMedium,
@@ -219,8 +223,7 @@ class OtpVerificationScreen extends GetView<AuthController> {
             textStyle: AppTheme.labelLarge.copyWith(
               fontWeight: FontWeight.w700,
             ),
-            disabledBackgroundColor:
-                AppColors.primary.withOpacity(0.4),
+            disabledBackgroundColor: AppColors.primary.withOpacity(0.4),
           ),
           child: controller.isOtpLoading.value
               ? const SizedBox(
@@ -247,9 +250,7 @@ class OtpVerificationScreen extends GetView<AuthController> {
       ),
       label: Text(
         'Back to Login',
-        style: AppTheme.labelMedium.copyWith(
-          color: AppColors.onSurfaceVariant,
-        ),
+        style: AppTheme.labelMedium.copyWith(color: AppColors.onSurfaceVariant),
       ),
       style: TextButton.styleFrom(
         padding: EdgeInsets.zero,

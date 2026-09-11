@@ -44,8 +44,8 @@ class SettingsTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: borderRadius,
-        hoverColor: AppColors.surfaceContainerLow.withOpacity(0.5),
-        highlightColor: AppColors.surfaceContainerLow.withOpacity(0.3),
+        hoverColor: Theme.of(context).colorScheme.surfaceContainerLow.withOpacity(0.5),
+        highlightColor: Theme.of(context).colorScheme.surfaceContainerLow.withOpacity(0.3),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
@@ -53,7 +53,7 @@ class SettingsTile extends StatelessWidget {
               MaterialSymbolIcon(
                 icon,
                 size: 24,
-                color: iconColor ?? AppColors.onSurfaceVariant,
+                color: iconColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -63,7 +63,7 @@ class SettingsTile extends StatelessWidget {
                     Text(
                       title,
                       style: AppTheme.bodyMedium.copyWith(
-                        color: textColor ?? AppColors.onSurface,
+                        color: textColor ?? Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -72,7 +72,7 @@ class SettingsTile extends StatelessWidget {
                       Text(
                         subtitle!,
                         style: AppTheme.bodySmall.copyWith(
-                          color: AppColors.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -84,7 +84,7 @@ class SettingsTile extends StatelessWidget {
                 MaterialSymbolIcon(
                   'chevron_right',
                   size: 24,
-                  color: AppColors.outline,
+                  color: Theme.of(context).colorScheme.outline,
                 ),
             ],
           ),

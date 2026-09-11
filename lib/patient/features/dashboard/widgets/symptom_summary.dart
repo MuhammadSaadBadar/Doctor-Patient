@@ -22,9 +22,16 @@ class SymptomSummary extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: cs.surfaceContainerLowest,
+          gradient: LinearGradient(
+            begin: AlignmentDirectional.topStart,
+            end: AlignmentDirectional.bottomEnd,
+            colors: [
+              cs.primary.withOpacity(0.10),
+              cs.primaryContainer.withOpacity(0.06),
+            ],
+          ),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: cs.outlineVariant),
+          border: Border.all(color: cs.primary.withOpacity(0.12)),
           boxShadow: [
             BoxShadow(
               color: cs.shadow.withOpacity(0.05),
@@ -40,13 +47,13 @@ class SymptomSummary extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.pink.withOpacity(0.12),
+                color: cs.primary.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 Icons.sick_rounded,
                 size: 18,
-                color: Colors.pink.shade400,
+                color: cs.primary,
               ),
             ),
             const SizedBox(width: 12),

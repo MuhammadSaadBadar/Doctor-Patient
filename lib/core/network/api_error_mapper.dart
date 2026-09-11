@@ -18,16 +18,48 @@ class ApiErrorMapper {
     final serverMessage = _extractServerMessage(e.response?.data);
     final fieldErrors = _extractFieldErrors(e.response?.data);
 
-    if (e.type == DioExceptionType.connectionError ||
-        e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.receiveTimeout ||
-        e.type == DioExceptionType.sendTimeout) {
+    // A transport exception can still carry a server response. In that case
+    // preserve the HTTP status and response body instead of masking it as a
+    // generic network failure.
+    if (e.response == null &&
+        (e.type == DioExceptionType.connectionError ||
+            e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.sendTimeout)) {
       return NetworkException();
     }
 
-    if (statusCode == 401) return UnauthorizedException();
-    if (statusCode == 404) return NotFoundException();
-    if (statusCode != null && statusCode >= 500) return ServerException();
+    // Prefer any server-supplied message before falling back to the fixed
+    // subclass messages (UnauthorizedException / NotFoundException /
+    // ServerException all hard-code generic strings that hide useful backend
+    // context like "Email not found" or "Invalid OTP").
+    if (statusCode == 401) {
+      return serverMessage != null
+          ? ApiException(
+              serverMessage,
+              statusCode: 401,
+              fieldErrors: fieldErrors,
+            )
+          : UnauthorizedException();
+    }
+    if (statusCode == 404) {
+      return serverMessage != null
+          ? ApiException(
+              serverMessage,
+              statusCode: 404,
+              fieldErrors: fieldErrors,
+            )
+          : NotFoundException();
+    }
+    if (statusCode != null && statusCode >= 500) {
+      return serverMessage != null
+          ? ApiException(
+              serverMessage,
+              statusCode: statusCode,
+              fieldErrors: fieldErrors,
+            )
+          : ServerException();
+    }
 
     return ApiException(
       serverMessage ?? defaultMessage,
@@ -42,8 +74,16 @@ class ApiErrorMapper {
       if (detail is String && detail.isNotEmpty) return detail;
       final message = data['message'];
       if (message is String && message.isNotEmpty) return message;
+      // Flatten first field-error list as a fallback message when there is no
+      // top-level detail/message but structured validation errors exist.
       final errors = data['errors'];
-      if (errors != null) return errors.toString();
+      if (errors is Map && errors.isNotEmpty) {
+        final firstKey = errors.keys.first;
+        final firstVal = errors[firstKey];
+        if (firstVal is List && firstVal.isNotEmpty)
+          return firstVal.first.toString();
+        return firstVal.toString();
+      }
     }
     return null;
   }

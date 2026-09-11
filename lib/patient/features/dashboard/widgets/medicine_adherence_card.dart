@@ -17,7 +17,6 @@ class MedicineAdherenceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final pct = adherence.adherencePercentage;
-    final isGood = pct >= 70;
     final progressColor = pct >= 70 ? Colors.green : Colors.orange;
 
     return InkWell(
@@ -26,9 +25,16 @@ class MedicineAdherenceCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: cs.surfaceContainerLowest,
+          gradient: LinearGradient(
+            begin: AlignmentDirectional.topStart,
+            end: AlignmentDirectional.bottomEnd,
+            colors: [
+              cs.primary.withOpacity(0.10),
+              cs.primaryContainer.withOpacity(0.06),
+            ],
+          ),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cs.outlineVariant),
+          border: Border.all(color: cs.primary.withOpacity(0.12)),
           boxShadow: [
             BoxShadow(
               color: cs.shadow.withOpacity(0.05),

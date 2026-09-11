@@ -3,6 +3,7 @@ import 'package:doctor/core/constants/api_constants.dart';
 import 'package:doctor/core/constants/user_role.dart';
 import 'package:doctor/core/network/api_client.dart';
 import 'package:doctor/core/network/api_error_mapper.dart';
+import 'package:doctor/core/network/api_exceptions.dart';
 import 'package:doctor/core/services/storage_service.dart';
 import 'package:doctor/doctor/features/auth/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,8 @@ class LoginResult {
 }
 
 class AuthRepository {
+  static const _emailOperationTimeout = Duration(seconds: 180);
+
   final ApiClient _apiClient;
   final StorageService _storage;
   String? _resetToken;
@@ -181,10 +184,11 @@ class AuthRepository {
       debugPrint('[AUTH] DioException response: ${e.response?.data}');
 
       // Check if it's a connection error
-      if (e.type == DioExceptionType.connectionError ||
-          e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout ||
-          e.type == DioExceptionType.sendTimeout) {
+      if (e.response == null &&
+          (e.type == DioExceptionType.connectionError ||
+              e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.receiveTimeout ||
+              e.type == DioExceptionType.sendTimeout)) {
         // Network error - show specific message
         return LoginResult.failure(
           'Unable to connect to the server. Please check your internet connection.',
@@ -297,30 +301,38 @@ class AuthRepository {
   }
 
   // ==================== FORGOT PASSWORD (Step 1) ====================
-  Future<bool> resetPassword(String email) async {
+  /// Returns null on success, or an error message string to display.
+  Future<String?> resetPassword(String email) async {
     try {
-      final response = await _apiClient.post(
+      final response = await _apiClient.postJson(
         ApiConstants.authPasswordForgot,
         data: {'email': email},
+        connectTimeout: _emailOperationTimeout,
+        receiveTimeout: _emailOperationTimeout,
       );
-      return response.statusCode == 200;
+      if (response.statusCode == 200) return null;
+      // Non-200 success or unexpected status.
+      final serverMessage = _extractServerMessage(response.data);
+      return serverMessage ?? 'Failed to send reset instructions.';
     } on DioException catch (e) {
       final apiException = ApiErrorMapper.mapDioException(
         e,
         defaultMessage: 'Failed to send reset instructions.',
       );
       debugPrint('[AUTH] Password reset error: ${apiException.message}');
-      return false;
+      if (apiException is NetworkException) throw apiException;
+      return apiException.message;
     } catch (e) {
       debugPrint('[AUTH] Password reset error: $e');
-      return false;
+      return 'An unexpected error occurred. Please try again.';
     }
   }
 
   // ==================== OTP VERIFICATION FOR RESET (Step 2) ====================
-  Future<bool> verifyOtpForReset(String email, String otp) async {
+  /// Returns null on success (reset token stored internally), or an error message.
+  Future<String?> verifyOtpForReset(String email, String otp) async {
     try {
-      final response = await _apiClient.post(
+      final response = await _apiClient.postJson(
         ApiConstants.authPasswordVerifyOtp,
         data: {'email': email, 'otp_code': otp},
       );
@@ -332,20 +344,21 @@ class AuthRepository {
           _resetToken = resetToken;
           Get.find<AuthController>().resetToken.value = resetToken;
         }
-        return true;
+        return null; // success
       }
 
-      return false;
+      final serverMessage = _extractServerMessage(response.data);
+      return serverMessage ?? 'OTP verification failed.';
     } on DioException catch (e) {
       final apiException = ApiErrorMapper.mapDioException(
         e,
         defaultMessage: 'OTP verification failed.',
       );
       debugPrint('[AUTH] OTP verification error: ${apiException.message}');
-      return false;
+      return apiException.message;
     } catch (e) {
       debugPrint('[AUTH] OTP verification error: $e');
-      return false;
+      return 'An unexpected error occurred. Please try again.';
     }
   }
 
@@ -353,30 +366,37 @@ class AuthRepository {
   String? get getResetToken => _resetToken;
 
   // ==================== RESEND RESET OTP ====================
-  Future<bool> resendResetOtp(String email) async {
+  /// Returns null on success, or an error message string.
+  Future<String?> resendResetOtp(String email) async {
     try {
-      final response = await _apiClient.post(
+      final response = await _apiClient.postJson(
         ApiConstants.authPasswordForgot,
         data: {'email': email},
       );
-      return response.statusCode == 200;
+      if (response.statusCode == 200) return null;
+      final serverMessage = _extractServerMessage(response.data);
+      return serverMessage ?? 'Failed to resend OTP.';
     } on DioException catch (e) {
       final apiException = ApiErrorMapper.mapDioException(
         e,
         defaultMessage: 'Failed to resend OTP.',
       );
       debugPrint('[AUTH] Resend reset OTP error: ${apiException.message}');
-      return false;
+      return apiException.message;
     } catch (e) {
       debugPrint('[AUTH] Resend reset OTP error: $e');
-      return false;
+      return 'An unexpected error occurred. Please try again.';
     }
   }
 
   // ==================== RESET PASSWORD WITH TOKEN (Step 3) ====================
-  Future<bool> resetPasswordWithToken(String token, String newPassword) async {
+  /// Returns null on success, or an error message string.
+  Future<String?> resetPasswordWithToken(
+    String token,
+    String newPassword,
+  ) async {
     try {
-      final response = await _apiClient.post(
+      final response = await _apiClient.postJson(
         ApiConstants.authPasswordReset,
         data: {'token': token, 'new_password': newPassword},
       );
@@ -384,10 +404,11 @@ class AuthRepository {
       if (response.statusCode == 200) {
         Get.find<AuthController>().resetToken.value = '';
         debugPrint('[AUTH] Password reset with token successful');
-        return true;
+        return null; // success
       }
 
-      return false;
+      final serverMessage = _extractServerMessage(response.data);
+      return serverMessage ?? 'Failed to reset password.';
     } on DioException catch (e) {
       final apiException = ApiErrorMapper.mapDioException(
         e,
@@ -396,32 +417,35 @@ class AuthRepository {
       debugPrint(
         '[AUTH] Password reset with token error: ${apiException.message}',
       );
-      return false;
+      return apiException.message;
     } catch (e) {
       debugPrint('[AUTH] Password reset with token error: $e');
-      return false;
+      return 'An unexpected error occurred. Please try again.';
     }
   }
 
   // ==================== CHANGE PASSWORD (Authenticated) ====================
-  Future<bool> changePassword(String oldPassword, String newPassword) async {
+  /// Returns null on success, or an error message string.
+  Future<String?> changePassword(String oldPassword, String newPassword) async {
     try {
-      final response = await _apiClient.post(
+      final response = await _apiClient.postJson(
         ApiConstants.authPasswordChange,
         data: {'old_password': oldPassword, 'new_password': newPassword},
       );
 
-      return response.statusCode == 200;
+      if (response.statusCode == 200) return null;
+      final serverMessage = _extractServerMessage(response.data);
+      return serverMessage ?? 'Failed to change password.';
     } on DioException catch (e) {
       final apiException = ApiErrorMapper.mapDioException(
         e,
         defaultMessage: 'Failed to change password.',
       );
       debugPrint('[AUTH] Change password error: ${apiException.message}');
-      return false;
+      return apiException.message;
     } catch (e) {
       debugPrint('[AUTH] Change password error: $e');
-      return false;
+      return 'An unexpected error occurred. Please try again.';
     }
   }
 
@@ -464,6 +488,8 @@ class AuthRepository {
           'last_name': lastName,
           'phone_number': phoneNumber,
         },
+        connectTimeout: _emailOperationTimeout,
+        receiveTimeout: _emailOperationTimeout,
       );
 
       return response.statusCode == 201;
@@ -473,52 +499,58 @@ class AuthRepository {
         defaultMessage: 'Registration failed.',
       );
       debugPrint('[AUTH] Registration error: ${apiException.message}');
-      return false;
+      throw apiException;
     } catch (e) {
       debugPrint('[AUTH] Registration error: $e');
-      return false;
+      rethrow;
     }
   }
 
   // ==================== VERIFY EMAIL ====================
-  Future<bool> verifyEmail(String email, String otp) async {
+  /// Returns null on success, or an error message string.
+  Future<String?> verifyEmail(String email, String otp) async {
     try {
       final response = await _apiClient.post(
         ApiConstants.authVerifyEmail,
         data: {'email': email, 'otp_code': otp},
       );
-      return response.statusCode == 200;
+      if (response.statusCode == 200) return null;
+      final serverMessage = _extractServerMessage(response.data);
+      return serverMessage ?? 'Email verification failed.';
     } on DioException catch (e) {
       final apiException = ApiErrorMapper.mapDioException(
         e,
         defaultMessage: 'Email verification failed.',
       );
       debugPrint('[AUTH] Verify email error: ${apiException.message}');
-      return false;
+      return apiException.message;
     } catch (e) {
       debugPrint('[AUTH] Verify email error: $e');
-      return false;
+      return 'An unexpected error occurred. Please try again.';
     }
   }
 
   // ==================== RESEND VERIFICATION ====================
-  Future<bool> resendVerification(String email) async {
+  /// Returns null on success, or an error message string.
+  Future<String?> resendVerification(String email) async {
     try {
       final response = await _apiClient.post(
         ApiConstants.authResendVerification,
         data: {'email': email},
       );
-      return response.statusCode == 200;
+      if (response.statusCode == 200) return null;
+      final serverMessage = _extractServerMessage(response.data);
+      return serverMessage ?? 'Failed to resend verification.';
     } on DioException catch (e) {
       final apiException = ApiErrorMapper.mapDioException(
         e,
         defaultMessage: 'Failed to resend verification.',
       );
       debugPrint('[AUTH] Resend verification error: ${apiException.message}');
-      return false;
+      return apiException.message;
     } catch (e) {
       debugPrint('[AUTH] Resend verification error: $e');
-      return false;
+      return 'An unexpected error occurred. Please try again.';
     }
   }
 
@@ -535,5 +567,26 @@ class AuthRepository {
     } catch (e) {
       return e.toString();
     }
+  }
+
+  // ==================== PRIVATE HELPERS ====================
+  /// Extracts the first usable human-readable message from a response body.
+  /// Mirrors the logic in [ApiErrorMapper._extractServerMessage] for use on
+  /// non-DioException paths (e.g. unexpected non-200 status codes).
+  static String? _extractServerMessage(dynamic data) {
+    if (data is Map<String, dynamic>) {
+      final detail = data['detail'];
+      if (detail is String && detail.isNotEmpty) return detail;
+      final message = data['message'];
+      if (message is String && message.isNotEmpty) return message;
+      final errors = data['errors'];
+      if (errors is Map && errors.isNotEmpty) {
+        final firstVal = errors[errors.keys.first];
+        if (firstVal is List && firstVal.isNotEmpty)
+          return firstVal.first.toString();
+        return firstVal?.toString();
+      }
+    }
+    return null;
   }
 }

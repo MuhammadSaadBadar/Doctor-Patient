@@ -25,9 +25,16 @@ class DashboardHeroStat extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
+        gradient: LinearGradient(
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
+          colors: [
+            cs.primary.withOpacity(0.10),
+            cs.primaryContainer.withOpacity(0.06),
+          ],
+        ),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: cs.outlineVariant),
+        border: Border.all(color: cs.primary.withOpacity(0.12)),
         boxShadow: [
           BoxShadow(
             color: cs.shadow.withOpacity(0.06),

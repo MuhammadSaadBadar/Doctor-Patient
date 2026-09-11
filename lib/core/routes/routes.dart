@@ -111,11 +111,13 @@ import 'package:doctor/patient/features/medicine_reminders/screens/add_medicine_
 import 'package:doctor/patient/features/medicine_reminders/screens/intake_log_screen.dart';
 import 'package:doctor/patient/features/medicine_reminders/screens/medicine_reminder_detail_screen.dart';
 import 'package:doctor/patient/features/medicine_reminders/screens/medicine_reminders_screen.dart';
+import 'package:doctor/patient/features/settings/bindings/patient_change_password_binding.dart';
 import 'package:doctor/patient/features/settings/bindings/patient_edit_profile_binding.dart';
 // ===========================================================
 
 // ============ PATIENT SETTINGS FEATURE IMPORTS ============
 import 'package:doctor/patient/features/settings/bindings/patient_settings_binding.dart';
+import 'package:doctor/patient/features/settings/screens/patient_change_password_screen.dart';
 import 'package:doctor/patient/features/settings/screens/patient_edit_profile_screen.dart';
 import 'package:doctor/patient/features/settings/screens/patient_settings_screen.dart';
 // ===========================================================
@@ -425,6 +427,11 @@ class Routes {
       name: AppRoutes.patientEditProfile,
       page: () => const PatientEditProfileScreen(),
       binding: PatientEditProfileBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.patientChangePassword,
+      page: () => const PatientChangePasswordScreen(),
+      binding: PatientChangePasswordBinding(),
     ),
     // =====================================================
 

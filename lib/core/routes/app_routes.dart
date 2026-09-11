@@ -9,6 +9,7 @@ class AppRoutes {
   static const String passwordResetSuccess = '/password-reset-success';
   static const String patientRegister = '/patient/register';
   static const String changePassword = '/change-password';
+  static const String patientChangePassword = '/patient/change-password';
   static const String docdashboard = '/dashboard';
   static const String docpatients = '/patients';
   static const String docpatientDetail = '/patient-detail';
@@ -83,7 +84,7 @@ class AppRoutes {
   // ============ PATIENT SETTINGS ROUTES ============
   static const String patientSettings = '/patient/settings';
   static const String patientEditProfile = '/patient/profile/edit';
-  // ===================================================
+  // ============================================
 
   static const String medicineReminders = '/patient/medicine-reminders';
   static const String addMedicineReminder = '/patient/medicine-reminders/add';

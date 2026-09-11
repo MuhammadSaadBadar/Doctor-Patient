@@ -22,7 +22,7 @@ class SettingsSection extends StatelessWidget {
           child: Text(
             title,
             style: AppTheme.labelMedium.copyWith(
-              color: AppColors.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               letterSpacing: 0.5,
               fontWeight: FontWeight.w600,
             ),
@@ -30,9 +30,9 @@ class SettingsSection extends StatelessWidget {
         ),
         Container(
           decoration: BoxDecoration(
-            color: AppColors.surfaceContainerLowest,
+            color: Theme.of(context).colorScheme.surfaceContainerLowest,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.outlineVariant, width: 1),
+            border: Border.all(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
           ),
           child: Column(children: children),
         ),

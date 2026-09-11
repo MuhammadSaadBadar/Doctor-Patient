@@ -15,7 +15,7 @@ class SymptomsScreen extends GetView<SymptomsController> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: colorScheme.background,
       appBar: PatientTopAppBar(title: TranslationKeys.symptomsTracker.tr),
       body: Obx(() {
         if (controller.isLoading.value && controller.symptomLogs.isEmpty) {
@@ -50,16 +50,11 @@ class SymptomsScreen extends GetView<SymptomsController> {
   Widget _buildLogSymptomsCard(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-        ),
-      ),
+      decoration: _cardDecoration(context, isDark, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -69,17 +64,16 @@ class SymptomsScreen extends GetView<SymptomsController> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.pink.withValues(alpha: 0.12),
+                  color: colorScheme.primary.withOpacity(isDark ? 0.14 : 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.sick_rounded,
                   size: 20,
-                  color: Colors.pink,
+                  color: colorScheme.primary,
                 ),
               ),
               const SizedBox(width: 12),
-              // ✅ Replaced Expanded with Flexible to avoid layout errors
               Flexible(
                 child: Text(
                   TranslationKeys.symptomsLogTodaySymptom.tr,
@@ -109,18 +103,12 @@ class SymptomsScreen extends GetView<SymptomsController> {
                 final id = type['id'] as int;
                 final name = type['name'] as String;
                 final isSelected = controller.selectedSymptomIds.contains(id);
-                return FilterChip(
-                  label: Text(name),
-                  selected: isSelected,
-                  onSelected: (_) => controller.toggleSymptom(id),
-                  selectedColor: colorScheme.primary.withValues(alpha: 0.2),
-                  checkmarkColor: colorScheme.primary,
-                  labelStyle: TextStyle(
-                    color: isSelected
-                        ? colorScheme.primary
-                        : colorScheme.onSurface,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  ),
+                return _buildThemeConsistentChip(
+                  context: context,
+                  label: name,
+                  isSelected: isSelected,
+                  onTap: () => controller.toggleSymptom(id),
+                  isDark: isDark,
                 );
               }).toList(),
             ),
@@ -182,6 +170,101 @@ class SymptomsScreen extends GetView<SymptomsController> {
     );
   }
 
+  /// ✅ NEW: Theme-consistent chip that matches QuickActionGrid style
+  /// ✅ FIXED: Chip with background-colored text when unselected
+  Widget _buildThemeConsistentChip({
+    required BuildContext context,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        decoration: BoxDecoration(
+          // ✅ SELECTED: Gradient with primary tint (unchanged)
+          gradient: isSelected
+              ? LinearGradient(
+                  begin: AlignmentDirectional.topStart,
+                  end: AlignmentDirectional.bottomEnd,
+                  colors: [
+                    colorScheme.primary.withOpacity(isDark ? 0.30 : 0.18),
+                    colorScheme.primaryContainer.withOpacity(
+                      isDark ? 0.20 : 0.10,
+                    ),
+                  ],
+                )
+              : null,
+          // ✅ UNSELECTED: Lighter surface so background-colored text is readable
+          color: isSelected
+              ? null
+              : (isDark
+                    ? colorScheme.surfaceContainerHigh
+                    : colorScheme.surfaceContainerLowest),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? colorScheme.primary.withOpacity(isDark ? 0.7 : 0.5)
+                : (isDark
+                      ? colorScheme.outline.withOpacity(0.5)
+                      : colorScheme.outlineVariant.withOpacity(0.5)),
+            width: isSelected ? 1.5 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: colorScheme.primary.withOpacity(
+                      isDark ? 0.25 : 0.15,
+                    ),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: colorScheme.shadow.withOpacity(isDark ? 0.15 : 0.04),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ✅ Checkmark only for selected
+            if (isSelected) ...[
+              Icon(
+                Icons.check_rounded,
+                size: textScale.scale(14).clamp(12, 16),
+                color: isDark ? colorScheme.primaryFixed : colorScheme.primary,
+              ),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: textScale.scale(12).clamp(10.0, 14.0),
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                // ✅ UNSELECTED → background color (per your requirement)
+                // ✅ SELECTED → primary (bright in dark mode)
+                color: isSelected
+                    ? (isDark ? colorScheme.primaryFixed : colorScheme.primary)
+                    : colorScheme.background,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildHistorySection(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
@@ -201,15 +284,10 @@ class SymptomsScreen extends GetView<SymptomsController> {
         const SizedBox(height: 12),
         Obx(() {
           if (controller.symptomLogs.isEmpty) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
             return Container(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-                ),
-              ),
+              decoration: _cardDecoration(context, isDark, 16),
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -259,24 +337,18 @@ class SymptomsScreen extends GetView<SymptomsController> {
   Widget _buildSymptomLogCard(BuildContext context, SymptomLog log) {
     final colorScheme = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-        ),
-      ),
+      decoration: _cardDecoration(context, isDark, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
-              // ✅ Replaced Expanded with Flexible for the date label
               Flexible(
                 child: Text(
                   log.dateLabel,
@@ -346,6 +418,43 @@ class SymptomsScreen extends GetView<SymptomsController> {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  /// ✅ IMPROVED: Card decoration that matches QuickActionGrid style
+  BoxDecoration _cardDecoration(
+    BuildContext context,
+    bool isDark,
+    double radius,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    if (isDark) {
+      return BoxDecoration(
+        gradient: LinearGradient(
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
+          colors: [
+            colorScheme.primary.withOpacity(0.10),
+            colorScheme.primaryContainer.withOpacity(0.06),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: colorScheme.primary.withOpacity(0.12)),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      );
+    }
+    return BoxDecoration(
+      color: colorScheme.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(
+        color: colorScheme.outlineVariant.withValues(alpha: 0.3),
       ),
     );
   }

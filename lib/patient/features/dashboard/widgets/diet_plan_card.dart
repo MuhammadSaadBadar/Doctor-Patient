@@ -18,9 +18,16 @@ class DietPlanCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: cs.surfaceContainerLowest,
+          gradient: LinearGradient(
+            begin: AlignmentDirectional.topStart,
+            end: AlignmentDirectional.bottomEnd,
+            colors: [
+              cs.primary.withOpacity(0.10),
+              cs.primaryContainer.withOpacity(0.06),
+            ],
+          ),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cs.outlineVariant),
+          border: Border.all(color: cs.primary.withOpacity(0.12)),
           boxShadow: [
             BoxShadow(
               color: cs.shadow.withOpacity(0.05),
@@ -144,13 +151,13 @@ class DietPlanCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.12),
+                      color: cs.primary.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.water_drop_rounded,
                       size: 14,
-                      color: Colors.blue.shade600,
+                      color: cs.primary,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -168,7 +175,7 @@ class DietPlanCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Colors.blue.shade600,
+                      color: cs.primary,
                     ),
                   ),
                 ],
@@ -181,10 +188,8 @@ class DietPlanCard extends StatelessWidget {
                       ((plan.waterConsumedLiters ?? 0) /
                               (plan.waterGoalLiters ?? 1))
                           .clamp(0.0, 1.0),
-                  backgroundColor: Colors.blue.withOpacity(0.12),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Colors.blue.shade500,
-                  ),
+                  backgroundColor: cs.primary.withOpacity(0.12),
+                  valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
                   minHeight: 5,
                 ),
               ),

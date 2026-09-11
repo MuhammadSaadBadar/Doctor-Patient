@@ -38,12 +38,12 @@ class PatientTopAppBar extends StatelessWidget implements PreferredSizeWidget {
     final resolvedShowBack = showBackButton && canPop;
 
     // Light theme: Primary background, White foreground
-    // Dark theme: White background, Primary foreground
-    final bgColor = isDark ? cs.surface : cs.primary;
-    final iconColor = isDark ? cs.primary : cs.onPrimary;
-    final titleColorResolved = titleColor ?? (isDark ? cs.primary : cs.onPrimary);
+    // Dark theme: White background, Background foreground
+    final bgColor = isDark ? Colors.white : cs.primary;
+    final iconColor = isDark ? cs.background : cs.onPrimary;
+    final titleColorResolved = titleColor ?? (isDark ? cs.background : cs.onPrimary);
     final backBgColor = isDark
-        ? cs.primary.withValues(alpha: 0.12)
+        ? Colors.transparent
         : cs.onPrimary.withValues(alpha: 0.12);
 
     return SafeArea(

@@ -29,10 +29,7 @@ class ApiClient {
       };
     }
     // On mobile/desktop, use application/json
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
+    return {'Content-Type': 'application/json', 'Accept': 'application/json'};
   }
 
   /// The underlying [Dio] instance. Exposed so the [AuthInterceptor] can
@@ -66,6 +63,28 @@ class ApiClient {
       path,
       data: data,
       options: Options(
+        connectTimeout: connectTimeout ?? _dio.options.connectTimeout,
+        receiveTimeout: receiveTimeout ?? _dio.options.receiveTimeout,
+      ),
+    );
+  }
+
+  /// Like [post] but always sends `application/json` regardless of the global
+  /// web header override. Use this for endpoints that require JSON bodies even
+  /// on Flutter Web (e.g. password/forgot, password/reset, password/verify-otp).
+  Future<Response> postJson(
+    String path, {
+    required Map<String, dynamic> data,
+    Duration? connectTimeout,
+    Duration? receiveTimeout,
+  }) async {
+    debugPrint('BASE URL : ${_dio.options.baseUrl}');
+    debugPrint('FULL URL : ${_dio.options.baseUrl}$path');
+    return await _dio.post(
+      path,
+      data: data,
+      options: Options(
+        contentType: 'application/json',
         connectTimeout: connectTimeout ?? _dio.options.connectTimeout,
         receiveTimeout: receiveTimeout ?? _dio.options.receiveTimeout,
       ),

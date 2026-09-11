@@ -1,4 +1,5 @@
 import 'package:doctor/core/constants/color_constants.dart';
+import 'package:doctor/core/network/api_exceptions.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/doctor/features/auth/repositories/auth_repository.dart';
 import 'package:flutter/material.dart';
@@ -89,15 +90,122 @@ class PatientRegisterController extends GetxController {
         backgroundColor: AppColors.secondary,
         colorText: AppColors.onPrimary,
       );
+    } on ApiException catch (e) {
+      if (e is NetworkException) {
+        _handleUnknownRegistrationOutcome();
+        return;
+      }
+
+      if (_isExistingEmailError(e)) {
+        Get.snackbar(
+          'Account already exists',
+          _registrationErrorMessage(e),
+          backgroundColor: AppColors.error,
+          colorText: AppColors.onError,
+          duration: const Duration(seconds: 7),
+          snackPosition: SnackPosition.BOTTOM,
+          mainButton: TextButton(
+            onPressed: _openVerificationRecovery,
+            child: const Text(
+              'Verify email',
+              style: TextStyle(color: AppColors.onError),
+            ),
+          ),
+        );
+        return;
+      }
+
+      Get.snackbar(
+        'Registration failed',
+        _registrationErrorMessage(e),
+        backgroundColor: AppColors.error,
+        colorText: AppColors.onError,
+        duration: const Duration(seconds: 5),
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e) {
       Get.snackbar(
         'Registration failed',
-        e.toString().replaceFirst('Exception: ', ''),
+        'Something went wrong. Please try again.',
         backgroundColor: AppColors.error,
         colorText: AppColors.onError,
+        duration: const Duration(seconds: 5),
+        snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
       isSubmitting.value = false;
+    }
+  }
+
+  void _handleUnknownRegistrationOutcome() {
+    Get.snackbar(
+      'Registration status unknown',
+      'The request may have been processed. Check your email for a verification code before trying again.',
+      backgroundColor: AppColors.error,
+      colorText: AppColors.onError,
+      duration: const Duration(seconds: 7),
+      snackPosition: SnackPosition.BOTTOM,
+    );
+
+    _openVerificationRecovery();
+  }
+
+  void _openVerificationRecovery() {
+    Get.closeCurrentSnackbar();
+    Get.toNamed(
+      AppRoutes.otpVerification,
+      arguments: {
+        'email': emailController.text.trim(),
+        'purpose': 'registration',
+      },
+    );
+  }
+
+  String _registrationErrorMessage(ApiException exception) {
+    final messages = <String>[];
+    final detail = exception.message.trim();
+    if (detail.isNotEmpty && detail != 'Registration failed.') {
+      messages.add(detail);
+    }
+
+    exception.fieldErrors?.forEach((field, fieldMessages) {
+      for (final fieldMessage in fieldMessages) {
+        final message = fieldMessage.trim();
+        if (message.isEmpty ||
+            messages.contains(message) ||
+            detail.contains(message)) {
+          continue;
+        }
+        messages.add('${_fieldLabel(field)}: $message');
+      }
+    });
+
+    return messages.isEmpty
+        ? 'Unable to create your account. Please check your details and try again.'
+        : messages.join('\n');
+  }
+
+        bool _isExistingEmailError(ApiException exception) {
+          final emailErrors = exception.fieldErrors?['email'] ?? const <String>[];
+          final text = [exception.message, ...emailErrors].join(' ').toLowerCase();
+          return text.contains('already exists') ||
+          text.contains('already registered');
+        }
+
+  String _fieldLabel(String field) {
+    switch (field) {
+      case 'email':
+        return 'Email';
+      case 'password':
+        return 'Password';
+      case 'first_name':
+        return 'First name';
+      case 'last_name':
+        return 'Last name';
+      case 'phone_number':
+        return 'Phone number';
+      default:
+        return field.replaceAll('_', ' ');
     }
   }
 
