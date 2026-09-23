@@ -11,9 +11,21 @@ class KickDailySummaryCard extends StatelessWidget {
 
   const KickDailySummaryCard({super.key, required this.summary, this.onTap});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.orange)
+      return isDark ? Colors.orange.shade300 : Colors.orange.shade800;
+    return base;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+    final orangeFg = _semanticFg(context, Colors.orange);
 
     return InkWell(
       onTap: onTap,
@@ -21,23 +33,38 @@ class KickDailySummaryCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLowest,
+          // ✅ Gradient in dark, solid in light
+          gradient: isDark
+              ? LinearGradient(
+                  begin: AlignmentDirectional.topStart,
+                  end: AlignmentDirectional.bottomEnd,
+                  colors: [
+                    cs.primary.withOpacity(0.10),
+                    cs.primaryContainer.withOpacity(0.06),
+                  ],
+                )
+              : null,
+          color: !isDark ? cs.surfaceContainerLowest : null,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+            color: isDark
+                ? cs.primary.withOpacity(0.12)
+                : cs.outlineVariant.withValues(alpha: 0.5),
+            width: 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: isDark
+              ? [
+                  BoxShadow(
+                    color: cs.shadow.withOpacity(0.05),
+                    blurRadius: 6,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Date Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -50,7 +77,7 @@ class KickDailySummaryCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: colorScheme.onSurface,
+                          color: cs.onSurface,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -58,7 +85,7 @@ class KickDailySummaryCard extends StatelessWidget {
                         summary.dayOfWeek,
                         style: TextStyle(
                           fontSize: 12,
-                          color: colorScheme.onSurfaceVariant,
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -72,7 +99,8 @@ class KickDailySummaryCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.12),
+                      // ✅ Semantic orange tint that flips with brightness
+                      color: Colors.orange.withOpacity(isDark ? 0.20 : 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -81,8 +109,8 @@ class KickDailySummaryCard extends StatelessWidget {
                         Container(
                           width: 6,
                           height: 6,
-                          decoration: const BoxDecoration(
-                            color: Colors.orange,
+                          decoration: BoxDecoration(
+                            color: orangeFg,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -92,7 +120,7 @@ class KickDailySummaryCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: Colors.orange.shade700,
+                            color: orangeFg,
                           ),
                         ),
                       ],
@@ -102,8 +130,6 @@ class KickDailySummaryCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-
-            // Stats
             Row(
               children: [
                 Expanded(
@@ -112,7 +138,7 @@ class KickDailySummaryCard extends StatelessWidget {
                     label: TranslationKeys.kickCounterTotalKicks.tr,
                     value: '${summary.totalKicks}',
                     icon: Icons.favorite_rounded,
-                    color: colorScheme.primary,
+                    color: cs.primary,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -122,7 +148,7 @@ class KickDailySummaryCard extends StatelessWidget {
                     label: TranslationKeys.kickCounterHistory.tr,
                     value: '${summary.sessionCount}',
                     icon: Icons.history_rounded,
-                    color: colorScheme.secondary,
+                    color: cs.secondary,
                   ),
                 ),
               ],
@@ -140,7 +166,8 @@ class KickDailySummaryCard extends StatelessWidget {
     required IconData icon,
     required Color color,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Row(
       children: [
@@ -148,7 +175,8 @@ class KickDailySummaryCard extends StatelessWidget {
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            // ✅ Stronger tint in dark
+            color: color.withOpacity(isDark ? 0.22 : 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, size: 14, color: color),
@@ -163,16 +191,13 @@ class KickDailySummaryCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
+                  color: cs.onSurface,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant),
                 overflow: TextOverflow.ellipsis,
               ),
             ],

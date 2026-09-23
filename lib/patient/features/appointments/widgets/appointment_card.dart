@@ -26,21 +26,37 @@ class AppointmentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
+        // ✅ Dark: gradient card; Light: solid surface (unchanged)
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  cs.primary.withOpacity(0.10),
+                  cs.primaryContainer.withOpacity(0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? cs.surfaceContainerLowest : null,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.06),
+            color: isDark
+                ? cs.shadow.withOpacity(0.05)
+                : cs.shadow.withValues(alpha: 0.06),
             blurRadius: 16,
             offset: const Offset(0, 2),
           ),
         ],
         border: Border.all(
-          color: appointment.statusColor.withValues(alpha: 0.2),
+          color: isDark
+              ? appointment.statusColor.withOpacity(0.35)
+              : appointment.statusColor.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -51,7 +67,6 @@ class AppointmentCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Doctor Avatar
               DoctorAvatar(
                 imageUrl: appointment.doctor.imageUrl,
                 firstName: appointment.doctor.firstName,
@@ -79,7 +94,8 @@ class AppointmentCard extends StatelessWidget {
                       appointment.doctorSpecialty,
                       style: TextStyle(
                         fontSize: textScale.scale(11).clamp(9.0, 12.0),
-                        color: cs.primary,
+                        // ✅ Dark: bright pink; Light: primary (unchanged)
+                        color: isDark ? cs.primaryFixed : cs.primary,
                         fontWeight: FontWeight.w500,
                       ),
                       maxLines: 1,
@@ -146,14 +162,17 @@ class AppointmentCard extends StatelessWidget {
             ],
           ),
 
-          // Reason (if available)
+          // Reason
           if (appointment.reason != null && appointment.reason!.isNotEmpty) ...[
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: cs.surfaceContainer.withValues(alpha: 0.5),
+                // ✅ Dark: use surfaceContainerHigh; Light: surfaceContainer (unchanged)
+                color: isDark
+                    ? cs.surfaceContainerHigh
+                    : cs.surfaceContainer.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(

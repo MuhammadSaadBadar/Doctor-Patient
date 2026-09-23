@@ -25,7 +25,7 @@ class DoctorSosScreen extends GetView<DoctorSosController> {
           const TopAppNavBar.gradient(
             title: 'Emergency Alerts',
             height: 64,
-            showBackButton: true,
+            showBackButton: false,
           ),
 
           _buildFilterTabs(),

@@ -12,29 +12,52 @@ class VideoCard extends StatelessWidget {
 
   const VideoCard({super.key, required this.video, required this.onTap});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: cs.surfaceContainerLowest,
+          // ✅ Gradient-in-dark, solid-in-light
+          gradient: isDark
+              ? LinearGradient(
+                  begin: AlignmentDirectional.topStart,
+                  end: AlignmentDirectional.bottomEnd,
+                  colors: [
+                    cs.primary.withOpacity(0.10),
+                    cs.primaryContainer.withOpacity(0.06),
+                  ],
+                )
+              : null,
+          color: !isDark ? cs.surfaceContainerLowest : null,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: cs.shadow.withValues(alpha: 0.04),
-              blurRadius: 16,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          border: Border.all(
+            color: isDark
+                ? cs.primary.withOpacity(0.12)
+                : cs.outlineVariant.withOpacity(0.5),
+            width: 1,
+          ),
+          boxShadow: isDark
+              ? [
+                  BoxShadow(
+                    color: cs.shadow.withOpacity(0.05),
+                    blurRadius: 6,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ Fixed: Use SizedBox with fixed width for thumbnail
+            // Thumbnail — fixed width, top-left radius, bottom-left radius
             SizedBox(
               width: 120,
               height: 120,
@@ -42,7 +65,7 @@ class VideoCard extends StatelessWidget {
                 borderRadius: const BorderRadius.horizontal(
                   left: Radius.circular(12),
                 ),
-                child: _thumbnailContent(cs),
+                child: _thumbnailContent(cs, isDark),
               ),
             ),
             Expanded(
@@ -115,7 +138,8 @@ class VideoCard extends StatelessWidget {
                           width: 32,
                           height: 32,
                           decoration: BoxDecoration(
-                            color: cs.primary.withValues(alpha: 0.1),
+                            // ✅ Stronger tint in dark
+                            color: cs.primary.withOpacity(isDark ? 0.20 : 0.10),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -136,28 +160,35 @@ class VideoCard extends StatelessWidget {
     );
   }
 
-  Widget _thumbnailContent(ColorScheme cs) {
+  Widget _thumbnailContent(ColorScheme cs, bool isDark) {
     final url = video.thumbnailUrl;
+
+    // ✅ Placeholder uses a distinguishable surface in both themes
+    final placeholderBg = isDark
+        ? cs.primaryContainer.withOpacity(0.12)
+        : cs.surfaceContainerHigh;
+
     if (url == null || url.isEmpty) {
       return Container(
-        color: cs.surfaceContainerHigh,
+        color: placeholderBg,
         child: Icon(
           Icons.play_circle_filled_rounded,
           size: 40,
-          color: cs.primary.withValues(alpha: 0.3),
+          color: cs.primary.withOpacity(isDark ? 0.6 : 0.3),
         ),
       );
     }
+
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,
-      placeholder: (_, __) => Container(color: cs.surfaceContainerHigh),
+      placeholder: (_, __) => Container(color: placeholderBg),
       errorWidget: (_, __, ___) => Container(
-        color: cs.surfaceContainerHigh,
+        color: placeholderBg,
         child: Icon(
           Icons.play_circle_filled_rounded,
           size: 40,
-          color: cs.primary.withValues(alpha: 0.3),
+          color: cs.primary.withOpacity(isDark ? 0.6 : 0.3),
         ),
       ),
     );

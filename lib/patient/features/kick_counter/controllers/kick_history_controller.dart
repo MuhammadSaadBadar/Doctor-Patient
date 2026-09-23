@@ -239,134 +239,138 @@ class KickHistoryController extends GetxController {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: colorScheme.background,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            TranslationKeys.kickCounterSessionDetails.tr,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildDetailRow(
-            TranslationKeys.appointmentsDate.tr,
-            _formatLogDate(session.logDate),
-          ),
-          _buildDetailRow(
-            TranslationKeys.kickCounterStartTime.tr,
-            formatTime(session.startedAt),
-          ),
-          _buildDetailRow(
-            TranslationKeys.kickCounterEndTime.tr,
-            session.endedAt != null
-                ? formatTime(session.endedAt!)
-                : TranslationKeys.kickCounterActive.tr,
-          ),
-          _buildDetailRow(
-            TranslationKeys.appointmentsDuration.tr,
-            session.duration,
-          ),
-          _buildDetailRow(
-            TranslationKeys.kickCounterKickCount.tr,
-            '${session.kickCount} ${TranslationKeys.kickCounterKicks.tr}',
-          ),
-          _buildDetailRow(
-            TranslationKeys.kickCounterStatus.tr,
-            session.isActive
-                ? TranslationKeys.kickCounterActive.tr
-                : TranslationKeys.kickCounterCompleted.tr,
-          ),
-          if (session.events.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Text(
-              TranslationKeys.kickCounterTimeline.tr,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 200,
-              child: ListView.builder(
-                itemCount: session.events.length,
-                itemBuilder: (context, index) {
-                  final event = session.events[index];
-                  return ListTile(
-                    dense: true,
-                    leading: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withOpacity(0.12),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.favorite_rounded,
-                        size: 16,
-                        color: colorScheme.primary,
-                      ),
-                    ),
-                    title: Text(
-                      TranslationKeys.kickCounterKickNumber.tr.replaceAll(
-                        '@number',
-                        '${index + 1}',
-                      ),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    subtitle: Text(
-                      formatTime(event.tappedAt),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Get.back(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-              child: Text(TranslationKeys.commonClose.tr),
-            ),
+              const SizedBox(height: 20),
+              Text(
+                TranslationKeys.kickCounterSessionDetails.tr,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildDetailRow(
+                TranslationKeys.appointmentsDate.tr,
+                _formatLogDate(session.logDate),
+              ),
+              _buildDetailRow(
+                TranslationKeys.kickCounterStartTime.tr,
+                formatTime(session.startedAt),
+              ),
+              _buildDetailRow(
+                TranslationKeys.kickCounterEndTime.tr,
+                session.endedAt != null
+                    ? formatTime(session.endedAt!)
+                    : TranslationKeys.kickCounterActive.tr,
+              ),
+              _buildDetailRow(
+                TranslationKeys.appointmentsDuration.tr,
+                session.duration,
+              ),
+              _buildDetailRow(
+                TranslationKeys.kickCounterKickCount.tr,
+                '${session.kickCount} ${TranslationKeys.kickCounterKicks.tr}',
+              ),
+              _buildDetailRow(
+                TranslationKeys.kickCounterStatus.tr,
+                session.isActive
+                    ? TranslationKeys.kickCounterActive.tr
+                    : TranslationKeys.kickCounterCompleted.tr,
+              ),
+              if (session.events.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(
+                  TranslationKeys.kickCounterTimeline.tr,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 200,
+                  child: ListView.builder(
+                    itemCount: session.events.length,
+                    itemBuilder: (context, index) {
+                      final event = session.events[index];
+                      return ListTile(
+                        dense: true,
+                        leading: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withOpacity(0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.favorite_rounded,
+                            size: 16,
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                        title: Text(
+                          TranslationKeys.kickCounterKickNumber.tr.replaceAll(
+                            '@number',
+                            '${index + 1}',
+                          ),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                        subtitle: Text(
+                          formatTime(event.tappedAt),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Get.back(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(TranslationKeys.commonClose.tr),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
-          const SizedBox(height: 16),
-        ],
+        ),
       ),
     );
   }

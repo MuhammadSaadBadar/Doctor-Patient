@@ -2,6 +2,8 @@ import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/services/storage_service.dart';
 import 'package:doctor/doctor/features/auth/controllers/auth_controller.dart';
+import 'package:doctor/patient/features/emergency/controllers/emergency_controller.dart';
+import 'package:doctor/patient/features/emergency/repositories/emergency_repository.dart';
 import 'package:doctor/patient/features/settings/models/patient_profile_model.dart';
 import 'package:doctor/patient/features/settings/repositories/patient_settings_repository.dart';
 import 'package:flutter/material.dart';
@@ -275,7 +277,7 @@ class PatientSettingsController extends GetxController {
   void setLanguage(String languageCode) {
     selectedLanguage.value = languageCode;
     _storage.setLanguage(languageCode);
-    
+
     if (languageCode == 'ur_PK') {
       Get.updateLocale(const Locale('ur', 'PK'));
     } else {
@@ -289,6 +291,13 @@ class PatientSettingsController extends GetxController {
       try {
         Get.find<AuthController>().clearCurrentUser();
       } catch (_) {}
+
+      // Clean up permanent bindings created during patient session
+      try {
+        Get.delete<EmergencyController>(force: true);
+        Get.delete<EmergencyRepository>(force: true);
+      } catch (_) {}
+
       Get.offAllNamed(AppRoutes.login);
     } catch (e) {
       Get.snackbar(
@@ -307,28 +316,56 @@ class PatientSettingsController extends GetxController {
       {'code': 'ur_PK', 'name': 'اردو'},
     ];
 
+    final colorScheme = Get.theme.colorScheme;
+    final isDark = Get.isDarkMode;
+
     Get.dialog(
       AlertDialog(
+        backgroundColor: isDark
+            ? colorScheme.surfaceContainerLow
+            : colorScheme.surfaceContainerLowest,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('settings.language'.tr),
+        title: Text(
+          'settings.language'.tr,
+          style: TextStyle(
+            color: isDark ? colorScheme.background : colorScheme.primary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: languages.map((lang) {
-            return Obx(() => RadioListTile<String>(
-              title: Text(lang['name']!),
-              value: lang['code']!,
-              groupValue: selectedLanguage.value == 'English' ? 'en_US' : selectedLanguage.value, // Fallback for old storage
-              onChanged: (value) {
-                if (value != null) {
-                  setLanguage(value);
-                  Get.back();
-                }
-              },
-            ));
+            return Obx(
+              () => RadioListTile<String>(
+                title: Text(
+                  lang['name']!,
+                  style: TextStyle(color: isDark ? Colors.black : Colors.black),
+                ),
+                value: lang['code']!,
+                groupValue: selectedLanguage.value == 'English'
+                    ? 'en_US'
+                    : selectedLanguage.value, // Fallback for old storage
+                onChanged: (value) {
+                  if (value != null) {
+                    setLanguage(value);
+                    Get.back();
+                  }
+                },
+              ),
+            );
           }).toList(),
         ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: Text('common.cancel'.tr)),
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'common.cancel'.tr,
+              style: TextStyle(
+                color: isDark ? colorScheme.primaryFixed : colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ],
       ),
     );

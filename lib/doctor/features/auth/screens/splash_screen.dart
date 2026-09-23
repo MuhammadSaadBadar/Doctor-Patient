@@ -82,68 +82,117 @@ class _SplashScreenState extends State<SplashScreen>
     final refreshToken = _storage.refreshToken;
 
     if (isLoggedIn && accessToken != null && accessToken.isNotEmpty) {
-      // User has a stored session, validate it
-      final bool sessionValid = await _validateSession(refreshToken);
+      // User has a stored session — validate it and get a fresh authoritative role.
+      final String? freshRole = await _validateSession(refreshToken);
 
       if (!mounted) return;
 
-      if (sessionValid) {
-        // Session is valid (or refreshed), go to appropriate dashboard based on role
+      if (freshRole != null) {
+        // Session is valid (or refreshed). Route based on verified role.
         final authController = Get.find<AuthController>();
         authController.isLoggedIn.value = true;
-        await authController.initializeCurrentUser();
-        final userRole = _storage.userRole;
-        if (userRole == 'patient') {
+
+        // Initialize the user profile in the correct role context.
+        await authController.initializeCurrentUser(role: freshRole);
+
+        if (!mounted) return;
+
+        if (freshRole == 'patient') {
+          debugPrint('[AUTH GATE] Routing Patient → /patient/dashboard');
           Get.offAllNamed(AppRoutes.patientDashboard);
-        } else {
+        } else if (freshRole == 'doctor') {
+          debugPrint('[AUTH GATE] Routing Doctor → /dashboard');
           Get.offAllNamed(AppRoutes.docdashboard);
+        } else {
+          // Unknown role — force re-login rather than guessing.
+          debugPrint(
+            '[AUTH GATE] Unknown role "$freshRole" — clearing auth, sending to /login.',
+          );
+          await _storage.clearAuth();
+          Get.find<AuthController>().isLoggedIn.value = false;
+          Get.offAllNamed(AppRoutes.login);
         }
       } else {
-        // Session invalid, clear and go to login
-        await _storage.clearAuth();
-        Get.find<AuthController>().isLoggedIn.value = false;
-        Get.offAllNamed(AppRoutes.login);
+        // _validateSession returned null meaning:
+        //   (a) the interceptor already force-logged out (token truly expired), or
+        //   (b) pure network failure.
+        // Check whether the interceptor already cleared the session.
+        if (!_storage.isLoggedIn) {
+          debugPrint('[AUTH GATE] Session cleared by interceptor — /login.');
+          Get.find<AuthController>().isLoggedIn.value = false;
+          Get.offAllNamed(AppRoutes.login);
+        } else {
+          // Network failure — fall back to the last-known stored role so the
+          // user isn't unnecessarily logged out during a Render cold start or
+          // brief connectivity loss.
+          final storedRole = _storage.userRole;
+          debugPrint(
+            '[AUTH GATE] Network failure during validation. '
+            'Using last-known role: $storedRole',
+          );
+          final authController = Get.find<AuthController>();
+          authController.isLoggedIn.value = true;
+
+          if (!mounted) return;
+
+          if (storedRole == 'patient') {
+            Get.offAllNamed(AppRoutes.patientDashboard);
+          } else if (storedRole == 'doctor') {
+            Get.offAllNamed(AppRoutes.docdashboard);
+          } else {
+            // Cannot determine role even from storage — safe fallback.
+            debugPrint(
+              '[AUTH GATE] No stored role available — clearing auth, /login.',
+            );
+            await _storage.clearAuth();
+            authController.isLoggedIn.value = false;
+            Get.offAllNamed(AppRoutes.login);
+          }
+        }
       }
     } else {
       // No stored session, go to login
+      debugPrint('[AUTH GATE] No session found — /login.');
       Get.offAllNamed(AppRoutes.login);
     }
   }
 
-  Future<bool> _validateSession(String? refreshToken) async {
+  /// Validates the stored session by calling GET /api/v1/auth/me/.
+  ///
+  /// Returns the **authoritative role string** on success (e.g. `'patient'`,
+  /// `'doctor'`), or `null` on network failure / genuine session expiry.
+  ///
+  /// Saving the role to storage is handled inside [AuthRepository.getUserProfile].
+  Future<String?> _validateSession(String? refreshToken) async {
     try {
-      // First, try to get user profile to validate the access token
-      final profileValid = await _authRepository.getUserProfile();
+      // getUserProfile now returns the role directly from /me response
+      // and also refreshes the stored role in SharedPreferences.
+      final freshRole = await _authRepository.getUserProfile();
 
-      // If the profile fetch succeeds, session is definitively valid.
-      if (profileValid) {
-        debugPrint('[AUTH GATE] Session validated via profile fetch');
-        return true;
+      if (freshRole != null) {
+        debugPrint('[AUTH GATE] Session validated. Role: $freshRole');
+        return freshRole;
       }
 
-      // If profileValid is false, it could be a network error (Render cold start)
-      // OR a genuine session expiration.
-      // If the session was genuinely expired and could not be refreshed, AuthInterceptor
-      // would have called _forceLogout(), which sets _storage.isLoggedIn to false.
+      // Profile call returned null — either network error or 401.
+      // Check if the interceptor already force-logged out.
       if (!_storage.isLoggedIn) {
         debugPrint(
-          '[AUTH GATE] Session definitively invalid (Interceptor logged out)',
+          '[AUTH GATE] Session definitively invalid (Interceptor logged out).',
         );
-        return false;
+        return null;
       }
 
-      // If we are still logged in according to storage, it means AuthInterceptor
-      // did not force a logout, so the failure was likely a network error (e.g. timeout).
-      // We should NOT clear the auth state on a network error. Let the user proceed
-      // to the dashboard where the network error can be handled gracefully by the UI.
+      // Still logged in in storage → likely a transient network error.
+      // Return null so the caller can decide to use the cached role.
       debugPrint(
-        '[AUTH GATE] Profile fetch failed, but session still marked active (Network error?)',
+        '[AUTH GATE] Profile fetch failed but session still marked active '
+        '(network error / Render cold start?).',
       );
-      return true;
+      return null;
     } catch (e) {
       debugPrint('[AUTH GATE] Session validation error: $e');
-      // On unexpected errors, don't blindly log the user out if storage says they are logged in.
-      return _storage.isLoggedIn;
+      return null;
     }
   }
 

@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class SurgicalProcedureController extends GetxController {
-  final SurgicalProcedureRepository _repository = Get.find<SurgicalProcedureRepository>();
+  final SurgicalProcedureRepository _repository =
+      Get.find<SurgicalProcedureRepository>();
 
   // State
   final isLoading = false.obs;
@@ -335,11 +336,34 @@ class SurgicalProcedureController extends GetxController {
     required String submitLabel,
     required VoidCallback onSubmit,
   }) {
+    final cs = Get.theme.colorScheme;
+    final isDark = Get.theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: Color(0xFFFDF6F0),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        // ✅ Theme-aware sheet background — background in both themes
+        color: cs.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        // ✅ Dark: primary-tinted top border (shadows are invisible in dark)
+        // ✅ Light: soft top shadow
+        border: isDark
+            ? Border(
+                top: BorderSide(
+                  color: cs.primary.withValues(alpha: 0.20),
+                  width: 1,
+                ),
+              )
+            : null,
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: cs.shadow.withValues(alpha: 0.10),
+                  blurRadius: 32,
+                  offset: const Offset(0, -8),
+                ),
+              ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -349,40 +373,72 @@ class SurgicalProcedureController extends GetxController {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              // ✅ Dark: primary-tinted handle so it's visible on the
+              //    same-color sheet background
+              color: isDark
+                  ? cs.primary.withValues(alpha: 0.45)
+                  : cs.outlineVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: 16),
-          // Title
+
+          // Title row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF221919),
-                  fontFamily: 'PlayfairDisplay',
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    // ✅ Theme-aware text
+                    color: cs.onSurface,
+                    fontFamily: 'PlayfairDisplay',
+                  ),
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.close_rounded),
-                onPressed: () => Get.back(),
-                style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFFF6E4E4),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  // ✅ Dark: primary-tinted close button
+                  color: isDark
+                      ? cs.primary.withValues(alpha: 0.14)
+                      : cs.surfaceContainer,
+                  shape: BoxShape.circle,
+                  border: isDark
+                      ? Border.all(
+                          color: cs.primary.withValues(alpha: 0.25),
+                          width: 1,
+                        )
+                      : null,
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.close_rounded,
+                    size: 20,
+                    color: cs.onSurfaceVariant,
+                  ),
+                  onPressed: () => Get.back(),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  style: IconButton.styleFrom(
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
+
           // Form
           Flexible(
             child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
-                  // Procedure Name
                   _buildFormField(
                     label: 'Procedure Name',
                     controller: procedureNameController,
@@ -390,10 +446,8 @@ class SurgicalProcedureController extends GetxController {
                     icon: Icons.medical_services_rounded,
                   ),
                   const SizedBox(height: 16),
-                  // Date
                   _buildDateField(),
                   const SizedBox(height: 16),
-                  // Hospital Name
                   _buildFormField(
                     label: 'Hospital / Facility Name',
                     controller: hospitalNameController,
@@ -401,9 +455,9 @@ class SurgicalProcedureController extends GetxController {
                     icon: Icons.local_hospital_rounded,
                   ),
                   const SizedBox(height: 16),
-                  // Notes
                   _buildNotesField(),
                   const SizedBox(height: 24),
+
                   // Buttons
                   Row(
                     children: [
@@ -411,12 +465,12 @@ class SurgicalProcedureController extends GetxController {
                         child: OutlinedButton(
                           onPressed: () => Get.back(),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF221919),
+                            foregroundColor: cs.onSurfaceVariant,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
-                            side: const BorderSide(color: Color(0xFFD8C1C3)),
+                            side: BorderSide(color: cs.outlineVariant),
                           ),
                           child: const Text('Cancel'),
                         ),
@@ -427,21 +481,27 @@ class SurgicalProcedureController extends GetxController {
                           () => ElevatedButton(
                             onPressed: isSubmitting.value ? null : onSubmit,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF934656),
-                              foregroundColor: Colors.white,
+                              backgroundColor: cs.primary,
+                              foregroundColor: cs.onPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
                               elevation: 4,
-                              disabledBackgroundColor: Colors.grey[300],
+                              // ✅ Theme-aware disabled colors
+                              disabledBackgroundColor: isDark
+                                  ? cs.primary.withValues(alpha: 0.18)
+                                  : cs.onSurface.withValues(alpha: 0.12),
+                              disabledForegroundColor: isDark
+                                  ? cs.onPrimary.withValues(alpha: 0.55)
+                                  : cs.onSurface.withValues(alpha: 0.38),
                             ),
                             child: isSubmitting.value
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 20,
                                     height: 20,
                                     child: CircularProgressIndicator(
-                                      color: Colors.white,
+                                      color: cs.onPrimary,
                                       strokeWidth: 2,
                                     ),
                                   )

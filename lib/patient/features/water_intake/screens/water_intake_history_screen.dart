@@ -23,6 +23,7 @@ class WaterIntakeHistoryScreen extends GetView<WaterIntakeHistoryController> {
             onPressed: controller.refreshData,
           ),
         ],
+        onNotificationTap: () => Get.toNamed('/notifications'),
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.entries.isEmpty) {
@@ -42,9 +43,13 @@ class WaterIntakeHistoryScreen extends GetView<WaterIntakeHistoryController> {
           color: colorScheme.primary,
           child: ListView.builder(
             padding: EdgeInsets.fromLTRB(
-                16, 16, 16, MediaQuery.of(context).padding.bottom + 20),
-            controller: ScrollController(),
-            itemCount: controller.sortedDateKeys.length +
+              16,
+              16,
+              16,
+              MediaQuery.of(context).padding.bottom + 20,
+            ),
+            itemCount:
+                controller.sortedDateKeys.length +
                 (controller.hasMoreData.value ? 1 : 0),
             itemBuilder: (context, index) {
               // Load more indicator
@@ -64,7 +69,10 @@ class WaterIntakeHistoryScreen extends GetView<WaterIntakeHistoryController> {
 
               final dateKey = controller.sortedDateKeys[index];
               final entries = controller.groupedEntries[dateKey] ?? [];
-              final dailyTotal = entries.fold<int>(0, (sum, e) => sum + e.amountMl);
+              final dailyTotal = entries.fold<int>(
+                0,
+                (sum, e) => sum + e.amountMl,
+              );
 
               return WaterIntakeHistoryEntry(
                 dateKey: dateKey,
@@ -82,6 +90,7 @@ class WaterIntakeHistoryScreen extends GetView<WaterIntakeHistoryController> {
 
   Widget _buildLoadingState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -91,7 +100,19 @@ class WaterIntakeHistoryScreen extends GetView<WaterIntakeHistoryController> {
             height: 64,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withOpacity(0.2),
+              gradient: isDark
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        colorScheme.primary.withOpacity(0.10),
+                        colorScheme.primaryContainer.withOpacity(0.06),
+                      ],
+                    )
+                  : null,
+              color: !isDark
+                  ? colorScheme.surfaceContainerLowest.withOpacity(0.7)
+                  : null,
               shape: BoxShape.circle,
             ),
             child: CircularProgressIndicator(
@@ -172,6 +193,7 @@ class WaterIntakeHistoryScreen extends GetView<WaterIntakeHistoryController> {
 
   Widget _buildEmptyState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -182,7 +204,19 @@ class WaterIntakeHistoryScreen extends GetView<WaterIntakeHistoryController> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withOpacity(0.25),
+                gradient: isDark
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          colorScheme.primary.withOpacity(0.10),
+                          colorScheme.primaryContainer.withOpacity(0.06),
+                        ],
+                      )
+                    : null,
+                color: !isDark
+                    ? colorScheme.primaryContainer.withOpacity(0.25)
+                    : null,
                 shape: BoxShape.circle,
               ),
               child: Icon(

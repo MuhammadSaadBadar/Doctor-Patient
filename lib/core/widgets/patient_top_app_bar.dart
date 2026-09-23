@@ -34,7 +34,7 @@ class PatientTopAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final canPop = Navigator.of(context).canPop();
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
     final resolvedShowBack = showBackButton && canPop;
 
     // Light theme: Primary background, White foreground

@@ -148,7 +148,7 @@ class VitalsScreen extends GetView<VitalsController> {
           _buildHistoryList(
             controller.bpHistory,
             TranslationKeys.vitalsBPHistory.tr,
-            (bp) => _buildBPHistoryItem(bp, colorScheme),
+            (bp) => _buildBPHistoryItem(bp, colorScheme, context),
             colorScheme,
           ),
         ],
@@ -171,7 +171,7 @@ class VitalsScreen extends GetView<VitalsController> {
           _buildHistoryList(
             controller.sugarHistory,
             TranslationKeys.vitalsSugarHistory.tr,
-            (sugar) => _buildSugarHistoryItem(sugar, colorScheme),
+            (sugar) => _buildSugarHistoryItem(sugar, colorScheme, context),
             colorScheme,
           ),
         ],
@@ -453,15 +453,40 @@ class VitalsScreen extends GetView<VitalsController> {
     );
   }
 
-  Widget _buildBPHistoryItem(BloodPressureReading bp, ColorScheme colorScheme) {
+  Widget _buildBPHistoryItem(BloodPressureReading bp, ColorScheme colorScheme, BuildContext context) {
     final isNormal = bp.isNormal;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? null : Colors.white,
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  colorScheme.primary.withOpacity(0.10),
+                  colorScheme.primaryContainer.withOpacity(0.06),
+                ],
+              )
+            : null,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
+        border: Border.all(
+          color: isDark
+              ? colorScheme.primary.withOpacity(0.12)
+              : colorScheme.outlineVariant.withOpacity(0.3),
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: colorScheme.shadow.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Row(
         children: [
@@ -528,15 +553,41 @@ class VitalsScreen extends GetView<VitalsController> {
   Widget _buildSugarHistoryItem(
     BloodSugarReading sugar,
     ColorScheme colorScheme,
+    BuildContext context,
   ) {
     final isNormal = sugar.isNormal;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? null : Colors.white,
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  colorScheme.primary.withOpacity(0.10),
+                  colorScheme.primaryContainer.withOpacity(0.06),
+                ],
+              )
+            : null,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
+        border: Border.all(
+          color: isDark
+              ? colorScheme.primary.withOpacity(0.12)
+              : colorScheme.outlineVariant.withOpacity(0.3),
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: colorScheme.shadow.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Row(
         children: [

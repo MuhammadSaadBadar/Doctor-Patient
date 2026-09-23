@@ -10,14 +10,16 @@ class FoodAvoidanceItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: colorScheme.outlineVariant.withOpacity(0.15),
+            // ✅ Stronger divider in dark mode
+            color: cs.outlineVariant.withOpacity(isDark ? 0.35 : 0.15),
             width: 1,
           ),
         ),
@@ -25,7 +27,7 @@ class FoodAvoidanceItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('❌', style: TextStyle(fontSize: 18)),
+          const Text('❌', style: TextStyle(fontSize: 18)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -36,17 +38,14 @@ class FoodAvoidanceItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
+                    color: cs.onSurface,
                   ),
                 ),
                 if (item.reason != null && item.reason!.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
                     item.reason!,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                    style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
                   ),
                 ],
               ],

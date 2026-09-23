@@ -14,26 +14,35 @@ class ReminderTimeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainer,
+        // ✅ Dark: primary-tinted; Light: neutral surface
+        color: isDark
+            ? cs.primary.withValues(alpha: 0.12)
+            : cs.surfaceContainer,
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
+        border: Border.all(
+          color: isDark
+              ? cs.primary.withValues(alpha: 0.25)
+              : cs.outlineVariant.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.schedule_rounded, size: 16, color: colorScheme.primary),
+          Icon(Icons.schedule_rounded, size: 16, color: cs.primary),
           const SizedBox(width: 6),
           Text(
             time,
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: colorScheme.onSurfaceVariant,
+              // ✅ onSurface reads better than onSurfaceVariant in dark
+              color: isDark ? cs.onSurface : cs.onSurfaceVariant,
             ),
           ),
           const SizedBox(width: 4),
@@ -42,7 +51,7 @@ class ReminderTimeChip extends StatelessWidget {
             child: Icon(
               Icons.close_rounded,
               size: 16,
-              color: colorScheme.outline,
+              color: isDark ? cs.onSurfaceVariant : cs.outline,
             ),
           ),
         ],

@@ -8,41 +8,84 @@ class DoctorCard extends StatelessWidget {
   final Doctor doctor;
   final VoidCallback onTap;
   final VoidCallback onBookTap;
+  final double commissionPercentage;
 
   const DoctorCard({
     super.key,
     required this.doctor,
     required this.onTap,
     required this.onBookTap,
+    this.commissionPercentage = 0.0,
   });
+
+  String _getFormattedTotalPayable() {
+    final feeStr = doctor.doctorProfile?.consultationFee;
+    if (feeStr == null) return 'Free';
+    final fee = double.tryParse(feeStr);
+    if (fee == null) return 'Rs. $feeStr';
+    final commission = fee * (commissionPercentage / 100);
+    final total = fee + commission;
+    return 'Rs. ${total.toStringAsFixed(0)}';
+  }
+
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.green)
+      return isDark ? Colors.green.shade300 : Colors.green.shade800;
+    return base;
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
+
+    // ✅ Semantic "accepting patients" indicator
+    final acceptingFg = _semanticFg(context, Colors.green);
+    final notAcceptingFg = colorScheme.onSurfaceVariant;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
+        // ✅ Gradient-in-dark, solid-in-light
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  colorScheme.primary.withValues(alpha: 0.10),
+                  colorScheme.primaryContainer.withValues(alpha: 0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? colorScheme.surfaceContainerLowest : null,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          color: isDark
+              ? colorScheme.primary.withValues(alpha: 0.12)
+              : colorScheme.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min, // ✅ Prevents unbounded height issues
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,10 +103,9 @@ class DoctorCard extends StatelessWidget {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min, // ✅ Added
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        // ✅ Removed Flexible wrapper
                         doctor.fullName,
                         style: TextStyle(
                           fontSize: textScale.scale(14).clamp(12.0, 18.0),
@@ -75,7 +117,6 @@ class DoctorCard extends StatelessWidget {
                       ),
                       if (doctor.doctorProfile?.hasSpecialization ?? false)
                         Text(
-                          // ✅ Removed Flexible wrapper
                           doctor.doctorProfile!.specialization!,
                           style: TextStyle(
                             fontSize: textScale.scale(11).clamp(9.0, 14.0),
@@ -89,13 +130,15 @@ class DoctorCard extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            // ✅ Removed Flexible wrapper
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: colorScheme.primary.withValues(alpha: 0.1),
+                              // ✅ Stronger tint in dark
+                              color: colorScheme.primary.withValues(
+                                alpha: isDark ? 0.20 : 0.1,
+                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -122,7 +165,6 @@ class DoctorCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Row(
-                            // ✅ Removed Flexible wrapper
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
@@ -132,7 +174,6 @@ class DoctorCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                // ✅ Removed Flexible wrapper
                                 doctor.doctorProfile?.experienceDisplay ??
                                     'N/A',
                                 style: TextStyle(
@@ -154,13 +195,14 @@ class DoctorCard extends StatelessWidget {
                           Icon(
                             Icons.calendar_today_rounded,
                             size: 14,
+                            // ✅ Semantic green flips with brightness;
+                            //    "not accepting" uses onSurfaceVariant
                             color: doctor.isAcceptingPatients
-                                ? Colors.green
-                                : Colors.grey,
+                                ? acceptingFg
+                                : notAcceptingFg,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            // ✅ Removed Flexible wrapper
                             doctor.isAcceptingPatients
                                 ? 'Accepting Patients'
                                 : 'Not Accepting',
@@ -168,8 +210,8 @@ class DoctorCard extends StatelessWidget {
                               fontSize: textScale.scale(10).clamp(8.0, 14.0),
                               fontWeight: FontWeight.w600,
                               color: doctor.isAcceptingPatients
-                                  ? Colors.green
-                                  : Colors.grey,
+                                  ? acceptingFg
+                                  : notAcceptingFg,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -190,7 +232,7 @@ class DoctorCard extends StatelessWidget {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: doctor.doctorProfile?.formattedFee ?? 'Free',
+                          text: _getFormattedTotalPayable(),
                           style: TextStyle(
                             fontSize: textScale.scale(16).clamp(14.0, 22.0),
                             fontWeight: FontWeight.w700,

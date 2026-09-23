@@ -19,7 +19,9 @@ class GlassCounter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final progress = targetGlasses > 0 ? (glasses / targetGlasses).clamp(0.0, 1.0) : 0.0;
+    final progress = targetGlasses > 0
+        ? (glasses / targetGlasses).clamp(0.0, 1.0)
+        : 0.0;
     final isComplete = progress >= 1.0;
 
     return LayoutBuilder(
@@ -79,7 +81,9 @@ class GlassCounter extends StatelessWidget {
                         strokeWidth: 5,
                         backgroundColor: colorScheme.tertiary.withOpacity(0.1),
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          isComplete ? colorScheme.tertiary : colorScheme.primary,
+                          isComplete
+                              ? colorScheme.tertiary
+                              : colorScheme.primary,
                         ),
                         strokeCap: StrokeCap.round,
                       ),
@@ -89,7 +93,7 @@ class GlassCounter extends StatelessWidget {
                       style: TextStyle(
                         fontSize: fontSize,
                         fontWeight: FontWeight.w700,
-                        color: colorScheme.onSurface,
+                        color: colorScheme.background,
                         height: 1.1,
                       ),
                     ),
@@ -144,7 +148,9 @@ class GlassCounter extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: isAdd
-              ? (enabled ? colorScheme.tertiary : colorScheme.tertiary.withOpacity(0.3))
+              ? (enabled
+                    ? colorScheme.tertiary
+                    : colorScheme.tertiary.withOpacity(0.3))
               : colorScheme.surfaceContainer,
           boxShadow: isAdd && enabled
               ? [
@@ -158,8 +164,12 @@ class GlassCounter extends StatelessWidget {
         child: Icon(
           icon,
           color: isAdd
-              ? (enabled ? colorScheme.onPrimary : colorScheme.onPrimary.withOpacity(0.4))
-              : (enabled ? colorScheme.tertiary : colorScheme.tertiary.withOpacity(0.4)),
+              ? (enabled
+                    ? colorScheme.onPrimary
+                    : colorScheme.onPrimary.withOpacity(0.4))
+              : (enabled
+                    ? colorScheme.tertiary
+                    : colorScheme.tertiary.withOpacity(0.4)),
           size: size * 0.5,
         ),
       ),

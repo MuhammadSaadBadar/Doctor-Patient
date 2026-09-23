@@ -16,26 +16,57 @@ class IntakeLogSummaryCard extends StatelessWidget {
     required this.adherenceRate,
   });
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.green)
+      return isDark ? Colors.green.shade300 : Colors.green.shade800;
+    if (base == Colors.orange)
+      return isDark ? Colors.orange.shade300 : Colors.orange.shade800;
+    return base;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
+        // ✅ Gradient in dark
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  cs.primary.withOpacity(0.10),
+                  cs.primaryContainer.withOpacity(0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? cs.surfaceContainerLowest : null,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(
+          color: isDark
+              ? cs.primary.withOpacity(0.12)
+              : cs.outlineVariant.withOpacity(0.5),
+          width: 1,
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: cs.shadow.withOpacity(0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
       child: Row(
         children: [
-          // Adherence Rate
           Expanded(
             flex: 2,
             child: Column(
@@ -46,7 +77,7 @@ class IntakeLogSummaryCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: colorScheme.onSurfaceVariant,
+                    color: cs.onSurfaceVariant,
                   ),
                 ),
                 Text(
@@ -54,14 +85,13 @@ class IntakeLogSummaryCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
-                    color: colorScheme.primary,
+                    color: cs.primary,
                     fontFamily: 'PlayfairDisplay',
                   ),
                 ),
               ],
             ),
           ),
-          // Stats
           Expanded(
             flex: 3,
             child: Row(
@@ -70,19 +100,21 @@ class IntakeLogSummaryCard extends StatelessWidget {
                   context,
                   label: 'Taken',
                   count: taken,
-                  color: Colors.green,
+                  // ✅ Semantic green
+                  color: _semanticFg(context, Colors.green),
                 ),
                 _buildStatItem(
                   context,
                   label: 'Skipped',
                   count: skipped,
-                  color: Colors.orange,
+                  // ✅ Semantic orange
+                  color: _semanticFg(context, Colors.orange),
                 ),
                 _buildStatItem(
                   context,
                   label: 'Pending',
                   count: pending,
-                  color: colorScheme.primary,
+                  color: cs.primary,
                 ),
               ],
             ),
@@ -98,7 +130,7 @@ class IntakeLogSummaryCard extends StatelessWidget {
     required int count,
     required Color color,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Expanded(
       child: Column(
@@ -113,7 +145,7 @@ class IntakeLogSummaryCard extends StatelessWidget {
           ),
           Text(
             label,
-            style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
+            style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
           ),
         ],
       ),

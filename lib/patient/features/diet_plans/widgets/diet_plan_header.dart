@@ -8,9 +8,17 @@ class DietPlanHeader extends StatelessWidget {
 
   const DietPlanHeader({super.key, required this.plan});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
+    // ✅ Semantic green that flips with brightness
+    final activeFg = isDark ? Colors.green.shade300 : Colors.green.shade800;
+    final inactiveFg = cs.onSurfaceVariant;
 
     return Column(
       children: [
@@ -26,7 +34,8 @@ class DietPlanHeader extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.1),
+                    // ✅ Slightly stronger in dark
+                    color: cs.primary.withOpacity(isDark ? 0.20 : 0.10),
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Text(
@@ -34,17 +43,14 @@ class DietPlanHeader extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: colorScheme.primary,
+                      color: cs.primary,
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   plan.formattedCreatedAt,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
                 ),
               ],
             ),
@@ -52,9 +58,14 @@ class DietPlanHeader extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
+                // ✅ Semantic tint that flips with brightness
                 color: plan.isActive
-                    ? Colors.green.withOpacity(0.12)
-                    : Colors.grey.withOpacity(0.12),
+                    ? (isDark
+                          ? Colors.green.withOpacity(0.20)
+                          : Colors.green.withOpacity(0.12))
+                    : (isDark
+                          ? cs.onSurfaceVariant.withOpacity(0.15)
+                          : Colors.grey.withOpacity(0.12)),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Row(
@@ -65,7 +76,7 @@ class DietPlanHeader extends StatelessWidget {
                         ? Icons.check_circle_rounded
                         : Icons.lock_clock_rounded,
                     size: 14,
-                    color: plan.isActive ? Colors.green : Colors.grey,
+                    color: plan.isActive ? activeFg : inactiveFg,
                   ),
                   const SizedBox(width: 4),
                   Text(
@@ -73,7 +84,7 @@ class DietPlanHeader extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: plan.isActive ? Colors.green : Colors.grey,
+                      color: plan.isActive ? activeFg : inactiveFg,
                     ),
                   ),
                 ],
@@ -87,15 +98,34 @@ class DietPlanHeader extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLowest,
+            // ✅ Gradient in dark, solid in light
+            gradient: isDark
+                ? LinearGradient(
+                    begin: AlignmentDirectional.topStart,
+                    end: AlignmentDirectional.bottomEnd,
+                    colors: [
+                      cs.primary.withOpacity(0.10),
+                      cs.primaryContainer.withOpacity(0.06),
+                    ],
+                  )
+                : null,
+            color: !isDark ? cs.surfaceContainerLowest : null,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withOpacity(0.04),
-                blurRadius: 16,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            border: Border.all(
+              color: isDark
+                  ? cs.primary.withOpacity(0.12)
+                  : cs.outlineVariant.withOpacity(0.5),
+              width: 1,
+            ),
+            boxShadow: isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: cs.shadow.withOpacity(0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Row(
             children: [
@@ -107,10 +137,7 @@ class DietPlanHeader extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: AlignmentDirectional.topStart,
                     end: AlignmentDirectional.bottomEnd,
-                    colors: [
-                      colorScheme.primary,
-                      colorScheme.primary.withOpacity(0.7),
-                    ],
+                    colors: [cs.primary, cs.primary.withOpacity(0.7)],
                   ),
                   shape: BoxShape.circle,
                 ),
@@ -122,7 +149,7 @@ class DietPlanHeader extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: colorScheme.onPrimary,
+                      color: cs.onPrimary,
                     ),
                   ),
                 ),
@@ -137,7 +164,7 @@ class DietPlanHeader extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: colorScheme.onSurface,
+                        color: cs.onSurface,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -147,17 +174,13 @@ class DietPlanHeader extends StatelessWidget {
                       'Diet plan provider',
                       style: TextStyle(
                         fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.verified_rounded,
-                size: 20,
-                color: colorScheme.primary,
-              ),
+              Icon(Icons.verified_rounded, size: 20, color: cs.primary),
             ],
           ),
         ),

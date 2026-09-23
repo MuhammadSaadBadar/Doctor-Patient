@@ -76,7 +76,9 @@ class SosEventCard extends StatelessWidget {
                         ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.only(start: isActive ? 12 : 0),
+                          padding: EdgeInsetsDirectional.only(
+                            start: isActive ? 12 : 0,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
@@ -316,13 +318,15 @@ class SosEventCard extends StatelessWidget {
         // Resolve Button
         SizedBox(
           width: double.infinity,
-          height: 40,
+          // ❌ REMOVED height: 40
           child: ElevatedButton(
             onPressed: isResolving ? null : onResolve,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
               foregroundColor: Colors.white,
               elevation: 0,
+              minimumSize: const Size(double.infinity, 44), // ✅ use min instead
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -337,6 +341,7 @@ class SosEventCard extends StatelessWidget {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 if (isResolving)
                   const SizedBox(
@@ -350,21 +355,31 @@ class SosEventCard extends StatelessWidget {
                 else ...[
                   const Icon(Icons.check_circle_rounded, size: 18),
                   const SizedBox(width: 8),
-                  const Text('Mark as Resolved'),
+                  Flexible(
+                    // ✅ prevents overflow
+                    child: Text(
+                      'Mark as Resolved',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
                 ],
               ],
             ),
           ),
         ),
         const SizedBox(height: 8),
+        // False Alarm Button
         SizedBox(
           width: double.infinity,
-          height: 40,
+          // ❌ REMOVED height: 40
           child: OutlinedButton(
             onPressed: isResolving ? null : onFalseAlarm,
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.error,
               side: const BorderSide(color: AppColors.error),
+              minimumSize: const Size(double.infinity, 44), // ✅
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -378,6 +393,7 @@ class SosEventCard extends StatelessWidget {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   Icons.block_rounded,
@@ -387,7 +403,14 @@ class SosEventCard extends StatelessWidget {
                       : AppColors.error,
                 ),
                 const SizedBox(width: 8),
-                const Text('Mark as False Alarm'),
+                Flexible(
+                  // ✅ prevents overflow
+                  child: Text(
+                    'Mark as False Alarm',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
               ],
             ),
           ),

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:doctor/core/constants/api_constants.dart';
 import 'package:doctor/core/network/api_client.dart';
@@ -90,37 +92,100 @@ class EmergencyRepository {
     }
   }
 
+  // Multiple Overpass mirrors — tried in order on failure
+  static const List<String> _overpassMirrors = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+  ];
+
   Future<({List<NearbyHospital> hospitals, bool hasNext})> getNearbyHospitals({
     required double latitude,
     required double longitude,
     int radius = 5000,
     int page = 1,
   }) async {
-    try {
-      final response = await _apiClient.get(
-        ApiConstants.hospitalsNearby,
-        queryParameters: {
-          'lat': latitude,
-          'lng': longitude,
-          'radius': radius,
-          'page': page,
-          'page_size': 20,
-        },
-      );
-      if (response.statusCode != 200)
-        return (hospitals: <NearbyHospital>[], hasNext: false);
-      final data = response.data as Map<String, dynamic>;
-      final hospitals = (data['results'] as List<dynamic>? ?? [])
-          .whereType<Map<String, dynamic>>()
-          .map(NearbyHospital.fromJson)
-          .toList();
-      return (hospitals: hospitals, hasNext: data['next'] != null);
-    } on DioException catch (e) {
-      debugPrint('[EMERGENCY] Hospital API error: ${e.message}');
-      throw ApiErrorMapper.mapDioException(
-        e,
-        defaultMessage: 'Hospital search is unavailable.',
-      );
+    final query = '''
+[out:json][timeout:25];
+(
+  node["amenity"="hospital"](around:$radius,$latitude,$longitude);
+  way["amenity"="hospital"](around:$radius,$latitude,$longitude);
+  node["amenity"="clinic"](around:$radius,$latitude,$longitude);
+  way["amenity"="clinic"](around:$radius,$latitude,$longitude);
+);
+out center tags;
+''';
+
+    for (final mirror in _overpassMirrors) {
+      try {
+        debugPrint('[EMERGENCY] Trying Overpass mirror: $mirror');
+        final response = await Dio().post(
+          mirror,
+          data: {'data': query},
+          options: Options(
+            contentType: Headers.formUrlEncodedContentType,
+            responseType: ResponseType.plain,
+            sendTimeout: const Duration(seconds: 30),
+            receiveTimeout: const Duration(seconds: 30),
+          ),
+        );
+
+        if (response.statusCode != 200) {
+          debugPrint('[EMERGENCY] Mirror $mirror returned ${response.statusCode}, trying next...');
+          continue;
+        }
+
+        final raw = response.data;
+        final Map<String, dynamic> data = raw is String
+            ? json.decode(raw) as Map<String, dynamic>
+            : raw as Map<String, dynamic>;
+
+        final elements = (data['elements'] as List<dynamic>? ?? []);
+
+        final hospitals = elements.map<NearbyHospital>((el) {
+          final tags = (el['tags'] as Map<String, dynamic>? ?? {});
+          final lat = (el['lat'] ?? el['center']?['lat']) as num?;
+          final lon = (el['lon'] ?? el['center']?['lon']) as num?;
+
+          final name = (tags['name'] as String?)?.trim();
+          final street = (tags['addr:street'] as String?)?.trim();
+          final houseNo = (tags['addr:housenumber'] as String?)?.trim();
+          final city = (tags['addr:city'] as String?)?.trim();
+
+          final addressParts = <String>[
+            if (houseNo != null && street != null) '$houseNo $street',
+            if (street != null && houseNo == null) street,
+            if (city != null) city,
+          ];
+
+          return NearbyHospital(
+            placeId: 'osm_${el['type']}_${el['id']}',
+            name: name?.isNotEmpty == true ? name! : 'Hospital',
+            address: addressParts.isNotEmpty
+                ? addressParts.join(', ')
+                : 'Address unavailable',
+            latitude: lat?.toDouble(),
+            longitude: lon?.toDouble(),
+            rating: null,
+            isOpenNow: null,
+          );
+        }).toList();
+
+        debugPrint('[EMERGENCY] Loaded ${hospitals.length} hospitals from $mirror');
+        return (hospitals: hospitals, hasNext: false);
+      } on DioException catch (e) {
+        debugPrint('[EMERGENCY] Overpass mirror $mirror error: ${e.message}');
+        // Try next mirror
+        continue;
+      } catch (e) {
+        debugPrint('[EMERGENCY] Overpass parse error on $mirror: $e');
+        continue;
+      }
     }
+
+    // All mirrors failed — return empty list gracefully
+    debugPrint('[EMERGENCY] All Overpass mirrors failed, returning empty list.');
+    return (hospitals: <NearbyHospital>[], hasNext: false);
   }
 }
+

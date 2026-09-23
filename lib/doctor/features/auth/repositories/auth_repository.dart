@@ -273,30 +273,53 @@ class AuthRepository {
   }
 
   // ==================== USER PROFILE ====================
-  Future<bool> getUserProfile() async {
+
+  /// Fetches /api/v1/auth/me/, persists user_id AND user_role from the
+  /// response, then returns the authoritative role string (e.g. 'patient',
+  /// 'doctor') so callers can route correctly without relying on stale
+  /// SharedPreferences data from login time.
+  ///
+  /// Returns null when the network call fails so the caller can distinguish
+  /// "verified role" from "could not verify" and act safely (e.g. keep last
+  /// known role instead of falling back to a hard-coded default).
+  Future<String?> getUserProfile() async {
     try {
       final response = await _apiClient.get(ApiConstants.authMe);
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
+
+        // Persist user id
         final userId = data['id'] as String?;
         if (userId != null) {
           await _storage.setUserId(userId);
         }
-        return true;
+
+        // Persist the authoritative role from this response
+        final roleRaw = data['role'] as String?;
+        if (roleRaw != null && roleRaw.isNotEmpty) {
+          final normalizedRole = roleRaw.toLowerCase();
+          await _storage.setUserRole(normalizedRole);
+          debugPrint('[AUTH] Role refreshed from /me: $normalizedRole');
+          return normalizedRole;
+        }
+
+        // Role field absent — return the locally-stored value as fallback
+        debugPrint('[AUTH] /me response had no role field; using stored role.');
+        return _storage.userRole;
       }
 
-      return false;
+      return null;
     } on DioException catch (e) {
       final apiException = ApiErrorMapper.mapDioException(
         e,
         defaultMessage: 'Failed to get user profile.',
       );
       debugPrint('[AUTH] Get user profile error: ${apiException.message}');
-      return false;
+      return null;
     } catch (e) {
       debugPrint('[AUTH] Get user profile error: $e');
-      return false;
+      return null;
     }
   }
 

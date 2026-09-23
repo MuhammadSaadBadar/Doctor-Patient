@@ -4,6 +4,7 @@ import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/patient/features/medicine_reminders/models/medicine_adherence.dart';
 import 'package:doctor/patient/features/medicine_reminders/models/medicine_reminder.dart';
 import 'package:doctor/patient/features/medicine_reminders/repositories/medicine_reminder_repository.dart';
+import 'package:doctor/patient/features/medicine_reminders/models/medicine_intake_log.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -77,7 +78,44 @@ class MedicineReminderController extends GetxController {
       );
 
       if (result != null) {
-        reminders.addAll(result.results);
+        // Fetch today's intake logs to reconstruct the correct adherence state
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+        final tomorrow = today.add(const Duration(days: 1));
+        
+        final logsResult = await _repository.getIntakeLogs(
+          page: 1,
+          pageSize: 1000, // Fetch all logs for today
+          startDate: today,
+          endDate: tomorrow,
+        );
+
+        final updatedReminders = <MedicineReminder>[];
+        for (var reminder in result.results) {
+          int taken = 0;
+          int skipped = 0;
+          
+          if (logsResult != null) {
+            final reminderLogs = logsResult.results.where((log) => 
+                log.reminderId == reminder.id &&
+                log.scheduledFor.isAfter(today.subtract(const Duration(seconds: 1))) &&
+                log.scheduledFor.isBefore(tomorrow)
+            );
+            taken = reminderLogs.where((log) => log.isTaken).length;
+            skipped = reminderLogs.where((log) => log.isSkipped).length;
+          }
+          
+          final pending = reminder.timesPerDay - (taken + skipped);
+          final adherence = MedicineAdherence(
+            taken: taken,
+            skipped: skipped,
+            pending: pending > 0 ? pending : 0,
+          );
+          
+          updatedReminders.add(reminder.copyWith(adherence: adherence));
+        }
+
+        reminders.addAll(updatedReminders);
         totalCount.value = result.count;
         hasMoreData.value = result.hasNext;
         currentPage.value++;

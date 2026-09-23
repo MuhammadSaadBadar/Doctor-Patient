@@ -9,30 +9,56 @@ import 'package:get/get.dart';
 class AddProcedureSheet extends GetView<AddProcedureController> {
   const AddProcedureSheet({super.key});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        // ✅ Sheet background: colorScheme.background in both themes
+        color: colorScheme.background,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 32,
-            offset: const Offset(0, -8),
-          ),
-        ],
+        // ✅ Light mode: soft top shadow
+        // ✅ Dark mode: subtle primary-tinted top border (no shadow —
+        //    shadows are invisible in dark and the border is the "elevation" cue)
+        border: isDark
+            ? Border(
+                top: BorderSide(
+                  color: colorScheme.primary.withValues(alpha: 0.20),
+                  width: 1,
+                ),
+              )
+            : null,
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.10),
+                  blurRadius: 32,
+                  offset: const Offset(0, -8),
+                ),
+              ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // ─────────────────────────────────────────────
+          // Drag handle
+          // ─────────────────────────────────────────────
           Container(
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: colorScheme.outlineVariant,
+              // ✅ Dark: primary-tinted handle so it's visible on
+              //    the same-color background
+              color: isDark
+                  ? colorScheme.primary.withValues(alpha: 0.45)
+                  : colorScheme.outlineVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -106,6 +132,7 @@ class AddProcedureSheet extends GetView<AddProcedureController> {
 
   Widget _buildHeader(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
 
     return Row(
@@ -126,8 +153,18 @@ class AddProcedureSheet extends GetView<AddProcedureController> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainer,
+            // ✅ Dark: primary-tinted close button so it stands out
+            //    on the same-color background
+            color: isDark
+                ? colorScheme.primary.withValues(alpha: 0.14)
+                : colorScheme.surfaceContainer,
             shape: BoxShape.circle,
+            border: isDark
+                ? Border.all(
+                    color: colorScheme.primary.withValues(alpha: 0.25),
+                    width: 1,
+                  )
+                : null,
           ),
           child: IconButton(
             icon: Icon(
@@ -149,6 +186,7 @@ class AddProcedureSheet extends GetView<AddProcedureController> {
 
   Widget _buildActions(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
 
     return Obx(
@@ -189,9 +227,15 @@ class AddProcedureSheet extends GetView<AddProcedureController> {
                   borderRadius: BorderRadius.circular(30),
                 ),
                 elevation: 4,
-                disabledBackgroundColor: colorScheme.onSurface.withValues(
-                  alpha: 0.12,
-                ),
+                // ✅ Theme-aware disabled colors — dark gets a
+                //    primary-tinted disabled state that's visible on
+                //    the same-color background
+                disabledBackgroundColor: isDark
+                    ? colorScheme.primary.withValues(alpha: 0.18)
+                    : colorScheme.onSurface.withValues(alpha: 0.12),
+                disabledForegroundColor: isDark
+                    ? colorScheme.onPrimary.withValues(alpha: 0.55)
+                    : colorScheme.onSurface.withValues(alpha: 0.38),
               ),
               child: controller.isSubmitting.value
                   ? SizedBox(
@@ -217,8 +261,18 @@ class AddProcedureSheet extends GetView<AddProcedureController> {
 
   String _formatDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }

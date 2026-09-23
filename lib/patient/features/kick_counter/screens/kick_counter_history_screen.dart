@@ -12,11 +12,15 @@ import 'package:get/get.dart';
 class KickHistoryScreen extends GetView<KickHistoryController> {
   const KickHistoryScreen({super.key});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      // ✅ surface, not deprecated background
       backgroundColor: colorScheme.background,
       appBar: PatientTopAppBar(
         title: TranslationKeys.kickCounterHistory.tr,
@@ -77,18 +81,12 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
   int _getTotalItemCount() {
     final summaries = controller.dailySummaries;
     int count = 0;
-
     for (final summary in summaries) {
-      count += 1; // Daily summary card
-      final sessions = controller.getSessionsForDate(summary.date);
-      count += sessions.length; // Session items
-    }
-
-    // Load more indicator
-    if (controller.hasMoreData.value) {
       count += 1;
+      final sessions = controller.getSessionsForDate(summary.date);
+      count += sessions.length;
     }
-
+    if (controller.hasMoreData.value) count += 1;
     return count;
   }
 
@@ -97,19 +95,14 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
     int currentIndex = 0;
 
     for (final summary in summaries) {
-      // Daily Summary Card
       if (index == currentIndex) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child: KickDailySummaryCard(
-            summary: summary,
-            onTap: null, // Could expand to show sessions
-          ),
+          child: KickDailySummaryCard(summary: summary, onTap: null),
         );
       }
       currentIndex++;
 
-      // Session Items for this day
       final sessions = controller.getSessionsForDate(summary.date);
       for (final session in sessions) {
         if (index == currentIndex) {
@@ -129,7 +122,6 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
       }
     }
 
-    // Load more indicator
     if (controller.hasMoreData.value && index == currentIndex) {
       return _buildLoadMoreIndicator(context);
     }
@@ -138,7 +130,7 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
   }
 
   Widget _buildLoadMoreIndicator(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Center(
@@ -147,7 +139,7 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
-                  color: colorScheme.primary,
+                  color: cs.primary,
                   strokeWidth: 2.5,
                 ),
               )
@@ -157,7 +149,9 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
   }
 
   Widget _buildLoadingState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -167,18 +161,16 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
             height: 64,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withOpacity(0.2),
+              // ✅ Stronger in dark
+              color: cs.primaryContainer.withOpacity(isDark ? 0.35 : 0.2),
               shape: BoxShape.circle,
             ),
-            child: CircularProgressIndicator(
-              color: colorScheme.primary,
-              strokeWidth: 3,
-            ),
+            child: CircularProgressIndicator(color: cs.primary, strokeWidth: 3),
           ),
           const SizedBox(height: 16),
           Text(
             TranslationKeys.kickCounterLoadingHistory.tr,
-            style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
+            style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
           ),
         ],
       ),
@@ -186,7 +178,8 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
   }
 
   Widget _buildErrorState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -197,13 +190,14 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: colorScheme.errorContainer,
+                color: cs.errorContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline_rounded,
                 size: 36,
-                color: colorScheme.error,
+                // ✅ Correct contrast pair
+                color: cs.onErrorContainer,
               ),
             ),
             const SizedBox(height: 16),
@@ -212,24 +206,21 @@ class KickHistoryScreen extends GetView<KickHistoryController> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               controller.errorMessage.value,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: controller.refreshData,
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 12,

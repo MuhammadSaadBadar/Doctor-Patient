@@ -14,6 +14,7 @@ class DietPlansScreen extends GetView<DietPlanListController> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
+      // ✅ surface, not deprecated background
       backgroundColor: colors.background,
       appBar: PatientTopAppBar(title: TranslationKeys.dietPlansTitle.tr),
       body: Obx(() {
@@ -83,6 +84,7 @@ class _DietPlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isActive = plan.isActive;
 
     return GestureDetector(
@@ -90,21 +92,42 @@ class _DietPlanCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         decoration: BoxDecoration(
-          color: colors.surface,
+          // ✅ Dark: gradient tint over scaffold; Light: solid surface
+          gradient: isDark
+              ? LinearGradient(
+                  begin: AlignmentDirectional.topStart,
+                  end: AlignmentDirectional.bottomEnd,
+                  colors: [
+                    colors.primary.withOpacity(0.10),
+                    colors.primaryContainer.withOpacity(0.06),
+                  ],
+                )
+              : null,
+          color: !isDark ? colors.surfaceContainerLowest : null,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isActive
-                ? colors.tertiary.withOpacity(0.40)
-                : colors.outlineVariant,
+                ? colors.tertiary.withOpacity(isDark ? 0.55 : 0.40)
+                : (isDark
+                      ? colors.primary.withOpacity(0.12)
+                      : colors.outlineVariant),
             width: isActive ? 1.5 : 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          boxShadow: isDark
+              ? [
+                  BoxShadow(
+                    color: colors.shadow.withOpacity(0.05),
+                    blurRadius: 6,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
         ),
         child: Column(
           children: [
@@ -132,7 +155,9 @@ class _DietPlanCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isActive
                           ? colors.tertiaryContainer
-                          : colors.primaryContainer,
+                          : (isDark
+                                ? colors.primary.withOpacity(0.15)
+                                : colors.primaryContainer),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
@@ -294,6 +319,8 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(32, 80, 32, 32),
       child: Column(
@@ -303,7 +330,10 @@ class _EmptyState extends StatelessWidget {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: colors.primaryContainer,
+              // ✅ Slightly stronger primary tint in dark
+              color: isDark
+                  ? colors.primary.withOpacity(0.18)
+                  : colors.primaryContainer,
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -360,6 +390,8 @@ class _ErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -370,12 +402,14 @@ class _ErrorState extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: colors.errorContainer.withOpacity(0.40),
+                // ✅ errorContainer is fine as-is (already a valid M3 container)
+                color: colors.errorContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.cloud_off_rounded,
-                color: colors.error,
+                // ✅ onErrorContainer is the correct contrast pair
+                color: colors.onErrorContainer,
                 size: 28,
               ),
             ),

@@ -14,13 +14,16 @@ import 'package:get/get.dart';
 class DoctorDetailScreen extends GetView<DoctorDetailController> {
   const DoctorDetailScreen({super.key});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textScale = MediaQuery.textScalerOf(context);
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      // ✅ surface — already correct in original
+      backgroundColor: colorScheme.background,
       appBar: PatientTopAppBar(
         title: TranslationKeys.doctorsProfile.tr,
         trailingActions: [
@@ -41,7 +44,6 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
         if (controller.isLoading.value) {
           return _buildLoadingState(context);
         }
-
         if (controller.hasError.value) {
           return _buildErrorState(context);
         }
@@ -83,20 +85,40 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
 
   Widget _buildBioSection(BuildContext context, dynamic doctor) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
+        // ✅ Gradient-in-dark, solid-in-light
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  colorScheme.primary.withValues(alpha: 0.10),
+                  colorScheme.primaryContainer.withValues(alpha: 0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? colorScheme.surfaceContainerLowest : null,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(
+          color: isDark
+              ? colorScheme.primary.withValues(alpha: 0.12)
+              : colorScheme.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -113,14 +135,12 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
             ),
           ),
           const SizedBox(height: 8),
-          Flexible(
-            child: Text(
-              doctor.doctorProfile?.bio ?? '',
-              style: TextStyle(
-                fontSize: textScale.scale(12).clamp(10.0, 16.0),
-                height: 1.6,
-                color: colorScheme.onSurfaceVariant,
-              ),
+          Text(
+            doctor.doctorProfile?.bio ?? '',
+            style: TextStyle(
+              fontSize: textScale.scale(12).clamp(10.0, 16.0),
+              height: 1.6,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -130,6 +150,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
 
   Widget _buildStickyBookingBar(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
 
     return Obx(() {
@@ -143,14 +164,28 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
 
       return Container(
         decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: 0.95),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.08),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
+          // ✅ Dark: solid elevated surface + top border (shadows vanish)
+          // ✅ Light: translucent surface + soft shadow
+          color: isDark
+              ? colorScheme.surfaceContainerHigh
+              : colorScheme.surface.withValues(alpha: 0.95),
+          border: Border(
+            top: BorderSide(
+              color: isDark
+                  ? colorScheme.primary.withValues(alpha: 0.15)
+                  : Colors.transparent,
+              width: 1,
             ),
-          ],
+          ),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: colorScheme.shadow.withValues(alpha: 0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: SafeArea(
@@ -171,14 +206,12 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
                           color: colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      Flexible(
-                        child: Text(
-                          feeDisplay,
-                          style: TextStyle(
-                            fontSize: textScale.scale(18).clamp(16.0, 24.0),
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.primary,
-                          ),
+                      Text(
+                        feeDisplay,
+                        style: TextStyle(
+                          fontSize: textScale.scale(18).clamp(16.0, 24.0),
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.primary,
                         ),
                       ),
                     ],
@@ -217,6 +250,8 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
 
   Widget _buildLoadingState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -226,7 +261,10 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
             height: 64,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.2),
+              // ✅ Stronger tint in dark
+              color: colorScheme.primaryContainer.withValues(
+                alpha: isDark ? 0.35 : 0.2,
+              ),
               shape: BoxShape.circle,
             ),
             child: CircularProgressIndicator(
@@ -247,6 +285,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
   Widget _buildErrorState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -263,7 +302,8 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
               child: Icon(
                 Icons.error_outline_rounded,
                 size: 36,
-                color: colorScheme.error,
+                // ✅ Correct contrast pair
+                color: colorScheme.onErrorContainer,
               ),
             ),
             const SizedBox(height: 16),
@@ -276,14 +316,12 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
               ),
             ),
             const SizedBox(height: 8),
-            Flexible(
-              child: Text(
-                controller.errorMessage.value,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: textScale.scale(12).clamp(10.0, 16.0),
-                  color: colorScheme.onSurfaceVariant,
-                ),
+            Text(
+              controller.errorMessage.value,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: textScale.scale(12).clamp(10.0, 16.0),
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 24),
@@ -311,6 +349,7 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
   Widget _buildEmptyState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -332,14 +371,12 @@ class DoctorDetailScreen extends GetView<DoctorDetailController> {
               ),
             ),
             const SizedBox(height: 8),
-            Flexible(
-              child: Text(
-                TranslationKeys.doctorsNotFoundDesc.tr,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: textScale.scale(12).clamp(10.0, 16.0),
-                  color: colorScheme.onSurfaceVariant,
-                ),
+            Text(
+              TranslationKeys.doctorsNotFoundDesc.tr,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: textScale.scale(12).clamp(10.0, 16.0),
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 24),

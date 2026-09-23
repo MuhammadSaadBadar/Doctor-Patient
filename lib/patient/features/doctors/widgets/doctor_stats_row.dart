@@ -8,6 +8,9 @@ class DoctorStatsRow extends StatelessWidget {
 
   const DoctorStatsRow({super.key, required this.doctor});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -57,33 +60,51 @@ class DoctorStatsRow extends StatelessWidget {
     required Color color,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
+        // ✅ Gradient-in-dark, solid-in-light
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  colorScheme.primary.withValues(alpha: 0.10),
+                  colorScheme.primaryContainer.withValues(alpha: 0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? colorScheme.surfaceContainerLowest : null,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(
+          color: isDark
+              ? colorScheme.primary.withValues(alpha: 0.12)
+              : colorScheme.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         children: [
           ConstrainedBox(
-            constraints: const BoxConstraints(
-              minWidth: 40,
-              minHeight: 40,
-            ),
+            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             child: Container(
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                // ✅ Stronger tint in dark
+                color: color.withValues(alpha: isDark ? 0.22 : 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 20, color: color),

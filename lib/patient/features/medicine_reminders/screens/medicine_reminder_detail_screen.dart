@@ -12,12 +12,25 @@ class MedicineReminderDetailScreen
     extends GetView<MedicineReminderDetailController> {
   const MedicineReminderDetailScreen({super.key});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.orange)
+      return isDark ? Colors.orange.shade300 : Colors.orange.shade800;
+    if (base == Colors.green)
+      return isDark ? Colors.green.shade300 : Colors.green.shade800;
+    return base;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      // ✅ surface, not deprecated background
+      backgroundColor: cs.background,
       appBar: PatientTopAppBar(
         title: 'Reminder Details',
         titleBuilder: (_) => Obx(
@@ -26,7 +39,7 @@ class MedicineReminderDetailScreen
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface,
+              color: cs.onSurface,
               fontFamily: 'PlayfairDisplay',
             ),
             maxLines: 1,
@@ -39,7 +52,7 @@ class MedicineReminderDetailScreen
               return const SizedBox.shrink();
             }
             return PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert_rounded, color: colorScheme.onSurface),
+              icon: Icon(Icons.more_vert_rounded, color: cs.onSurface),
               onSelected: (value) {
                 switch (value) {
                   case 'edit':
@@ -58,11 +71,7 @@ class MedicineReminderDetailScreen
                   value: 'edit',
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.edit_rounded,
-                        size: 18,
-                        color: colorScheme.primary,
-                      ),
+                      Icon(Icons.edit_rounded, size: 18, color: cs.primary),
                       const SizedBox(width: 8),
                       const Text('Edit Reminder'),
                     ],
@@ -75,7 +84,7 @@ class MedicineReminderDetailScreen
                       Icon(
                         Icons.history_rounded,
                         size: 18,
-                        color: colorScheme.secondary,
+                        color: cs.secondary,
                       ),
                       const SizedBox(width: 8),
                       const Text('View Intake Logs'),
@@ -86,13 +95,19 @@ class MedicineReminderDetailScreen
                   value: 'delete',
                   child: Row(
                     children: [
-                      const Icon(
+                      // ✅ Semantic red that flips with brightness
+                      Icon(
                         Icons.delete_rounded,
                         size: 18,
-                        color: Colors.red,
+                        color: _semanticFg(context, Colors.red),
                       ),
                       const SizedBox(width: 8),
-                      const Text('Delete', style: TextStyle(color: Colors.red)),
+                      Text(
+                        'Delete',
+                        style: TextStyle(
+                          color: _semanticFg(context, Colors.red),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -117,14 +132,13 @@ class MedicineReminderDetailScreen
 
         return RefreshIndicator(
           onRefresh: () => controller.loadReminder(reminder.id),
-          color: colorScheme.primary,
+          color: cs.primary,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Reminder Card with Toggle
                 ReminderCard(
                   reminder: reminder,
                   onToggle: controller.toggleReminder,
@@ -152,15 +166,9 @@ class MedicineReminderDetailScreen
                   },
                 ),
                 const SizedBox(height: 24),
-
-                // Details Section
                 _buildDetailsSection(context, reminder),
                 const SizedBox(height: 24),
 
-                _buildIntakeActions(context, reminder),
-                const SizedBox(height: 24),
-
-                // Action Buttons
                 _buildActionButtons(context),
               ],
             ),
@@ -171,21 +179,40 @@ class MedicineReminderDetailScreen
   }
 
   Widget _buildDetailsSection(BuildContext context, MedicineReminder reminder) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
+        // ✅ Gradient in dark, solid in light
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  cs.primary.withOpacity(0.10),
+                  cs.primaryContainer.withOpacity(0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? cs.surfaceContainerLowest : null,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(
+          color: isDark
+              ? cs.primary.withOpacity(0.12)
+              : cs.outlineVariant.withOpacity(0.5),
+          width: 1,
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: cs.shadow.withOpacity(0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,7 +222,7 @@ class MedicineReminderDetailScreen
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface,
+              color: cs.onSurface,
               fontFamily: 'PlayfairDisplay',
             ),
           ),
@@ -251,9 +278,7 @@ class MedicineReminderDetailScreen
             icon: Icons.toggle_on_rounded,
             label: 'Status',
             value: reminder.isActive ? 'Active' : 'Inactive',
-            valueColor: reminder.isActive
-                ? colorScheme.tertiary
-                : colorScheme.error,
+            valueColor: reminder.isActive ? cs.tertiary : cs.error,
           ),
           const SizedBox(height: 12),
           _buildDetailRow(
@@ -281,7 +306,8 @@ class MedicineReminderDetailScreen
     required String value,
     Color? valueColor,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,10 +316,11 @@ class MedicineReminderDetailScreen
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: colorScheme.primary.withOpacity(0.1),
+            // ✅ Stronger primary tint in dark
+            color: cs.primary.withOpacity(isDark ? 0.18 : 0.10),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, size: 18, color: colorScheme.primary),
+          child: Icon(icon, size: 18, color: cs.primary),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -305,20 +332,20 @@ class MedicineReminderDetailScreen
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: colorScheme.onSurfaceVariant,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 2),
-Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: valueColor ?? colorScheme.onSurface,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: valueColor ?? cs.onSurface,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ),
@@ -327,29 +354,25 @@ Text(
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Row(
       children: [
         Expanded(
           child: OutlinedButton.icon(
             onPressed: controller.navigateToIntakeLogs,
-            icon: Icon(
-              Icons.history_rounded,
-              size: 18,
-              color: colorScheme.primary,
-            ),
+            icon: Icon(Icons.history_rounded, size: 18, color: cs.primary),
             label: Text(
               'Intake History',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: colorScheme.primary,
+                color: cs.primary,
               ),
             ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: colorScheme.primary,
-              side: BorderSide(color: colorScheme.primary),
+              foregroundColor: cs.primary,
+              side: BorderSide(color: cs.primary),
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
@@ -362,7 +385,7 @@ Text(
   }
 
   Widget _buildIntakeActions(BuildContext context, MedicineReminder reminder) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final intakeController = Get.find<IntakeLogController>();
 
     if (!reminder.isActive) return const SizedBox.shrink();
@@ -385,8 +408,9 @@ Text(
               icon: const Icon(Icons.close_rounded),
               label: const Text('Skip'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.orange.shade700,
-                side: BorderSide(color: Colors.orange.shade700),
+                // ✅ Semantic orange that flips with brightness
+                foregroundColor: _semanticFg(context, Colors.orange),
+                side: BorderSide(color: _semanticFg(context, Colors.orange)),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -401,8 +425,8 @@ Text(
               icon: const Icon(Icons.check_rounded),
               label: const Text('Taken'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.tertiary,
-                foregroundColor: colorScheme.onTertiary,
+                backgroundColor: cs.tertiary,
+                foregroundColor: cs.onTertiary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -416,7 +440,9 @@ Text(
   }
 
   Widget _buildLoadingState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -426,13 +452,10 @@ Text(
             height: 64,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withOpacity(0.15),
+              color: cs.primaryContainer.withOpacity(isDark ? 0.35 : 0.15),
               shape: BoxShape.circle,
             ),
-            child: CircularProgressIndicator(
-              color: colorScheme.primary,
-              strokeWidth: 3,
-            ),
+            child: CircularProgressIndicator(color: cs.primary, strokeWidth: 3),
           ),
           const SizedBox(height: 16),
           Text(
@@ -440,7 +463,7 @@ Text(
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: colorScheme.onSurfaceVariant,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],
@@ -449,7 +472,8 @@ Text(
   }
 
   Widget _buildErrorState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -460,13 +484,13 @@ Text(
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: colorScheme.errorContainer.withOpacity(0.3),
+                color: cs.errorContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline_rounded,
                 size: 36,
-                color: colorScheme.error,
+                color: cs.onErrorContainer,
               ),
             ),
             const SizedBox(height: 16),
@@ -475,17 +499,14 @@ Text(
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               controller.errorMessage.value,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -496,8 +517,8 @@ Text(
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 12,

@@ -1,5 +1,8 @@
+// lib/patient/features/settings/screens/patient_edit_profile_screen.dart
+
 import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/themes/app_theme.dart';
+import 'package:doctor/core/utils/date_picker_helper.dart';
 import 'package:doctor/core/widgets/material_symbol_icon.dart';
 import 'package:doctor/core/widgets/patient_top_app_bar.dart';
 import 'package:doctor/patient/features/settings/controllers/patient_settings_controller.dart';
@@ -199,6 +202,8 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
   }
 
   Widget _buildProfileHeader(PatientProfileData profile) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Column(
         children: [
@@ -207,9 +212,9 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
             height: 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primaryContainer,
+              color: colorScheme.primaryContainer,
               border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.3),
+                color: colorScheme.primary.withValues(alpha: 0.3),
                 width: 2,
               ),
             ),
@@ -230,7 +235,7 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
           Text(
             profile.user.fullName,
             style: AppTheme.headlineMedium.copyWith(
-              color: AppColors.onSurface,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -238,7 +243,7 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
           Text(
             profile.user.email,
             style: AppTheme.bodyMedium.copyWith(
-              color: AppColors.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -247,13 +252,15 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
   }
 
   Widget _buildInitials(UserProfile user) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Text(
         user.initials,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.w600,
-          color: AppColors.primary,
+          color: colorScheme.primary,
         ),
       ),
     );
@@ -371,13 +378,16 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
     required String title,
     required List<Widget> children,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: AppTheme.titleMedium.copyWith(
-            color: AppColors.onSurface,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -385,9 +395,24 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surfaceContainerLowest,
+            gradient: isDark
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colorScheme.primary.withOpacity(0.08),
+                      colorScheme.primaryContainer.withOpacity(0.04),
+                    ],
+                  )
+                : null,
+            color: !isDark ? colorScheme.surfaceContainerLowest : null,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.outlineVariant, width: 1),
+            border: Border.all(
+              color: isDark
+                  ? colorScheme.primary.withOpacity(0.12)
+                  : colorScheme.outlineVariant,
+              width: 1,
+            ),
           ),
           child: Column(children: children),
         ),
@@ -405,6 +430,8 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return TextFormField(
       controller: controller,
       readOnly: readOnly,
@@ -418,14 +445,14 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.outlineVariant),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
         ),
         filled: true,
-        fillColor: AppColors.surfaceContainerLowest,
+        fillColor: colorScheme.surfaceContainerLowest,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -441,6 +468,8 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
     required String icon,
     required void Function(String?) onChanged,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return DropdownButtonFormField<String>(
       value: value,
       decoration: InputDecoration(
@@ -449,14 +478,14 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.outlineVariant),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
         ),
         filled: true,
-        fillColor: AppColors.surfaceContainerLowest,
+        fillColor: colorScheme.surfaceContainerLowest,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -470,6 +499,8 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
   }
 
   Widget _buildSaveButton() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Obx(
       () => SizedBox(
         width: double.infinity,
@@ -477,8 +508,8 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
         child: ElevatedButton(
           onPressed: _controller.isLoading.value ? null : _saveProfile,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.onPrimary,
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -506,14 +537,19 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════════
+  //   DATE PICKERS — using AppDatePicker for dark mode compatibility
+  // ═══════════════════════════════════════════════════════════════════
+
   Future<void> _selectDateOfBirth() async {
-    final picked = await showDatePicker(
+    final picked = await AppDatePicker.show(
       context: context,
       initialDate:
           _selectedDateOfBirth ??
           DateTime.now().subtract(const Duration(days: 365 * 25)),
       firstDate: DateTime.now().subtract(const Duration(days: 365 * 100)),
       lastDate: DateTime.now(),
+      helpText: 'Select Date of Birth',
     );
     if (picked != null && mounted) {
       setState(() {
@@ -525,11 +561,12 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
   }
 
   Future<void> _selectLmpDate() async {
-    final picked = await showDatePicker(
+    final picked = await AppDatePicker.show(
       context: context,
       initialDate: _selectedLmpDate ?? DateTime.now(),
       firstDate: DateTime.now().subtract(const Duration(days: 300)),
       lastDate: DateTime.now(),
+      helpText: 'Select LMP Date',
     );
     if (picked != null && mounted) {
       setState(() {
@@ -541,12 +578,13 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
   }
 
   Future<void> _selectEddDate() async {
-    final picked = await showDatePicker(
+    final picked = await AppDatePicker.show(
       context: context,
       initialDate:
           _selectedEddDate ?? DateTime.now().add(const Duration(days: 280)),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 300)),
+      helpText: 'Select EDD Date',
     );
     if (picked != null && mounted) {
       setState(() {
@@ -567,7 +605,6 @@ class _PatientEditProfileViewState extends State<_PatientEditProfileView> {
     );
 
     if (success && mounted) {
-      // Also update patient profile fields
       await _controller.updatePatientProfile(
         dateOfBirth: _selectedDateOfBirth,
         lmpDate: _selectedLmpDate,

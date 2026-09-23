@@ -17,41 +17,74 @@ class IntakeLogEntry extends StatelessWidget {
     this.onSkipNow,
   });
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.green)
+      return isDark ? Colors.green.shade300 : Colors.green.shade800;
+    if (base == Colors.orange)
+      return isDark ? Colors.orange.shade300 : Colors.orange.shade800;
+    return base;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
+    // ✅ Semantic colors used for status badges & action buttons
+    final takenFg = _semanticFg(context, Colors.green);
+    final skipFg = _semanticFg(context, Colors.orange);
+    final statusFg = log.statusColor == Colors.green
+        ? takenFg
+        : (log.statusColor == Colors.orange ? skipFg : log.statusColor);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
+        // ✅ Gradient in dark, solid in light
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  cs.primary.withOpacity(0.10),
+                  cs.primaryContainer.withOpacity(0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? cs.surfaceContainerLowest : null,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(
+          color: isDark
+              ? cs.primary.withOpacity(0.12)
+              : cs.outlineVariant.withOpacity(0.5),
+          width: 1,
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: cs.shadow.withOpacity(0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
       child: Row(
         children: [
-          // Icon
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: log.statusColor.withOpacity(0.15),
+              color: statusFg.withOpacity(isDark ? 0.22 : 0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.medication_rounded,
-              size: 20,
-              color: log.statusColor,
-            ),
+            child: Icon(Icons.medication_rounded, size: 20, color: statusFg),
           ),
           const SizedBox(width: 12),
-          // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,24 +94,20 @@ class IntakeLogEntry extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
+                    color: cs.onSurface,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   '${log.statusLabel} • ${formatTime(log.scheduledFor)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          // Status Badge
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -88,20 +117,20 @@ class IntakeLogEntry extends StatelessWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: log.statusColor.withOpacity(0.12),
+                  color: statusFg.withOpacity(isDark ? 0.22 : 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(log.statusIcon, size: 12, color: log.statusColor),
+                    Icon(log.statusIcon, size: 12, color: statusFg),
                     const SizedBox(width: 4),
                     Text(
                       log.statusLabel,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: log.statusColor,
+                        color: statusFg,
                       ),
                     ),
                   ],
@@ -111,13 +140,11 @@ class IntakeLogEntry extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Taken at ${formatTime(log.takenAt!)}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
                 ),
               ],
-              if (log.isPending && (onTakeNow != null || onSkipNow != null)) ...[
+              if (log.isPending &&
+                  (onTakeNow != null || onSkipNow != null)) ...[
                 const SizedBox(height: 8),
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -131,7 +158,8 @@ class IntakeLogEntry extends StatelessWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.green,
+                            // ✅ Use tertiary for "taken"
+                            color: cs.tertiary,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -139,7 +167,7 @@ class IntakeLogEntry extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: cs.onTertiary,
                             ),
                           ),
                         ),
@@ -157,7 +185,8 @@ class IntakeLogEntry extends StatelessWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.orange,
+                            // ✅ Semantic orange for skip, brightness-aware
+                            color: skipFg,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -165,7 +194,10 @@ class IntakeLogEntry extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              // ✅ Dark text on light orange in dark; white on dark orange in light
+                              color: isDark
+                                  ? Colors.black.withOpacity(0.75)
+                                  : Colors.white,
                             ),
                           ),
                         ),
@@ -178,10 +210,7 @@ class IntakeLogEntry extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Skipped',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
                 ),
               ],
             ],

@@ -12,6 +12,7 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
       backgroundColor: colors.background,
       appBar: PatientTopAppBar(title: TranslationKeys.sosGenerate.tr),
@@ -21,24 +22,15 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
           () => Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── Hero ─────────────────────────────────────────────────
-              _buildHero(colors),
+              _buildHero(context, colors),
               const SizedBox(height: 28),
-
-              // ── Notes ────────────────────────────────────────────────
-              _buildNotesSection(colors),
+              _buildNotesSection(context, colors),
               const SizedBox(height: 16),
-
-              // ── Location ─────────────────────────────────────────────
-              _buildLocationRow(colors),
+              _buildLocationRow(context, colors),
               const SizedBox(height: 32),
-
-              // ── SOS Button ───────────────────────────────────────────
               _buildSosButton(colors),
               const SizedBox(height: 20),
-
-              // ── Disclaimer ───────────────────────────────────────────
-              _buildDisclaimer(colors),
+              _buildDisclaimer(context, colors),
             ],
           ),
         ),
@@ -47,17 +39,32 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
   }
 
   // ── Hero section with concentric ring effect ──────────────────────────────
-  Widget _buildHero(ColorScheme colors) {
+  Widget _buildHero(BuildContext context, ColorScheme colors) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
       decoration: BoxDecoration(
-        color: colors.errorContainer.withOpacity(0.10),
+        // ✅ Dark mode: gradient card with error tint
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  colors.error.withOpacity(0.15),
+                  colors.errorContainer.withOpacity(0.08),
+                ],
+              )
+            : null,
+        color: !isDark ? colors.errorContainer.withOpacity(0.10) : null,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colors.error.withOpacity(0.18), width: 1.5),
+        border: Border.all(
+          color: colors.error.withOpacity(isDark ? 0.35 : 0.18),
+          width: 1.5,
+        ),
       ),
       child: Column(
         children: [
-          // Concentric rings around the emergency icon
           Stack(
             alignment: Alignment.center,
             children: [
@@ -91,6 +98,7 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
           const SizedBox(height: 20),
           Text(
             TranslationKeys.sosEmergencyAlert.tr,
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
@@ -114,7 +122,9 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
   }
 
   // ── Notes input section ───────────────────────────────────────────────────
-  Widget _buildNotesSection(ColorScheme colors) {
+  Widget _buildNotesSection(BuildContext context, ColorScheme colors) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -123,15 +133,19 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
             Icon(
               Icons.edit_note_rounded,
               size: 16,
-              color: colors.onSurfaceVariant,
+              color: isDark ? colors.primary : colors.onSurfaceVariant,
             ),
             const SizedBox(width: 6),
-            Text(
-              TranslationKeys.sosAdditionalDetails.tr,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: colors.onSurface,
+            Flexible(
+              child: Text(
+                TranslationKeys.sosAdditionalDetails.tr,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: colors.onSurface,
+                ),
               ),
             ),
             Text(
@@ -144,22 +158,42 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
         TextField(
           controller: controller.notesController,
           maxLines: 4,
+          // ✅ Text color matches input background contrast
+          style: TextStyle(
+            color: isDark ? colors.onBackground : colors.onSurface,
+          ),
           decoration: InputDecoration(
             hintText: TranslationKeys.sosNotesHint.tr,
+            hintStyle: TextStyle(
+              color: isDark
+                  ? colors.onBackground.withOpacity(0.5)
+                  : colors.onSurfaceVariant,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: colors.outlineVariant),
+              borderSide: BorderSide(
+                color: isDark
+                    ? colors.primary.withOpacity(0.3)
+                    : colors.outlineVariant,
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: colors.outlineVariant),
+              borderSide: BorderSide(
+                color: isDark
+                    ? colors.primary.withOpacity(0.3)
+                    : colors.outlineVariant,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(color: colors.primary, width: 1.5),
             ),
+            // ✅ Dark mode: use background so it stays light and text is visible
             filled: true,
-            fillColor: colors.surfaceContainerLowest,
+            fillColor: isDark
+                ? colors.background
+                : colors.surfaceContainerLowest,
             contentPadding: const EdgeInsets.all(16),
             alignLabelWithHint: true,
           ),
@@ -169,20 +203,25 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
   }
 
   // ── Location capture row ──────────────────────────────────────────────────
-  Widget _buildLocationRow(ColorScheme colors) {
+  Widget _buildLocationRow(BuildContext context, ColorScheme colors) {
     final hasLocation = controller.locationMessage.value.isNotEmpty;
     final isLoading = controller.isLoadingLocation.value;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
       decoration: BoxDecoration(
         color: hasLocation
-            ? colors.primaryContainer.withOpacity(0.40)
-            : colors.surfaceContainerLow,
+            ? (isDark
+                  ? colors.primary.withOpacity(0.20)
+                  : colors.primaryContainer.withOpacity(0.40))
+            : (isDark
+                  ? colors.surfaceContainerHigh
+                  : colors.surfaceContainerLow),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: hasLocation
-              ? colors.primary.withOpacity(0.35)
+              ? colors.primary.withOpacity(isDark ? 0.5 : 0.35)
               : colors.outlineVariant,
         ),
       ),
@@ -196,13 +235,12 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             child: Row(
               children: [
-                // Icon container
                 Container(
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
                     color: hasLocation
-                        ? colors.primary.withOpacity(0.12)
+                        ? colors.primary.withOpacity(0.20)
                         : colors.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -223,12 +261,11 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
                               : Icons.add_location_alt_rounded,
                           size: 20,
                           color: hasLocation
-                              ? colors.primary
+                              ? (isDark ? colors.primaryFixed : colors.primary)
                               : colors.onSurfaceVariant,
                         ),
                 ),
                 const SizedBox(width: 12),
-                // Label + message
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,11 +274,13 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
                         hasLocation
                             ? TranslationKeys.sosLocationCaptured.tr
                             : TranslationKeys.sosAddLocation.tr,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: hasLocation
-                              ? colors.primary
+                              ? (isDark ? colors.primaryFixed : colors.primary)
                               : colors.onSurface,
                         ),
                       ),
@@ -250,22 +289,21 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
                         hasLocation
                             ? controller.locationMessage.value
                             : '${TranslationKeys.sosOptional.tr} — ${TranslationKeys.sosCheckLocation.tr}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
                           color: colors.onSurfaceVariant,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
-                // Trailing indicator
                 hasLocation
                     ? Icon(
                         Icons.check_circle_rounded,
-                        color: colors.primary,
+                        color: isDark ? colors.primaryFixed : colors.primary,
                         size: 20,
                       )
                     : Icon(
@@ -301,6 +339,7 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
         child: isSubmitting
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
                     width: 20,
@@ -311,24 +350,36 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    TranslationKeys.sosSend.tr,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: colors.onError,
+                  Flexible(
+                    child: Text(
+                      TranslationKeys.sosSend.tr,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: colors.onError,
+                      ),
                     ),
                   ),
                 ],
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.sos_rounded, size: 22),
-                  SizedBox(width: 10),
-                  Text(
-                    TranslationKeys.sosSend.tr,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      TranslationKeys.sosSend.tr,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -337,7 +388,7 @@ class GenerateSosScreen extends GetView<GenerateSosController> {
   }
 
   // ── Disclaimer ────────────────────────────────────────────────────────────
-  Widget _buildDisclaimer(ColorScheme colors) {
+  Widget _buildDisclaimer(BuildContext context, ColorScheme colors) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

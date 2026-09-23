@@ -22,16 +22,33 @@ class WaterIntakeHistoryEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
+        gradient: isDark
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colorScheme.primary.withOpacity(0.10),
+                  colorScheme.primaryContainer.withOpacity(0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? colorScheme.surfaceContainerLowest : null,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
+        border: Border.all(
+          color: isDark
+              ? colorScheme.primary.withOpacity(0.12)
+              : colorScheme.outlineVariant,
+        ),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.04),
+            color: isDark
+                ? colorScheme.shadow.withOpacity(0.05)
+                : colorScheme.shadow.withOpacity(0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -44,8 +61,12 @@ class WaterIntakeHistoryEntry extends StatelessWidget {
           Container(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withOpacity(0.15),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              color: isDark
+                  ? colorScheme.primary.withOpacity(0.12)
+                  : colorScheme.primaryContainer.withOpacity(0.15),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
             ),
             child: Row(
               children: [
@@ -69,7 +90,10 @@ class WaterIntakeHistoryEntry extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: colorScheme.primary.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(20),
@@ -108,14 +132,31 @@ class WaterIntakeHistoryEntry extends StatelessWidget {
 
   Widget _buildEntryTile(BuildContext context, WaterIntakeEntry entry) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final glasses = (entry.amountMl / 250).ceil();
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest.withOpacity(0.5),
+        gradient: isDark
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colorScheme.primary.withOpacity(0.10),
+                  colorScheme.primaryContainer.withOpacity(0.06),
+                ],
+              )
+            : null,
+        color: !isDark
+            ? colorScheme.surfaceContainerLowest.withOpacity(0.5)
+            : null,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
+        border: Border.all(
+          color: isDark
+              ? colorScheme.primary.withOpacity(0.12)
+              : colorScheme.outlineVariant.withOpacity(0.3),
+        ),
       ),
       child: Row(
         children: [
@@ -123,13 +164,15 @@ class WaterIntakeHistoryEntry extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: colorScheme.tertiary.withOpacity(0.12),
+              color: isDark
+                  ? colorScheme.primary.withOpacity(0.14)
+                  : colorScheme.tertiary.withOpacity(0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               Icons.water_drop_rounded,
               size: 22,
-              color: colorScheme.tertiary,
+              color: isDark ? colorScheme.primary : colorScheme.tertiary,
             ),
           ),
           const SizedBox(width: 12),

@@ -1,6 +1,7 @@
 import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/network/api_exceptions.dart';
 import 'package:doctor/core/routes/app_routes.dart';
+import 'package:doctor/doctor/features/auth/controllers/auth_controller.dart';
 import 'package:doctor/doctor/features/auth/repositories/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -77,6 +78,7 @@ class PatientRegisterController extends GetxController {
       );
       if (!success) throw Exception('Registration failed. Please try again.');
 
+      Get.find<AuthController>().startOtpTimer();
       Get.toNamed(
         AppRoutes.otpVerification,
         arguments: {
@@ -152,6 +154,7 @@ class PatientRegisterController extends GetxController {
 
   void _openVerificationRecovery() {
     Get.closeCurrentSnackbar();
+    Get.find<AuthController>().startOtpTimer();
     Get.toNamed(
       AppRoutes.otpVerification,
       arguments: {
@@ -185,12 +188,12 @@ class PatientRegisterController extends GetxController {
         : messages.join('\n');
   }
 
-        bool _isExistingEmailError(ApiException exception) {
-          final emailErrors = exception.fieldErrors?['email'] ?? const <String>[];
-          final text = [exception.message, ...emailErrors].join(' ').toLowerCase();
-          return text.contains('already exists') ||
-          text.contains('already registered');
-        }
+  bool _isExistingEmailError(ApiException exception) {
+    final emailErrors = exception.fieldErrors?['email'] ?? const <String>[];
+    final text = [exception.message, ...emailErrors].join(' ').toLowerCase();
+    return text.contains('already exists') ||
+        text.contains('already registered');
+  }
 
   String _fieldLabel(String field) {
     switch (field) {

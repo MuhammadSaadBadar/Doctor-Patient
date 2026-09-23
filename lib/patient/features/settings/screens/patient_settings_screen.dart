@@ -1,6 +1,9 @@
+// lib/patient/features/settings/screens/patient_settings_screen.dart
+
 import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/core/themes/app_theme.dart';
+import 'package:doctor/core/utils/date_picker_helper.dart';
 import 'package:doctor/core/widgets/doctor_avatar.dart';
 import 'package:doctor/core/widgets/material_symbol_icon.dart'
     show MaterialSymbolIcon;
@@ -30,7 +33,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
-                return _buildLoadingState();
+                return _buildLoadingState(context);
               }
 
               if (controller.hasError.value) {
@@ -38,7 +41,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
               }
 
               return RefreshIndicator(
-                color: AppColors.primary,
+                color: Theme.of(context).colorScheme.primary,
                 onRefresh: controller.refreshProfile,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -55,7 +58,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
                           const SizedBox(height: 20),
                           _buildAccountSection(),
                           const SizedBox(height: 24),
-                          _buildPatientProfileSection(),
+                          _buildPatientProfileSection(context),
                           const SizedBox(height: 24),
                           // _buildHealthSettingsSection(),
                           // const SizedBox(height: 24),
@@ -78,12 +81,14 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
     );
   }
 
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(color: AppColors.primary),
+          CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.primary,
+          ),
           const SizedBox(height: 16),
           Text(TranslationKeys.settingsLoading.tr),
         ],
@@ -147,6 +152,9 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
       final profile = controller.profileData.value;
       if (profile == null) return const SizedBox.shrink();
 
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      final colorScheme = Theme.of(context).colorScheme;
+
       return GestureDetector(
         onTap: () => Get.toNamed('/patient/profile/edit')?.then((result) {
           if (result == true) {
@@ -156,10 +164,22 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerLowest,
+            gradient: isDark
+                ? LinearGradient(
+                    begin: AlignmentDirectional.topStart,
+                    end: AlignmentDirectional.bottomEnd,
+                    colors: [
+                      colorScheme.primary.withOpacity(0.10),
+                      colorScheme.primaryContainer.withOpacity(0.06),
+                    ],
+                  )
+                : null,
+            color: !isDark ? colorScheme.surfaceContainerLowest : null,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outlineVariant,
+              color: isDark
+                  ? colorScheme.primary.withOpacity(0.12)
+                  : colorScheme.outlineVariant,
               width: 1,
             ),
           ),
@@ -180,7 +200,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
                     Text(
                       profile.user.fullName,
                       style: AppTheme.headlineSmall.copyWith(
-                        color: AppColors.primary,
+                        color: isDark ? Colors.white : colorScheme.primary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -188,7 +208,9 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
                     Text(
                       profile.user.email,
                       style: AppTheme.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        color: isDark
+                            ? colorScheme.onSurfaceVariant.withOpacity(0.75)
+                            : colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -198,13 +220,17 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.secondaryContainer,
+                        color: isDark
+                            ? colorScheme.primary.withOpacity(0.2)
+                            : colorScheme.secondaryContainer,
                         borderRadius: BorderRadius.circular(9999),
                       ),
                       child: Text(
                         TranslationKeys.settingsPatientBadge.tr,
                         style: AppTheme.labelMedium.copyWith(
-                          color: AppColors.onSecondaryContainer,
+                          color: isDark
+                              ? colorScheme.primaryFixed
+                              : colorScheme.onSecondaryContainer,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -215,7 +241,9 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
               MaterialSymbolIcon(
                 'chevron_right',
                 size: 24,
-                color: Theme.of(context).colorScheme.outline,
+                color: isDark
+                    ? colorScheme.primary.withOpacity(0.6)
+                    : colorScheme.outline,
               ),
             ],
           ),
@@ -265,7 +293,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
     });
   }
 
-  Widget _buildPatientProfileSection() {
+  Widget _buildPatientProfileSection(BuildContext context) {
     return Obx(() {
       final patientProfile = controller.profileData.value?.patientProfile;
 
@@ -287,7 +315,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
             subtitle: patientProfile?.lmpDate != null
                 ? '${patientProfile!.lmpDate!.day}/${patientProfile.lmpDate!.month}/${patientProfile.lmpDate!.year}'
                 : TranslationKeys.settingsNotSet.tr,
-            onTap: () => _showLmpDateDialog(),
+            onTap: () => _showLmpDateDialog(context),
           ),
           SettingsTile(
             icon: 'pregnant_woman',
@@ -301,7 +329,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
             subtitle:
                 patientProfile?.bloodGroupDisplay ??
                 TranslationKeys.settingsNotSet.tr,
-            onTap: () => _showBloodGroupDialog(),
+            onTap: () => _showBloodGroupDialog(context),
           ),
           SettingsTile(
             icon: 'contact_emergency',
@@ -404,55 +432,6 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
     );
   }
 
-  // Widget _buildSupportSection() {
-  //   return SettingsSection(
-  //     title: 'Support & Legal',
-  //     children: [
-  //       SettingsTile(
-  //         icon: 'help_outline',
-  //         title: 'Help Center',
-  //         onTap: () {
-  //           Get.snackbar(
-  //             'Coming Soon',
-  //             'Help center will be available soon',
-  //             snackPosition: SnackPosition.TOP,
-  //           );
-  //         },
-  //         isFirst: true,
-  //       ),
-  //       SettingsTile(
-  //         icon: 'privacy_tip',
-  //         title: 'Privacy Policy',
-  //         onTap: () {
-  //           Get.snackbar(
-  //             'Coming Soon',
-  //             'Privacy policy will be available soon',
-  //             snackPosition: SnackPosition.TOP,
-  //           );
-  //         },
-  //       ),
-  //       SettingsTile(
-  //         icon: 'gavel',
-  //         title: 'Terms & Conditions',
-  //         onTap: () {
-  //           Get.snackbar(
-  //             'Coming Soon',
-  //             'Terms & conditions will be available soon',
-  //             snackPosition: SnackPosition.TOP,
-  //           );
-  //         },
-  //       ),
-  //       SettingsTile(
-  //         icon: 'info',
-  //         title: 'About',
-  //         subtitle: 'Version 1.0.0',
-  //         onTap: controller.showAboutDialog,
-  //         isLast: true,
-  //       ),
-  //     ],
-  //   );
-  // }
-
   Widget _buildLogoutButton(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
@@ -466,13 +445,17 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
       child: SettingsTile(
         icon: 'logout',
         title: TranslationKeys.settingsLogout.tr,
-        textColor: AppColors.error,
-        iconColor: AppColors.error,
+        textColor: Theme.of(context).colorScheme.error,
+        iconColor: Theme.of(context).colorScheme.error,
         onTap: controller.showLogoutDialog,
         isOnly: true,
       ),
     );
   }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //   DATE PICKERS — using AppDatePicker for dark mode compatibility
+  // ═══════════════════════════════════════════════════════════════════
 
   void _showDateOfBirthDialog() {
     final profile = controller.profileData.value?.patientProfile;
@@ -481,11 +464,12 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
     final firstDate = DateTime(now.year - 100);
     final lastDate = now;
 
-    showDatePicker(
+    AppDatePicker.show(
       context: Get.context!,
       initialDate: selectedDate ?? DateTime(now.year - 25),
       firstDate: firstDate,
       lastDate: lastDate,
+      helpText: 'Select Date of Birth',
     ).then((picked) {
       if (picked != null && picked != selectedDate) {
         controller.updatePatientProfile(dateOfBirth: picked);
@@ -493,7 +477,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
     });
   }
 
-  void _showLmpDateDialog() {
+  void _showLmpDateDialog(BuildContext context) {
     final profile = controller.profileData.value?.patientProfile;
     final lmpController = TextEditingController(
       text: profile?.lmpDate != null
@@ -512,7 +496,7 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
               'LMP',
               style: AppTheme.bodySmall.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.primary,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
             const SizedBox(height: 4),
@@ -526,13 +510,14 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
                 border: OutlineInputBorder(),
               ),
               onTap: () async {
-                final picked = await showDatePicker(
+                final picked = await AppDatePicker.show(
                   context: Get.context!,
                   initialDate: profile?.lmpDate ?? DateTime.now(),
                   firstDate: DateTime.now().subtract(
                     const Duration(days: 365 * 40),
                   ),
                   lastDate: DateTime.now(),
+                  helpText: 'Select LMP Date',
                 );
                 if (picked != null) {
                   lmpController.text =
@@ -566,8 +551,8 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimary,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
             ),
             child: Text(TranslationKeys.commonSave.tr),
           ),
@@ -614,11 +599,12 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
                 border: OutlineInputBorder(),
               ),
               onTap: () async {
-                final picked = await showDatePicker(
+                final picked = await AppDatePicker.show(
                   context: Get.context!,
                   initialDate: profile?.lmpDate ?? DateTime.now(),
                   firstDate: DateTime.now().subtract(const Duration(days: 300)),
                   lastDate: DateTime.now(),
+                  helpText: 'Select LMP Date',
                 );
                 if (picked != null) {
                   lmpController.text =
@@ -645,13 +631,14 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
                 border: OutlineInputBorder(),
               ),
               onTap: () async {
-                final picked = await showDatePicker(
+                final picked = await AppDatePicker.show(
                   context: Get.context!,
                   initialDate:
                       profile?.eddDate ??
                       DateTime.now().add(const Duration(days: 280)),
                   firstDate: DateTime.now(),
                   lastDate: DateTime.now().add(const Duration(days: 300)),
+                  helpText: 'Select EDD Date',
                 );
                 if (picked != null) {
                   eddController.text =
@@ -709,34 +696,109 @@ class PatientSettingsScreen extends GetView<PatientSettingsController> {
     );
   }
 
-  void _showBloodGroupDialog() {
+  void _showBloodGroupDialog(BuildContext context) {
     final profile = controller.profileData.value?.patientProfile;
     final bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // ✅ Use the SAME background color for all items (selected or not)
+    final itemBgColor = colorScheme.background;
+    // ✅ Text color = dark on light background
+    final itemTextColor = colorScheme.onBackground;
 
     Get.dialog(
       AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Blood Group'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: bloodGroups.map((group) {
-            return RadioListTile<String>(
-              title: Text(group),
-              value: group,
-              groupValue: profile?.bloodGroup,
-              onChanged: (value) {
-                if (value != null) {
-                  controller.updatePatientProfile(bloodGroup: value);
-                  Get.back();
-                }
-              },
-            );
-          }).toList(),
+        backgroundColor: isDark
+            ? colorScheme.surfaceContainerLow
+            : colorScheme.surfaceContainerLowest,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        title: Text(
+          'Blood Group',
+          style: TextStyle(
+            color: isDark ? colorScheme.primaryFixed : colorScheme.primary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: bloodGroups.map((group) {
+                final isSelected = profile?.bloodGroup == group;
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Material(
+                    // ✅ Same white/light background for both selected & unselected
+                    color: itemBgColor,
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                        controller.updatePatientProfile(bloodGroup: group);
+                        Get.back();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          // ✅ Selected = pink border, Unselected = subtle border
+                          border: Border.all(
+                            color: isSelected
+                                ? colorScheme.primary
+                                : colorScheme.outlineVariant.withOpacity(0.4),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            // ✅ Blood group text — dark on white bg
+                            Expanded(
+                              child: Text(
+                                group,
+                                style: AppTheme.bodyLarge.copyWith(
+                                  color: isSelected
+                                      ? colorScheme.primary
+                                      : itemTextColor,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            // ✅ Selected indicator (pink checkmark)
+                            if (isSelected)
+                              Icon(
+                                Icons.check_circle_rounded,
+                                size: 20,
+                                color: colorScheme.primary,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text(TranslationKeys.commonCancel.tr),
+            child: Text(
+              TranslationKeys.commonCancel.tr,
+              style: TextStyle(
+                color: isDark ? colorScheme.primaryFixed : colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),

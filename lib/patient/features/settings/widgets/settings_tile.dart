@@ -1,5 +1,6 @@
+// lib/patient/features/settings/widgets/settings_tile.dart
+
 import 'package:flutter/material.dart';
-import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/widgets/material_symbol_icon.dart';
 
@@ -31,6 +32,9 @@ class SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final borderRadius = BorderRadius.only(
       topLeft: isFirst || isOnly ? const Radius.circular(12) : Radius.zero,
       topRight: isFirst || isOnly ? const Radius.circular(12) : Radius.zero,
@@ -38,23 +42,44 @@ class SettingsTile extends StatelessWidget {
       bottomRight: isLast || isOnly ? const Radius.circular(12) : Radius.zero,
     );
 
+    // ✅ Dark mode: use primary-tinted hover/highlight for theme consistency
+    // ✅ Light mode: use surfaceContainerLow as before
+    final hoverColor = isDark
+        ? colorScheme.primary.withOpacity(0.10)
+        : colorScheme.surfaceContainerLow.withOpacity(0.5);
+
+    final highlightColor = isDark
+        ? colorScheme.primary.withOpacity(0.06)
+        : colorScheme.surfaceContainerLow.withOpacity(0.3);
+
+    // ✅ Resolve text colors (dark mode uses brighter onSurface)
+    final resolvedTextColor = textColor ?? colorScheme.onSurface;
+    final resolvedIconColor =
+        iconColor ??
+        (isDark ? colorScheme.primary : colorScheme.onSurfaceVariant);
+    final resolvedChevronColor = isDark
+        ? colorScheme.primary.withOpacity(0.6)
+        : colorScheme.outline;
+    final resolvedSubtitleColor = isDark
+        ? colorScheme.onSurfaceVariant.withOpacity(0.75)
+        : colorScheme.onSurfaceVariant;
+
     return Material(
       color: Colors.transparent,
       borderRadius: borderRadius,
       child: InkWell(
         onTap: onTap,
         borderRadius: borderRadius,
-        hoverColor: Theme.of(context).colorScheme.surfaceContainerLow.withOpacity(0.5),
-        highlightColor: Theme.of(context).colorScheme.surfaceContainerLow.withOpacity(0.3),
+        hoverColor: hoverColor,
+        highlightColor: highlightColor,
+        splashColor: isDark
+            ? colorScheme.primary.withOpacity(0.08)
+            : colorScheme.primary.withOpacity(0.05),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              MaterialSymbolIcon(
-                icon,
-                size: 24,
-                color: iconColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              MaterialSymbolIcon(icon, size: 24, color: resolvedIconColor),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -63,7 +88,7 @@ class SettingsTile extends StatelessWidget {
                     Text(
                       title,
                       style: AppTheme.bodyMedium.copyWith(
-                        color: textColor ?? Theme.of(context).colorScheme.onSurface,
+                        color: resolvedTextColor,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -72,7 +97,7 @@ class SettingsTile extends StatelessWidget {
                       Text(
                         subtitle!,
                         style: AppTheme.bodySmall.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: resolvedSubtitleColor,
                         ),
                       ),
                     ],
@@ -84,7 +109,7 @@ class SettingsTile extends StatelessWidget {
                 MaterialSymbolIcon(
                   'chevron_right',
                   size: 24,
-                  color: Theme.of(context).colorScheme.outline,
+                  color: resolvedChevronColor,
                 ),
             ],
           ),

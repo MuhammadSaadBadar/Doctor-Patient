@@ -20,55 +20,107 @@ class BookingTypeOption extends StatelessWidget {
     required this.onTap,
   });
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
+    // ✅ The caller now passes a brightness-aware `color` (e.g. blue.shade300
+    //    in dark, blue.shade600 in light), so we can use it directly.
+    //    We still compute a couple of derived tones for tint/shadow.
+
+    // Selected decoration — solid-ish accent tint + strong accent border
+    final selectedDecoration = BoxDecoration(
+      color: color.withValues(alpha: isDark ? 0.18 : 0.10),
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(
+        color: color.withValues(alpha: isDark ? 0.75 : 0.45),
+        width: 2,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: color.withValues(alpha: isDark ? 0.30 : 0.15),
+          blurRadius: isDark ? 14 : 12,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    );
+
+    // Unselected decoration — gradient-in-dark / solid-in-light
+    // (matches SettingsSection, ProcedureCard, ReminderCard, etc.)
+    final unselectedDecoration = BoxDecoration(
+      gradient: isDark
+          ? LinearGradient(
+              begin: AlignmentDirectional.topStart,
+              end: AlignmentDirectional.bottomEnd,
+              colors: [
+                cs.primary.withValues(alpha: 0.10),
+                cs.primaryContainer.withValues(alpha: 0.06),
+              ],
+            )
+          : null,
+      color: !isDark ? cs.surfaceContainerLowest : null,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(
+        color: isDark
+            ? cs.primary.withValues(alpha: 0.12)
+            : cs.outlineVariant.withValues(alpha: 0.4),
+        width: 1,
+      ),
+      boxShadow: isDark
+          ? [
+              BoxShadow(
+                color: cs.shadow.withValues(alpha: 0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 1),
+              ),
+            ]
+          : null,
+    );
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? color.withOpacity(0.10)
-              : colorScheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isSelected ? color : colorScheme.outline.withOpacity(0.15),
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: color.withOpacity(0.15),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
+        decoration: isSelected ? selectedDecoration : unselectedDecoration,
         child: Column(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                gradient: isSelected
-                    ? LinearGradient(
-                        begin: AlignmentDirectional.topStart,
-                        end: AlignmentDirectional.bottomEnd,
-                        colors: [color, color.withOpacity(0.8)],
-                      )
-                    : null,
-                color: isSelected ? null : colorScheme.surfaceContainerHighest,
+                // ✅ Selected: solid accent (bright in dark, saturated in light)
+                //    Unselected: neutral tint that reads in both themes
+                color: isSelected
+                    ? color
+                    : (isDark
+                          ? cs.primary.withValues(alpha: 0.14)
+                          : cs.surfaceContainerHighest),
                 shape: BoxShape.circle,
+                // ✅ Glow only on selected, only when we can afford it
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: color.withValues(alpha: isDark ? 0.45 : 0.30),
+                          blurRadius: isDark ? 14 : 10,
+                        ),
+                      ]
+                    : null,
               ),
               child: Icon(
                 icon,
                 size: 22,
+                // ✅ On a saturated accent button, use black/white depending
+                //    on the accent's luminance. In dark mode the accent is
+                //    already pastel (shade300), so use a dark foreground.
                 color: isSelected
-                    ? colorScheme.onPrimary
-                    : colorScheme.onSurfaceVariant,
+                    ? (isDark
+                          ? Colors.black.withValues(alpha: 0.75)
+                          : Colors.white)
+                    : (isDark ? cs.primary : cs.onSurfaceVariant),
               ),
             ),
             const SizedBox(height: 8),
@@ -78,8 +130,14 @@ class BookingTypeOption extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? color : colorScheme.onSurfaceVariant,
+                // ✅ Selected text uses the accent (bright in dark / saturated
+                //    in light); unselected uses onSurface / onSurfaceVariant
+                color: isSelected
+                    ? color
+                    : (isDark ? cs.onSurface : cs.onSurfaceVariant),
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

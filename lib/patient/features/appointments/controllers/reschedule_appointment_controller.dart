@@ -112,20 +112,73 @@ class RescheduleAppointmentController extends GetxController {
       !isLoading.value;
 
   Future<void> pickDate(BuildContext context) async {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final now = DateTime.now();
+
     final picked = await showDatePicker(
       context: context,
-      initialDate:
-          selectedDate.value ?? DateTime.now().add(const Duration(days: 1)),
-      firstDate: DateTime.now().add(const Duration(days: 1)),
-      lastDate: DateTime.now().add(const Duration(days: 90)),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: Theme.of(context).colorScheme.copyWith(
-            primary: Theme.of(context).colorScheme.primary,
+      initialDate: selectedDate.value ?? now.add(const Duration(days: 1)),
+      firstDate: now.add(const Duration(days: 1)),
+      lastDate: now.add(const Duration(days: 90)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            datePickerTheme: DatePickerThemeData(
+              // ✅ Dialog surface — matches scaffold in dark
+              backgroundColor: isDark ? cs.background : cs.surface,
+              // ✅ Header strip (top band with the selected date)
+              headerBackgroundColor: isDark ? cs.background : cs.surface,
+              headerForegroundColor: isDark ? cs.onBackground : cs.onSurface,
+              // ✅ Day numbers
+              dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return cs.onPrimary;
+                }
+                if (states.contains(WidgetState.disabled)) {
+                  return (isDark ? cs.onBackground : cs.onSurface).withValues(
+                    alpha: 0.38,
+                  );
+                }
+                return isDark ? cs.onBackground : cs.onSurface;
+              }),
+              // ✅ Circle behind selected day — null = transparent so
+              //    unselected days show the dark dialog bg, not a white circle
+              dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return cs.primary;
+                }
+                return null;
+              }),
+              // ✅ Today's ring
+              todayBorder: BorderSide(color: cs.primary, width: 1.5),
+              todayForegroundColor: WidgetStatePropertyAll(cs.primary),
+              // ✅ Weekday labels (Mon, Tue, Wed…)
+              weekdayStyle: TextStyle(
+                color: (isDark ? cs.onBackground : cs.onSurface).withValues(
+                  alpha: 0.7,
+                ),
+                fontWeight: FontWeight.w600,
+              ),
+              // ✅ Month / year header
+              yearForegroundColor: WidgetStatePropertyAll(
+                isDark ? cs.onBackground : cs.onSurface,
+              ),
+              // ✅ Cancel / OK
+              cancelButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              confirmButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
           ),
-        ),
-        child: child!,
-      ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       selectedDate.value = picked;
@@ -144,17 +197,58 @@ class RescheduleAppointmentController extends GetxController {
       return;
     }
 
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final picked = await showTimePicker(
       context: context,
-      initialTime: selectedTime.value ?? TimeOfDay(hour: 9, minute: 0),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: Theme.of(context).colorScheme.copyWith(
-            primary: Theme.of(context).colorScheme.primary,
+      initialTime: selectedTime.value ?? const TimeOfDay(hour: 9, minute: 0),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            timePickerTheme: TimePickerThemeData(
+              // ✅ Same treatment so the dial matches the date picker
+              backgroundColor: isDark ? cs.background : cs.surface,
+              hourMinuteColor: isDark
+                  ? cs.primary.withValues(alpha: 0.18)
+                  : cs.primaryContainer,
+              hourMinuteTextColor: isDark
+                  ? cs.onBackground
+                  : cs.onPrimaryContainer,
+              dialBackgroundColor: isDark
+                  ? cs.primary.withValues(alpha: 0.12)
+                  : cs.surfaceVariant,
+              dialHandColor: cs.primary,
+              dialTextColor: WidgetStateColor.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return cs.onPrimary;
+                }
+                return isDark ? cs.onBackground : cs.onSurface;
+              }),
+              entryModeIconColor: isDark
+                  ? cs.onBackground
+                  : cs.onSurfaceVariant,
+              helpTextStyle: TextStyle(
+                color: (isDark ? cs.onBackground : cs.onSurface).withValues(
+                  alpha: 0.7,
+                ),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+              cancelButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              confirmButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
           ),
-        ),
-        child: child!,
-      ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       selectedTime.value = picked;

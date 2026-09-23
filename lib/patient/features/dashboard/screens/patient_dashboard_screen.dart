@@ -61,32 +61,24 @@ class PatientDashboardScreen extends GetView<PatientDashboardController> {
                     summary.latestBloodSugar != null) ...[
                   _sectionHeader(context, TranslationKeys.dashboardVitals.tr),
                   const SizedBox(height: 8),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
+                  IntrinsicHeight(
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         if (summary.latestBloodPressure != null)
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              minWidth: 140,
-                              maxWidth: 180,
-                            ),
+                          Expanded(
                             child: VitalCard.bloodPressure(
                               reading: summary.latestBloodPressure!,
                             ),
                           ),
-                        if (summary.latestBloodSugar != null) ...[
+                        if (summary.latestBloodPressure != null && summary.latestBloodSugar != null)
                           const SizedBox(width: 12),
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              minWidth: 140,
-                              maxWidth: 180,
-                            ),
+                        if (summary.latestBloodSugar != null)
+                          Expanded(
                             child: VitalCard.bloodSugar(
                               reading: summary.latestBloodSugar!,
                             ),
                           ),
-                        ],
                       ],
                     ),
                   ),

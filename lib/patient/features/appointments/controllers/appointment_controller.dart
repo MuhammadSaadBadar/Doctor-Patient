@@ -146,6 +146,10 @@ class AppointmentController extends GetxController {
     Get.toNamed(AppRoutes.bookAppointment);
   }
 
+  void navigateToFindDoctors() {
+    Get.toNamed(AppRoutes.findDoctors);
+  }
+
   void navigateToAppointmentDetail(int appointmentId) {
     Get.toNamed(
       AppRoutes.patientAppointmentDetail,

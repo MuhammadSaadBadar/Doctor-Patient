@@ -5,6 +5,7 @@ import 'package:doctor/patient/features/emergency/repositories/emergency_reposit
 import 'package:doctor/patient/features/emergency/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:latlong2/latlong.dart';
 
 class EmergencyController extends GetxController {
   final EmergencyRepository _repository = Get.find<EmergencyRepository>();
@@ -31,6 +32,7 @@ class EmergencyController extends GetxController {
   void onInit() {
     super.onInit();
     loadSos(refresh: true);
+    loadHospitals(); // Pre-fetch at launch so data is ready when tab is opened
   }
 
   Future<void> loadSos({bool refresh = false}) async {
@@ -57,9 +59,11 @@ class EmergencyController extends GetxController {
   }
 
   Future<void> loadHospitals({bool refresh = true}) async {
+    if (isLoadingHospitals.value) return;
     isLoadingHospitals.value = true;
     hasHospitalError.value = false;
     if (refresh) hospitals.clear();
+
     try {
       final position = await _locationService.getCurrentPosition();
       if (position == null) {
@@ -67,12 +71,45 @@ class EmergencyController extends GetxController {
       }
       latitude.value = position.latitude;
       longitude.value = position.longitude;
+
+      final userLatLng = LatLng(position.latitude, position.longitude);
+      const distanceCalc = Distance();
+
+      // Fetch from OSM Overpass (with automatic mirror fallback)
       final result = await _repository.getNearbyHospitals(
         latitude: position.latitude,
         longitude: position.longitude,
       );
-      hospitals.addAll(result.hospitals);
-      hasMoreHospitals.value = result.hasNext;
+
+      final all = result.hospitals;
+
+      if (all.isEmpty) {
+        // Mirrors were all unreachable — show friendly message, not error
+        hasHospitalError.value = true;
+        hospitalError.value = 'Hospital data is temporarily unavailable. Please try again later.';
+        return;
+      }
+
+      // Compute distance for each hospital
+      for (final h in all) {
+        if (h.latitude != null && h.longitude != null) {
+          h.distanceMeters = distanceCalc.as(
+            LengthUnit.Meter,
+            userLatLng,
+            LatLng(h.latitude!, h.longitude!),
+          );
+        }
+      }
+
+      // Sort by distance (closest first)
+      all.sort((a, b) {
+        final da = a.distanceMeters ?? double.infinity;
+        final db = b.distanceMeters ?? double.infinity;
+        return da.compareTo(db);
+      });
+
+      hospitals.assignAll(all);
+      hasMoreHospitals.value = false;
     } catch (e) {
       hasHospitalError.value = true;
       hospitalError.value = e.toString().replaceFirst('Exception: ', '');

@@ -9,24 +9,39 @@ class DoctorNoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+        // ✅ Dark: primary-tinted gradient to match other cards
+        // ✅ Light: surfaceContainerLow (subtle neutral)
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  cs.primary.withOpacity(0.10),
+                  cs.primaryContainer.withOpacity(0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? cs.surfaceContainerLow : null,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark
+              ? cs.primary.withOpacity(0.12)
+              : cs.outlineVariant.withOpacity(0.5),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.note_alt_rounded,
-                size: 20,
-                color: colorScheme.primary,
-              ),
+              Icon(Icons.note_alt_rounded, size: 20, color: cs.primary),
               const SizedBox(width: 8),
               Text(
                 "Doctor's Note",
@@ -34,7 +49,7 @@ class DoctorNoteCard extends StatelessWidget {
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5,
-                  color: colorScheme.primary,
+                  color: cs.primary,
                 ),
               ),
             ],
@@ -45,7 +60,7 @@ class DoctorNoteCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontStyle: FontStyle.italic,
-              color: colorScheme.onSurface,
+              color: cs.onSurface,
             ),
           ),
         ],

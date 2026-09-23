@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class AddMedicineReminderController extends GetxController {
-  final MedicineReminderRepository _repository = Get.find<MedicineReminderRepository>();
+  final MedicineReminderRepository _repository =
+      Get.find<MedicineReminderRepository>();
 
   // State
   final isLoading = false.obs;
@@ -108,28 +109,121 @@ class AddMedicineReminderController extends GetxController {
   }
 
   Future<void> pickStartDate(BuildContext context) async {
-    final date = await showDatePicker(
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final picked = await showDatePicker(
       context: context,
       initialDate: startDate.value ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            // ✅ Override just the date picker's background
+            datePickerTheme: DatePickerThemeData(
+              backgroundColor: isDark ? cs.background : cs.surface,
+              headerBackgroundColor: isDark ? cs.background : cs.surface,
+              headerForegroundColor: isDark ? cs.onBackground : cs.onSurface,
+              dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return cs.onPrimary;
+                }
+                return isDark ? cs.onBackground : cs.onSurface;
+              }),
+              dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return cs.primary;
+                }
+                return null;
+              }),
+              todayBorder: BorderSide(color: cs.primary, width: 1.5),
+              todayForegroundColor: WidgetStatePropertyAll(cs.primary),
+              weekdayStyle: TextStyle(
+                color: (isDark ? cs.onBackground : cs.onSurface).withValues(
+                  alpha: 0.7,
+                ),
+              ),
+              cancelButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              confirmButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
-    if (date != null) {
-      startDate.value = date;
-      validateStartDate();
+
+    if (picked != null) {
+      startDate.value = picked;
     }
   }
 
   Future<void> pickEndDate(BuildContext context) async {
-    final date = await showDatePicker(
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // ✅ End date must be after the start date (or today, whichever is later)
+    final today = DateTime.now();
+    final start = startDate.value;
+    final firstDate = start != null && start.isAfter(today) ? start : today;
+
+    final picked = await showDatePicker(
       context: context,
-      initialDate:
-          endDate.value ?? DateTime.now().add(const Duration(days: 30)),
-      firstDate: startDate.value ?? DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 730)),
+      initialDate: endDate.value ?? firstDate.add(const Duration(days: 30)),
+      firstDate: firstDate,
+      lastDate: today.add(const Duration(days: 365 * 2)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            // ✅ Same dark-mode override as pickStartDate
+            datePickerTheme: DatePickerThemeData(
+              backgroundColor: isDark ? cs.background : cs.surface,
+              headerBackgroundColor: isDark ? cs.background : cs.surface,
+              headerForegroundColor: isDark ? cs.onBackground : cs.onSurface,
+              dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return cs.onPrimary;
+                }
+                return isDark ? cs.onBackground : cs.onSurface;
+              }),
+              dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return cs.primary;
+                }
+                return null;
+              }),
+              todayBorder: BorderSide(color: cs.primary, width: 1.5),
+              todayForegroundColor: WidgetStatePropertyAll(cs.primary),
+              weekdayStyle: TextStyle(
+                color: (isDark ? cs.onBackground : cs.onSurface).withValues(
+                  alpha: 0.7,
+                ),
+              ),
+              cancelButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              confirmButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
-    if (date != null) {
-      endDate.value = date;
+
+    if (picked != null) {
+      endDate.value = picked;
     }
   }
 

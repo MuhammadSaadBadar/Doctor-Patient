@@ -15,7 +15,7 @@ class AppointmentsScreen extends GetView<AppointmentController> {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: cs.surfaceContainerLow,
+      backgroundColor: cs.background,
       appBar: PatientTopAppBar(
         title: TranslationKeys.appointmentsTitle.tr,
         // trailingActions: [
@@ -295,55 +295,57 @@ class AppointmentsScreen extends GetView<AppointmentController> {
     final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min, // ✅ Added
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: cs.primaryContainer.withValues(alpha: 0.25),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.event_busy_rounded, size: 40, color: cs.primary),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _getEmptyTitle(),
-            style: TextStyle(
-              fontSize: textScale.scale(16).clamp(14.0, 18.0),
-              fontWeight: FontWeight.w700,
-              color: cs.onSurface,
-              fontFamily: 'PlayfairDisplay',
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _getEmptySubtitle(),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: textScale.scale(12).clamp(10.0, 14.0),
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: controller.navigateToBookAppointment,
-            icon: const Icon(Icons.add_rounded, size: 18),
-            label: Text(TranslationKeys.appointmentsBookAppointment.tr),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: cs.primary,
-              foregroundColor: cs.onPrimary,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // ✅ Added
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: cs.primaryContainer.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
               ),
-              elevation: 0,
+              child: Icon(Icons.event_busy_rounded, size: 40, color: cs.primary),
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Text(
+              _getEmptyTitle(),
+              style: TextStyle(
+                fontSize: textScale.scale(16).clamp(14.0, 18.0),
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface,
+                fontFamily: 'PlayfairDisplay',
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _getEmptySubtitle(),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: textScale.scale(12).clamp(10.0, 14.0),
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: controller.navigateToFindDoctors,
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: Text(TranslationKeys.appointmentsBookAppointment.tr),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 0,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

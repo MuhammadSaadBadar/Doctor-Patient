@@ -53,7 +53,8 @@ class VitalCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
@@ -78,6 +79,8 @@ class VitalCard extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                     color: cs.onSurfaceVariant,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               Container(
@@ -97,20 +100,30 @@ class VitalCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            '${bp.systolic}/${bp.diastolic}',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: cs.onSurface,
-              letterSpacing: -0.5,
+          // Flexible spacer absorbs any extra height given by IntrinsicHeight,
+          // preventing the 1px bottom overflow.
+          const Flexible(child: SizedBox(height: 6)),
+          Flexible(
+            child: Text(
+              '${bp.systolic}/${bp.diastolic}',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface,
+                letterSpacing: -0.5,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           if (bp.pulse != null)
-            Text(
-              '♥ ${bp.pulse} bpm',
-              style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant),
+            Flexible(
+              child: Text(
+                '♥ ${bp.pulse} bpm',
+                style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
         ],
       ),
@@ -144,7 +157,8 @@ class VitalCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
@@ -169,6 +183,8 @@ class VitalCard extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                     color: cs.onSurfaceVariant,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               Container(
@@ -188,19 +204,27 @@ class VitalCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            '${sugar.valueMgDl} mg/dL',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: cs.onSurface,
-              letterSpacing: -0.4,
+          const Flexible(child: SizedBox(height: 6)),
+          Flexible(
+            child: Text(
+              '${sugar.valueMgDl} mg/dL',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface,
+                letterSpacing: -0.4,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Text(
-            sugar.contextLabel,
-            style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant),
+          Flexible(
+            child: Text(
+              sugar.contextLabel,
+              style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),

@@ -1,9 +1,8 @@
-// lib/patient/features/dashboard/widgets/diet_plan_card.dart
-
 import 'package:flutter/material.dart';
+import 'package:doctor/patient/features/dashboard/models/diet_plan_summary.dart';
 
 class DietPlanCard extends StatelessWidget {
-  final dynamic plan;
+  final DietPlanSummary plan;
   final VoidCallback onTap;
 
   const DietPlanCard({super.key, required this.plan, required this.onTap});
@@ -60,7 +59,7 @@ class DietPlanCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Today's Diet Plan",
+                        "Active Diet Plan",
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -68,14 +67,13 @@ class DietPlanCard extends StatelessWidget {
                           letterSpacing: -0.2,
                         ),
                       ),
-                      if (plan.name != null)
-                        Text(
-                          plan.name,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: cs.onSurfaceVariant,
-                          ),
+                      Text(
+                        'Prescribed by ${plan.doctorFullName}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: cs.onSurfaceVariant,
                         ),
+                      ),
                     ],
                   ),
                 ),
@@ -86,63 +84,28 @@ class DietPlanCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
 
-            // Macros Row
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final macros = [
-                  _macroTile(
-                    cs,
-                    label: 'Calories',
-                    value: '${plan.totalCalories ?? 0}',
-                    unit: 'kcal',
-                    color: Colors.orange,
+            // Meals Info
+            if (plan.hasMeals) ...[
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Icon(Icons.fastfood_rounded, size: 14, color: cs.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${plan.meals.length} Meals Planned',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: cs.onSurface,
+                    ),
                   ),
-                  _macroTile(
-                    cs,
-                    label: 'Protein',
-                    value: '${plan.proteinGrams ?? 0}',
-                    unit: 'g',
-                    color: Colors.pink,
-                  ),
-                  _macroTile(
-                    cs,
-                    label: 'Carbs',
-                    value: '${plan.carbsGrams ?? 0}',
-                    unit: 'g',
-                    color: Colors.amber,
-                  ),
-                  _macroTile(
-                    cs,
-                    label: 'Fat',
-                    value: '${plan.fatGrams ?? 0}',
-                    unit: 'g',
-                    color: Colors.teal,
-                  ),
-                ];
+                ],
+              ),
+            ],
 
-                // Use Wrap on narrow screens (< 360dp), Row on wider
-                if (constraints.maxWidth < 360) {
-                  return Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    alignment: WrapAlignment.center,
-                    children: macros,
-                  );
-                }
-
-                return Row(
-                  children: macros
-                      .expand((tile) => [tile, const SizedBox(width: 8)])
-                      .take(7) // 4 tiles + 3 spacers
-                      .toList(),
-                );
-              },
-            ),
-
-            // Water Intake
-            if (plan.waterGoalLiters != null) ...[
+            // Water Intake Goal
+            if (plan.hydrationMl > 0) ...[
               const SizedBox(height: 14),
               Divider(color: cs.outlineVariant, height: 1),
               const SizedBox(height: 12),
@@ -162,7 +125,7 @@ class DietPlanCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Water Intake',
+                    'Daily Water Goal',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -171,7 +134,7 @@ class DietPlanCard extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    '${plan.waterConsumedLiters ?? 0}L / ${plan.waterGoalLiters}L',
+                    '${plan.hydrationGlasses} glasses (${(plan.hydrationMl / 1000).toStringAsFixed(1)}L)',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -180,59 +143,7 @@ class DietPlanCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value:
-                      ((plan.waterConsumedLiters ?? 0) /
-                              (plan.waterGoalLiters ?? 1))
-                          .clamp(0.0, 1.0),
-                  backgroundColor: cs.primary.withOpacity(0.12),
-                  valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
-                  minHeight: 5,
-                ),
-              ),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _macroTile(
-    ColorScheme cs, {
-    required String label,
-    required String value,
-    required String unit,
-    required Color color,
-  }) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: cs.onSurface,
-              ),
-            ),
-            Text(
-              unit,
-              style: TextStyle(fontSize: 9, color: color.withOpacity(0.8)),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(fontSize: 9, color: cs.onSurfaceVariant),
-            ),
           ],
         ),
       ),

@@ -22,22 +22,33 @@ class BookingFeeSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final pm = paymentMethod;
     final isFree = doctor.doctorProfile?.consultationFee == null;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
+        // ✅ Dark: stronger gradient; Light: subtle (unchanged)
         gradient: LinearGradient(
           begin: AlignmentDirectional.topStart,
           end: AlignmentDirectional.bottomEnd,
-          colors: [
-            colorScheme.primary.withValues(alpha: 0.08),
-            colorScheme.primary.withValues(alpha: 0.02),
-          ],
+          colors: isDark
+              ? [
+                  colorScheme.primary.withValues(alpha: 0.16),
+                  colorScheme.primaryContainer.withValues(alpha: 0.08),
+                ]
+              : [
+                  colorScheme.primary.withValues(alpha: 0.08),
+                  colorScheme.primary.withValues(alpha: 0.02),
+                ],
         ),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.12)),
+        border: Border.all(
+          color: isDark
+              ? colorScheme.primary.withValues(alpha: 0.25)
+              : colorScheme.primary.withValues(alpha: 0.12),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,32 +58,41 @@ class BookingFeeSummary extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.10),
+                  color: colorScheme.primary.withValues(
+                    alpha: isDark ? 0.20 : 0.10,
+                  ),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   Icons.receipt_long_rounded,
                   size: 18,
-                  color: colorScheme.primary,
+                  color: isDark
+                      ? colorScheme.primaryFixed
+                      : colorScheme.primary,
                 ),
               ),
               const SizedBox(width: 10),
-              Text(
-                'Fee Summary',
-                style: TextStyle(
-                  fontSize: textScale.scale(14).clamp(12.0, 16.0),
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
+              Flexible(
+                child: Text(
+                  'Fee Summary',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: textScale.scale(14).clamp(12.0, 16.0),
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 14),
+
           if (isFree) ...[
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.08),
+                color: Colors.green.withValues(alpha: isDark ? 0.15 : 0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
@@ -80,7 +100,9 @@ class BookingFeeSummary extends StatelessWidget {
                   Icon(
                     Icons.check_circle_rounded,
                     size: 16,
-                    color: Colors.green.shade600,
+                    color: isDark
+                        ? Colors.green.shade300
+                        : Colors.green.shade600,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -89,7 +111,9 @@ class BookingFeeSummary extends StatelessWidget {
                       style: TextStyle(
                         fontSize: textScale.scale(12).clamp(10.0, 13.0),
                         fontWeight: FontWeight.w500,
-                        color: Colors.green.shade700,
+                        color: isDark
+                            ? Colors.green.shade300
+                            : Colors.green.shade700,
                       ),
                     ),
                   ),
@@ -102,7 +126,6 @@ class BookingFeeSummary extends StatelessWidget {
               label: 'Doctor Consultation Fee',
               value: consultationFee,
             ),
-
             const SizedBox(height: 10),
             Divider(
               color: colorScheme.outlineVariant.withValues(alpha: 0.3),
@@ -120,9 +143,11 @@ class BookingFeeSummary extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.06),
+                  color: Colors.green.withValues(alpha: isDark ? 0.12 : 0.06),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.green.withValues(alpha: 0.2)),
+                  border: Border.all(
+                    color: Colors.green.withValues(alpha: isDark ? 0.35 : 0.2),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,15 +157,23 @@ class BookingFeeSummary extends StatelessWidget {
                         Icon(
                           Icons.account_balance_wallet_rounded,
                           size: 16,
-                          color: Colors.green.shade700,
+                          color: isDark
+                              ? Colors.green.shade300
+                              : Colors.green.shade700,
                         ),
                         const SizedBox(width: 6),
-                        Text(
-                          'Payment Method',
-                          style: TextStyle(
-                            fontSize: textScale.scale(12).clamp(10.0, 13.0),
-                            fontWeight: FontWeight.w600,
-                            color: Colors.green.shade700,
+                        Flexible(
+                          child: Text(
+                            'Payment Method',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: textScale.scale(12).clamp(10.0, 13.0),
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? Colors.green.shade300
+                                  : Colors.green.shade700,
+                            ),
                           ),
                         ),
                       ],
@@ -148,16 +181,19 @@ class BookingFeeSummary extends StatelessWidget {
                     const SizedBox(height: 8),
                     if (pm.hasJazzCash)
                       _buildPaymentRow(
+                        context,
                         'JazzCash',
                         '${pm.jazzcashNumber} - ${pm.jazzcashAccountTitle}',
                       ),
                     if (pm.hasEasyPaisa)
                       _buildPaymentRow(
+                        context,
                         'EasyPaisa',
                         '${pm.easypaisaNumber} - ${pm.easypaisaAccountTitle}',
                       ),
                     if (pm.hasBank)
                       _buildPaymentRow(
+                        context,
                         'Bank',
                         '${pm.bankName} - ${pm.bankAccountNumber}',
                       ),
@@ -187,7 +223,9 @@ class BookingFeeSummary extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-              fontSize: textScale.scale(isTotal ? 13 : 12).clamp(10.0, isTotal ? 15.0 : 13.0),
+              fontSize: textScale
+                  .scale(isTotal ? 13 : 12)
+                  .clamp(10.0, isTotal ? 15.0 : 13.0),
               fontWeight: isTotal ? FontWeight.w700 : FontWeight.w400,
               color: isTotal
                   ? colorScheme.onSurface
@@ -201,7 +239,9 @@ class BookingFeeSummary extends StatelessWidget {
         Text(
           value,
           style: TextStyle(
-            fontSize: textScale.scale(isTotal ? 14 : 12).clamp(10.0, isTotal ? 16.0 : 13.0),
+            fontSize: textScale
+                .scale(isTotal ? 14 : 12)
+                .clamp(10.0, isTotal ? 16.0 : 13.0),
             fontWeight: isTotal ? FontWeight.w800 : FontWeight.w600,
             color: isTotal ? colorScheme.primary : colorScheme.onSurface,
           ),
@@ -210,7 +250,9 @@ class BookingFeeSummary extends StatelessWidget {
     );
   }
 
-  Widget _buildPaymentRow(String label, String value) {
+  Widget _buildPaymentRow(BuildContext context, String label, String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: Row(
@@ -220,10 +262,12 @@ class BookingFeeSummary extends StatelessWidget {
             flex: 2,
             child: Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
-                color: Colors.green.shade600,
+                color: isDark ? Colors.green.shade300 : Colors.green.shade600,
               ),
             ),
           ),
@@ -235,7 +279,7 @@ class BookingFeeSummary extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: Colors.green.shade800,
+                color: isDark ? Colors.green.shade200 : Colors.green.shade800,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

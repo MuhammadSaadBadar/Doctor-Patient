@@ -20,21 +20,40 @@ class ReminderStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
+        // ✅ Gradient in dark
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  cs.primary.withOpacity(0.10),
+                  cs.primaryContainer.withOpacity(0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? cs.surfaceContainerLowest : null,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(
+          color: isDark
+              ? cs.primary.withOpacity(0.12)
+              : cs.outlineVariant.withOpacity(0.5),
+          width: 1,
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: cs.shadow.withOpacity(0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         children: [
@@ -42,7 +61,10 @@ class ReminderStatCard extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: backgroundColor ?? iconColor.withOpacity(0.12),
+              // ✅ iconColor already passed with proper tint from caller
+              color:
+                  backgroundColor ??
+                  iconColor.withOpacity(isDark ? 0.22 : 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, size: 20, color: iconColor),
@@ -53,7 +75,7 @@ class ReminderStatCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface,
+              color: cs.onSurface,
             ),
           ),
           Text(
@@ -61,7 +83,7 @@ class ReminderStatCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: colorScheme.onSurfaceVariant,
+              color: cs.onSurfaceVariant,
               letterSpacing: 0.5,
             ),
           ),

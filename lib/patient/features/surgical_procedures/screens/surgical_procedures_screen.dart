@@ -11,13 +11,23 @@ import 'package:get/get.dart';
 class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
   const SurgicalProceduresScreen({super.key});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.green)
+      return isDark ? Colors.green.shade300 : Colors.green.shade800;
+    return base;
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textScale = MediaQuery.textScalerOf(context);
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      // ✅ surface is correct here — already in the original code
+      backgroundColor: colorScheme.background,
       appBar: PatientTopAppBar(
         title: 'Surgical History',
         trailingActions: [
@@ -79,6 +89,9 @@ class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
   }
 
   Widget _buildStatsRow(BuildContext context, ColorScheme colorScheme) {
+    final isDark = _isDark(context);
+    final greenFg = _semanticFg(context, Colors.green);
+
     return Row(
       children: [
         Expanded(
@@ -87,7 +100,10 @@ class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
             label: 'Total Procedures',
             icon: Icons.folder_off_rounded,
             iconColor: colorScheme.primary,
-            backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+            // ✅ Tint bumped in dark
+            backgroundColor: colorScheme.primary.withValues(
+              alpha: isDark ? 0.20 : 0.1,
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -97,7 +113,9 @@ class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
             label: 'This Year',
             icon: Icons.schedule_rounded,
             iconColor: colorScheme.secondary,
-            backgroundColor: colorScheme.secondary.withValues(alpha: 0.1),
+            backgroundColor: colorScheme.secondary.withValues(
+              alpha: isDark ? 0.20 : 0.1,
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -106,8 +124,11 @@ class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
             value: controller.lastRecordedDate,
             label: 'Last Recorded',
             icon: Icons.event_available_rounded,
-            iconColor: Colors.green.shade700,
-            backgroundColor: Colors.green.withValues(alpha: 0.1),
+            // ✅ Semantic green that flips with brightness
+            iconColor: greenFg,
+            backgroundColor: Colors.green.withValues(
+              alpha: isDark ? 0.20 : 0.1,
+            ),
           ),
         ),
       ],
@@ -115,7 +136,9 @@ class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
   }
 
   Widget _buildFilterTabs(BuildContext context, ColorScheme colorScheme) {
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
+
     return SizedBox(
       height: 44,
       child: ListView.builder(
@@ -126,6 +149,43 @@ class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
           final isSelected = controller.selectedCategory.value == category;
           final count = controller.getCategoryCount(category);
 
+          // ✅ Unselected chip — gradient in dark, surface in light
+          final unselectedDecoration = BoxDecoration(
+            gradient: isDark
+                ? LinearGradient(
+                    begin: AlignmentDirectional.topStart,
+                    end: AlignmentDirectional.bottomEnd,
+                    colors: [
+                      colorScheme.primary.withValues(alpha: 0.10),
+                      colorScheme.primaryContainer.withValues(alpha: 0.06),
+                    ],
+                  )
+                : null,
+            color: !isDark ? colorScheme.surfaceContainerLowest : null,
+            borderRadius: BorderRadius.circular(30),
+            border: isDark
+                ? Border.all(
+                    color: colorScheme.primary.withValues(alpha: 0.18),
+                    width: 1,
+                  )
+                : null,
+          );
+
+          // ✅ Selected chip — solid primary + shadow
+          final selectedDecoration = BoxDecoration(
+            color: colorScheme.primary,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.primary.withValues(
+                  alpha: isDark ? 0.35 : 0.2,
+                ),
+                blurRadius: isDark ? 10 : 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          );
+
           return Padding(
             padding: const EdgeInsetsDirectional.only(end: 8),
             child: GestureDetector(
@@ -135,21 +195,9 @@ class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
                   horizontal: textScale.scale(14).clamp(10.0, 20.0),
                   vertical: textScale.scale(6).clamp(4.0, 12.0),
                 ),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? colorScheme.primary
-                      : colorScheme.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: colorScheme.primary.withValues(alpha: 0.2),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : null,
-                ),
+                decoration: isSelected
+                    ? selectedDecoration
+                    : unselectedDecoration,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -171,9 +219,14 @@ class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
                           vertical: 1,
                         ),
                         decoration: BoxDecoration(
+                          // ✅ Count badge tint bumped in dark
                           color: isSelected
-                              ? colorScheme.onPrimary.withValues(alpha: 0.2)
-                              : colorScheme.surfaceContainerHighest,
+                              ? colorScheme.onPrimary.withValues(alpha: 0.22)
+                              : (isDark
+                                    ? colorScheme.primary.withValues(
+                                        alpha: 0.18,
+                                      )
+                                    : colorScheme.surfaceContainerHighest),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
@@ -277,6 +330,8 @@ class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
 
   Widget _buildLoadingState(BuildContext context, ColorScheme colorScheme) {
     final textScale = MediaQuery.textScalerOf(context);
+    final isDark = _isDark(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -286,7 +341,10 @@ class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
             height: 64,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.2),
+              // ✅ Stronger tint in dark
+              color: colorScheme.primaryContainer.withValues(
+                alpha: isDark ? 0.35 : 0.2,
+              ),
               shape: BoxShape.circle,
             ),
             child: CircularProgressIndicator(
@@ -309,6 +367,7 @@ class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
 
   Widget _buildErrorState(BuildContext context, ColorScheme colorScheme) {
     final textScale = MediaQuery.textScalerOf(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -325,7 +384,8 @@ class SurgicalProceduresScreen extends GetView<SurgicalProcedureController> {
               child: Icon(
                 Icons.error_outline_rounded,
                 size: 36,
-                color: colorScheme.error,
+                // ✅ Correct contrast pair
+                color: colorScheme.onErrorContainer,
               ),
             ),
             const SizedBox(height: 16),

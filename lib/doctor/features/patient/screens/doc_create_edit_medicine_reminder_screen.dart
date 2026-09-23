@@ -403,6 +403,7 @@ class DoctorCreateEditMedicineReminderScreen
             const SizedBox(height: 16),
 
             // Dates
+            // Dates
             Row(
               children: [
                 Expanded(
@@ -415,6 +416,8 @@ class DoctorCreateEditMedicineReminderScreen
                           fontWeight: FontWeight.w600,
                           color: AppColors.onSurface,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 6),
                       InkWell(
@@ -448,6 +451,8 @@ class DoctorCreateEditMedicineReminderScreen
                                   style: AppTheme.bodyMedium.copyWith(
                                     color: AppColors.onSurface,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const Icon(
@@ -472,6 +477,8 @@ class DoctorCreateEditMedicineReminderScreen
                           fontWeight: FontWeight.w600,
                           color: AppColors.onSurface,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis, // ✅ prevents overflow
                       ),
                       const SizedBox(height: 6),
                       InkWell(
@@ -510,15 +517,24 @@ class DoctorCreateEditMedicineReminderScreen
                                         : AppColors.onSurfaceVariant
                                               .withOpacity(0.5),
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis, // ✅
                                 ),
                               ),
-                              IconButton(
-                                onPressed: controller.clearEndDate,
-                                icon: const Icon(Icons.close_rounded, size: 16),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                color: AppColors.onSurfaceVariant,
-                              ),
+                              // ✅ Only show clear button if end date exists
+                              if (controller.endDate.value != null)
+                                GestureDetector(
+                                  onTap: controller.clearEndDate,
+                                  behavior: HitTestBehavior.opaque,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4),
+                                    child: Icon(
+                                      Icons.close_rounded,
+                                      size: 16,
+                                      color: AppColors.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                         ),

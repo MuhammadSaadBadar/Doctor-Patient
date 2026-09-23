@@ -15,6 +15,8 @@ class EmergencyScreen extends GetView<EmergencyController> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       backgroundColor: colors.background,
       appBar: PatientTopAppBar(title: TranslationKeys.sosTitle.tr),
@@ -27,9 +29,25 @@ class EmergencyScreen extends GetView<EmergencyController> {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: colors.surfaceContainerLowest,
+                  // ✅ Dark mode: gradient card to match other screens
+                  gradient: isDark
+                      ? LinearGradient(
+                          begin: AlignmentDirectional.topStart,
+                          end: AlignmentDirectional.bottomEnd,
+                          colors: [
+                            colors.primary.withOpacity(0.10),
+                            colors.primaryContainer.withOpacity(0.06),
+                          ],
+                        )
+                      : null,
+                  color: !isDark ? colors.surfaceContainerLowest : null,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: colors.outlineVariant, width: 1),
+                  border: Border.all(
+                    color: isDark
+                        ? colors.primary.withOpacity(0.12)
+                        : colors.outlineVariant,
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -77,7 +95,25 @@ class EmergencyScreen extends GetView<EmergencyController> {
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
               )
-            : const SizedBox.shrink(),
+            : FloatingActionButton(
+                onPressed: controller.isLoadingHospitals.value
+                    ? null
+                    : () => controller.loadHospitals(refresh: true),
+                backgroundColor: colors.primary,
+                foregroundColor: colors.onPrimary,
+                elevation: 3,
+                tooltip: 'Refresh hospitals',
+                child: controller.isLoadingHospitals.value
+                    ? SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: colors.onPrimary,
+                        ),
+                      )
+                    : const Icon(Icons.refresh_rounded),
+              ),
       ),
     );
   }
@@ -86,26 +122,23 @@ class EmergencyScreen extends GetView<EmergencyController> {
   Widget _tab(BuildContext context, String label, IconData icon, int index) {
     final colors = Theme.of(context).colorScheme;
     final selected = controller.selectedSection.value == index;
-    // SOS tab uses error red when active; Hospitals tab uses primary teal.
     final activeColor = index == 0 ? colors.error : colors.primary;
 
     return Expanded(
       child: GestureDetector(
         onTap: () {
           controller.selectedSection.value = index;
-          if (index == 1 && controller.hospitals.isEmpty)
-            controller.loadHospitals();
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
-          padding: const EdgeInsets.symmetric(vertical: 11),
+          padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 6),
           decoration: BoxDecoration(
             color: selected ? activeColor : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             boxShadow: selected
                 ? [
                     BoxShadow(
-                      color: activeColor.withOpacity(0.20),
+                      color: activeColor.withOpacity(0.25),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
@@ -114,6 +147,7 @@ class EmergencyScreen extends GetView<EmergencyController> {
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 icon,
@@ -121,12 +155,18 @@ class EmergencyScreen extends GetView<EmergencyController> {
                 color: selected ? colors.onPrimary : colors.onSurfaceVariant,
               ),
               const SizedBox(width: 7),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
-                  color: selected ? colors.onPrimary : colors.onSurfaceVariant,
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: selected
+                        ? colors.onPrimary
+                        : colors.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],
@@ -201,26 +241,47 @@ class EmergencyScreen extends GetView<EmergencyController> {
   // ── SOS Card ──────────────────────────────────────────────────────────────
   Widget _sosCard(BuildContext context, PatientSosEvent event) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isActive = event.isActive;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
+        // ✅ Dark mode: gradient card; Light: solid surface
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: isActive
+                    ? [
+                        colors.error.withOpacity(0.12),
+                        colors.errorContainer.withOpacity(0.06),
+                      ]
+                    : [
+                        colors.primary.withOpacity(0.10),
+                        colors.primaryContainer.withOpacity(0.06),
+                      ],
+              )
+            : null,
         color: isActive
             ? colors.errorContainer.withOpacity(0.10)
-            : colors.surface,
+            : (!isDark ? colors.surface : null),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isActive
-              ? colors.error.withOpacity(0.30)
-              : colors.outlineVariant,
+              ? colors.error.withOpacity(isDark ? 0.4 : 0.30)
+              : (isDark
+                    ? colors.primary.withOpacity(0.12)
+                    : colors.outlineVariant),
           width: isActive ? 1.5 : 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isActive
-                ? colors.error.withOpacity(0.06)
-                : Colors.black.withOpacity(0.04),
+                ? colors.error.withOpacity(0.08)
+                : (isDark
+                      ? colors.shadow.withOpacity(0.05)
+                      : Colors.black.withOpacity(0.04)),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -229,7 +290,6 @@ class EmergencyScreen extends GetView<EmergencyController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Active indicator bar at the card top
           if (isActive)
             Container(
               height: 3,
@@ -241,7 +301,6 @@ class EmergencyScreen extends GetView<EmergencyController> {
                 ),
               ),
             ),
-
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -269,7 +328,6 @@ class EmergencyScreen extends GetView<EmergencyController> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Status pill
                           _statusPill(event, colors),
                           const SizedBox(height: 3),
                           Text(
@@ -291,11 +349,15 @@ class EmergencyScreen extends GetView<EmergencyController> {
                   Container(
                     padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                     decoration: BoxDecoration(
-                      color: colors.surfaceContainerLow,
+                      color: isDark
+                          ? colors.primary.withOpacity(0.15)
+                          : colors.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(10),
                       border: Border(
                         left: BorderSide(
-                          color: colors.onSurfaceVariant.withOpacity(0.35),
+                          color: isDark
+                              ? colors.primary.withOpacity(0.5)
+                              : colors.onSurfaceVariant.withOpacity(0.35),
                           width: 3,
                         ),
                       ),
@@ -304,14 +366,13 @@ class EmergencyScreen extends GetView<EmergencyController> {
                       event.notes,
                       style: TextStyle(
                         fontSize: 14,
-                        color: colors.onSurface,
+                        color: isDark ? Colors.white : colors.onSurface,
                         height: 1.45,
                       ),
                     ),
                   ),
                 ],
 
-                // ── Location coords ──
                 if (event.latitude != null && event.longitude != null) ...[
                   const SizedBox(height: 10),
                   Row(
@@ -322,20 +383,23 @@ class EmergencyScreen extends GetView<EmergencyController> {
                         color: colors.primary,
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        '${event.latitude!.toStringAsFixed(4)}, '
-                        '${event.longitude!.toStringAsFixed(4)}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: colors.primary,
-                          fontWeight: FontWeight.w500,
+                      Flexible(
+                        child: Text(
+                          '${event.latitude!.toStringAsFixed(4)}, '
+                          '${event.longitude!.toStringAsFixed(4)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ],
 
-                // ── Cancel button (active only) ──
                 if (isActive) ...[
                   const SizedBox(height: 14),
                   Divider(height: 1, color: colors.outlineVariant),
@@ -455,15 +519,34 @@ class EmergencyScreen extends GetView<EmergencyController> {
 
   Widget _hospitalTile(BuildContext context, NearbyHospital hospital) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: colors.surface,
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  colors.primary.withOpacity(0.10),
+                  colors.primaryContainer.withOpacity(0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? colors.surface : null,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.outlineVariant, width: 1),
+        border: Border.all(
+          color: isDark
+              ? colors.primary.withOpacity(0.12)
+              : colors.outlineVariant,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: isDark
+                ? colors.shadow.withOpacity(0.05)
+                : Colors.black.withOpacity(0.04),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -478,12 +561,14 @@ class EmergencyScreen extends GetView<EmergencyController> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: colors.primaryContainer,
+                color: isDark
+                    ? colors.primary.withOpacity(0.2)
+                    : colors.primaryContainer,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 Icons.local_hospital_rounded,
-                color: colors.primary,
+                color: isDark ? colors.primaryFixed : colors.primary,
                 size: 24,
               ),
             ),
@@ -492,14 +577,44 @@ class EmergencyScreen extends GetView<EmergencyController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    hospital.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  // ── Name row with distance chip ──
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          hospital.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                            color: colors.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (hospital.distanceMeters != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colors.primary.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Text(
+                            hospital.distanceLabel,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: colors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Row(
@@ -525,24 +640,54 @@ class EmergencyScreen extends GetView<EmergencyController> {
                       ),
                     ],
                   ),
-                  if (hospital.rating != null) ...[
+                  // ── Rating + Open-now row ──
+                  if (hospital.rating != null ||
+                      hospital.isOpenNow != null) ...[
                     const SizedBox(height: 7),
                     Row(
                       children: [
-                        Icon(
-                          Icons.star_rounded,
-                          size: 15,
-                          color: Colors.amber.shade600,
-                        ),
-                        const SizedBox(width: 3),
-                        Text(
-                          hospital.rating!.toStringAsFixed(1),
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: colors.onSurface,
+                        if (hospital.rating != null) ...[
+                          Icon(
+                            Icons.star_rounded,
+                            size: 15,
+                            color: Colors.amber.shade600,
                           ),
-                        ),
+                          const SizedBox(width: 3),
+                          Text(
+                            hospital.rating!.toStringAsFixed(1),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: colors.onSurface,
+                            ),
+                          ),
+                        ],
+                        if (hospital.isOpenNow != null) ...[
+                          if (hospital.rating != null)
+                            const SizedBox(width: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: hospital.isOpenNow!
+                                  ? Colors.green.withOpacity(0.15)
+                                  : colors.errorContainer.withOpacity(0.4),
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: Text(
+                              hospital.isOpenNow! ? 'Open now' : 'Closed',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: hospital.isOpenNow!
+                                    ? Colors.green.shade700
+                                    : colors.error,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ],
@@ -564,19 +709,33 @@ class EmergencyScreen extends GetView<EmergencyController> {
     required bool isActive,
   }) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        Flexible(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: colors.onSurface,
+            ),
+          ),
         ),
         const SizedBox(width: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
             color: isActive && count > 0
-                ? colors.errorContainer
-                : colors.surfaceContainerHigh,
+                ? (isDark
+                      ? colors.error.withOpacity(0.2)
+                      : colors.errorContainer)
+                : (isDark
+                      ? colors.surfaceContainerHigh
+                      : colors.surfaceContainerHigh),
             borderRadius: BorderRadius.circular(100),
           ),
           child: Text(
@@ -585,7 +744,7 @@ class EmergencyScreen extends GetView<EmergencyController> {
               fontSize: 12,
               fontWeight: FontWeight.w700,
               color: isActive && count > 0
-                  ? colors.onErrorContainer
+                  ? (isDark ? colors.error : colors.onErrorContainer)
                   : colors.onSurfaceVariant,
             ),
           ),
@@ -601,6 +760,8 @@ class EmergencyScreen extends GetView<EmergencyController> {
     required String submessage,
   }) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
       child: Column(
@@ -610,10 +771,24 @@ class EmergencyScreen extends GetView<EmergencyController> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: colors.surfaceContainerHigh,
+              gradient: isDark
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        colors.primary.withOpacity(0.15),
+                        colors.primaryContainer.withOpacity(0.08),
+                      ],
+                    )
+                  : null,
+              color: !isDark ? colors.surfaceContainerHigh : null,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: colors.onSurfaceVariant, size: 26),
+            child: Icon(
+              icon,
+              color: isDark ? colors.primary : colors.onSurfaceVariant,
+              size: 26,
+            ),
           ),
           const SizedBox(height: 14),
           Text(

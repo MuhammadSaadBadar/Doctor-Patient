@@ -139,17 +139,36 @@ class WaterIntakeScreen extends GetView<WaterIntakeController> {
   Widget _buildMainCard(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final targetGlasses = (controller.targetMl.value / glassSizeMl).round();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest.withOpacity(0.7),
+        gradient: isDark
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colorScheme.primary.withOpacity(0.10),
+                  colorScheme.primaryContainer.withOpacity(0.06),
+                ],
+              )
+            : null,
+        color: !isDark
+            ? colorScheme.surfaceContainerLowest.withOpacity(0.7)
+            : null,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
+        border: Border.all(
+          color: isDark
+              ? colorScheme.primary.withOpacity(0.12)
+              : colorScheme.outlineVariant.withOpacity(0.3),
+        ),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.04),
-            blurRadius: 32,
+            color: isDark
+                ? colorScheme.shadow.withOpacity(0.05)
+                : colorScheme.shadow.withOpacity(0.04),
+            blurRadius: isDark ? 32 : 32,
           ),
         ],
       ),
@@ -228,16 +247,35 @@ class WaterIntakeScreen extends GetView<WaterIntakeController> {
 
   Widget _buildWeeklyHistory(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest.withOpacity(0.7),
+        gradient: isDark
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colorScheme.primary.withOpacity(0.10),
+                  colorScheme.primaryContainer.withOpacity(0.06),
+                ],
+              )
+            : null,
+        color: !isDark
+            ? colorScheme.surfaceContainerLowest.withOpacity(0.7)
+            : null,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
+        border: Border.all(
+          color: isDark
+              ? colorScheme.primary.withOpacity(0.12)
+              : colorScheme.outlineVariant.withOpacity(0.3),
+        ),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.04),
+            color: isDark
+                ? colorScheme.shadow.withOpacity(0.05)
+                : colorScheme.shadow.withOpacity(0.04),
             blurRadius: 32,
           ),
         ],

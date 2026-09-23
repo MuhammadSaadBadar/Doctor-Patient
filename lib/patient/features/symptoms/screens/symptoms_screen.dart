@@ -170,8 +170,6 @@ class SymptomsScreen extends GetView<SymptomsController> {
     );
   }
 
-  /// ✅ NEW: Theme-consistent chip that matches QuickActionGrid style
-  /// ✅ FIXED: Chip with background-colored text when unselected
   Widget _buildThemeConsistentChip({
     required BuildContext context,
     required String label,
@@ -252,11 +250,9 @@ class SymptomsScreen extends GetView<SymptomsController> {
               style: TextStyle(
                 fontSize: textScale.scale(12).clamp(10.0, 14.0),
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                // ✅ UNSELECTED → background color (per your requirement)
-                // ✅ SELECTED → primary (bright in dark mode)
                 color: isSelected
                     ? (isDark ? colorScheme.primaryFixed : colorScheme.primary)
-                    : colorScheme.background,
+                    : (isDark ? Colors.black : colorScheme.onSurface),
               ),
             ),
           ],

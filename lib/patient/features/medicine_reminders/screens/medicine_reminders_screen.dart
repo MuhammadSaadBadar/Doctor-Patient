@@ -14,12 +14,17 @@ import 'package:doctor/core/localization/translation_keys.dart';
 class MedicineRemindersScreen extends GetView<MedicineReminderController> {
   const MedicineRemindersScreen({super.key});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      // ✅ surface, not deprecated background
+      backgroundColor: cs.background,
       appBar: PatientTopAppBar(
         title: TranslationKeys.medicineRemindersTitle.tr,
         showBackButton: true,
@@ -34,29 +39,27 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerLowest,
+                  // ✅ Dark: primary tint; Light: solid surface
+                  gradient: isDark
+                      ? LinearGradient(
+                          begin: AlignmentDirectional.topStart,
+                          end: AlignmentDirectional.bottomEnd,
+                          colors: [
+                            cs.primary.withOpacity(0.10),
+                            cs.primaryContainer.withOpacity(0.06),
+                          ],
+                        )
+                      : null,
+                  color: !isDark ? cs.surfaceContainerLowest : null,
                   borderRadius: BorderRadius.circular(30),
                   border: Border.all(
-                    color: colorScheme.primary.withOpacity(0.2),
+                    color: cs.primary.withOpacity(isDark ? 0.30 : 0.20),
                   ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.add_rounded,
-                      size: 18,
-                      color: colorScheme.primary,
-                    ),
-                    // const SizedBox(width: 4),
-                    // Text(
-                    //   'Add',
-                    //   style: TextStyle(
-                    //     fontSize: 12,
-                    //     fontWeight: FontWeight.w700,
-                    //     color: colorScheme.primary,
-                    //   ),
-                    // ),
+                    Icon(Icons.add_rounded, size: 18, color: cs.primary),
                   ],
                 ),
               ),
@@ -80,7 +83,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
 
         return RefreshIndicator(
           onRefresh: controller.refreshData,
-          color: colorScheme.primary,
+          color: cs.primary,
           child: NotificationListener<ScrollNotification>(
             onNotification: (notification) {
               if (notification is ScrollEndNotification) {
@@ -96,18 +99,11 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
               child: Column(
                 children: [
-                  // Quick Stats
                   _buildStatsRow(context),
                   const SizedBox(height: 16),
-
-                  // Section Title
                   _buildSectionHeader(context),
                   const SizedBox(height: 12),
-
-                  // Reminder List
                   _buildReminderList(context),
-
-                  // Footer
                   _buildListFooter(context),
                 ],
               ),
@@ -121,7 +117,11 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
   }
 
   Widget _buildStatsRow(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
+    // ✅ Semantic tints that read on both themes
+    Color tint(Color base) => base.withOpacity(isDark ? 0.18 : 0.10);
 
     return Row(
       children: [
@@ -130,8 +130,8 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
             value: '${controller.activeCount}',
             label: TranslationKeys.medicineActive.tr,
             icon: Icons.medication_rounded,
-            iconColor: colorScheme.primary,
-            backgroundColor: colorScheme.primary.withOpacity(0.1),
+            iconColor: cs.primary,
+            backgroundColor: tint(cs.primary),
           ),
         ),
         const SizedBox(width: 10),
@@ -140,8 +140,8 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
             value: '${controller.todayDoses}',
             label: TranslationKeys.medicineToday.tr,
             icon: Icons.schedule_rounded,
-            iconColor: colorScheme.secondary,
-            backgroundColor: colorScheme.secondary.withOpacity(0.1),
+            iconColor: cs.secondary,
+            backgroundColor: tint(cs.secondary),
           ),
         ),
         const SizedBox(width: 10),
@@ -150,8 +150,8 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
             value: '${controller.overallAdherence.toInt()}%',
             label: TranslationKeys.medicineAdherence.tr,
             icon: Icons.monitor_rounded,
-            iconColor: colorScheme.tertiary,
-            backgroundColor: colorScheme.tertiary.withOpacity(0.1),
+            iconColor: cs.tertiary,
+            backgroundColor: tint(cs.tertiary),
           ),
         ),
       ],
@@ -159,7 +159,8 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
   }
 
   Widget _buildSectionHeader(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -169,7 +170,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
+            color: cs.onSurface,
             fontFamily: 'PlayfairDisplay',
           ),
         ),
@@ -178,7 +179,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.1),
+                color: cs.primary.withOpacity(isDark ? 0.20 : 0.10),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Text(
@@ -186,7 +187,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: colorScheme.primary,
+                  color: cs.primary,
                 ),
               ),
             ),
@@ -197,8 +198,6 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
   }
 
   Widget _buildReminderList(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Column(
       children: controller.reminders.map((reminder) {
         return Padding(
@@ -210,10 +209,8 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
             onDelete: () => controller.deleteReminder(reminder),
             onTap: () => controller.navigateToReminderDetail(reminder.id),
             onTakeNow: () {
-              // Find the intake log controller and log intake
               if (Get.isRegistered<IntakeLogController>()) {
                 final intakeController = Get.find<IntakeLogController>();
-                // Use current time as scheduled_for for immediate intake
                 intakeController.logIntake(
                   reminderId: reminder.id,
                   status: 'taken',
@@ -238,7 +235,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
   }
 
   Widget _buildListFooter(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -249,17 +246,20 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
             width: 8,
             height: 8,
             decoration: BoxDecoration(
-              color: colorScheme.tertiary,
+              color: cs.tertiary,
               shape: BoxShape.circle,
             ),
           ),
           const SizedBox(width: 6),
           Text(
-            TranslationKeys.medicineShowingActive.tr.replaceAll('@count', '${controller.reminders.length}'),
+            TranslationKeys.medicineShowingActive.tr.replaceAll(
+              '@count',
+              '${controller.reminders.length}',
+            ),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: colorScheme.onSurfaceVariant,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],
@@ -268,15 +268,15 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
   }
 
   Widget _buildFAB(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return FloatingActionButton.extended(
       onPressed: controller.navigateToAddReminder,
-      backgroundColor: colorScheme.primary,
-      foregroundColor: colorScheme.onPrimary,
+      backgroundColor: cs.primary,
+      foregroundColor: cs.onPrimary,
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-      icon: Icon(Icons.add_rounded, size: 22),
+      icon: const Icon(Icons.add_rounded, size: 22),
       label: Text(
         TranslationKeys.medicineAddReminder.tr,
         style: const TextStyle(fontWeight: FontWeight.w600),
@@ -285,7 +285,9 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
   }
 
   Widget _buildLoadingState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -295,13 +297,10 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
             height: 64,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withOpacity(0.15),
+              color: cs.primaryContainer.withOpacity(isDark ? 0.35 : 0.15),
               shape: BoxShape.circle,
             ),
-            child: CircularProgressIndicator(
-              color: colorScheme.primary,
-              strokeWidth: 3,
-            ),
+            child: CircularProgressIndicator(color: cs.primary, strokeWidth: 3),
           ),
           const SizedBox(height: 16),
           Text(
@@ -309,7 +308,7 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: colorScheme.onSurfaceVariant,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],
@@ -318,7 +317,8 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
   }
 
   Widget _buildErrorState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -329,13 +329,14 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: colorScheme.errorContainer.withOpacity(0.3),
+                color: cs.errorContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline_rounded,
                 size: 36,
-                color: colorScheme.error,
+                // ✅ Correct contrast pair
+                color: cs.onErrorContainer,
               ),
             ),
             const SizedBox(height: 16),
@@ -344,24 +345,21 @@ class MedicineRemindersScreen extends GetView<MedicineReminderController> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               controller.errorMessage.value,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: controller.refreshData,
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 12,

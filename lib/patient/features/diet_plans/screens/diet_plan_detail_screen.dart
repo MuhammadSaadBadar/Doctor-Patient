@@ -16,6 +16,29 @@ import 'package:get/get.dart';
 class DietPlanDetailScreen extends GetView<DietPlanController> {
   const DietPlanDetailScreen({super.key});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  /// Semantic hue helper (matches other refactored screens).
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.green)
+      return isDark ? Colors.green.shade300 : Colors.green.shade800;
+    if (base == Colors.red)
+      return isDark ? Colors.red.shade300 : Colors.red.shade800;
+    return base;
+  }
+
+  Color _semanticBg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    return base.withOpacity(isDark ? 0.16 : 0.08);
+  }
+
+  Color _semanticBorder(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    return base.withOpacity(isDark ? 0.45 : 0.30);
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -45,24 +68,15 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
             child: Column(
               children: [
-                // Plan Header
                 DietPlanHeader(plan: plan),
                 const SizedBox(height: 16),
-
-                // Hydration Card
                 if (plan.hasHydration)
                   HydrationCard(glasses: plan.hydrationRecommendationGlasses!),
                 if (plan.hasHydration) const SizedBox(height: 16),
-
-                // Meals Section
                 _buildMealsSection(context, plan),
                 const SizedBox(height: 16),
-
-                // Foods to Avoid Section
                 _buildFoodsToAvoidSection(context, plan),
                 const SizedBox(height: 16),
-
-                // Doctor Notes
                 if (plan.hasNotes) DoctorNoteCard(notes: plan.notes!),
                 if (plan.hasNotes) const SizedBox(height: 16),
               ],
@@ -74,19 +88,36 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
   }
 
   Widget _buildMealsSection(BuildContext context, DietPlan plan) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     if (!plan.hasMeals) {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLowest,
+          gradient: isDark
+              ? LinearGradient(
+                  begin: AlignmentDirectional.topStart,
+                  end: AlignmentDirectional.bottomEnd,
+                  colors: [
+                    cs.primary.withOpacity(0.10),
+                    cs.primaryContainer.withOpacity(0.06),
+                  ],
+                )
+              : null,
+          color: !isDark ? cs.surfaceContainerLowest : null,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark
+                ? cs.primary.withOpacity(0.12)
+                : cs.outlineVariant.withOpacity(0.5),
+            width: 1,
+          ),
         ),
         child: Center(
           child: Text(
             TranslationKeys.dietNoMeals.tr,
-            style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
+            style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
           ),
         ),
       );
@@ -103,7 +134,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
                 fontFamily: 'PlayfairDisplay',
               ),
             ),
@@ -112,7 +143,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: colorScheme.primary,
+                color: cs.primary,
               ),
             ),
           ],
@@ -131,7 +162,8 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
   }
 
   Widget _buildFoodsToAvoidSection(BuildContext context, DietPlan plan) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,7 +173,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
+            color: cs.onSurface,
             fontFamily: 'PlayfairDisplay',
           ),
         ),
@@ -150,18 +182,38 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerLowest,
+              gradient: isDark
+                  ? LinearGradient(
+                      begin: AlignmentDirectional.topStart,
+                      end: AlignmentDirectional.bottomEnd,
+                      colors: [
+                        cs.primary.withOpacity(0.10),
+                        cs.primaryContainer.withOpacity(0.06),
+                      ],
+                    )
+                  : null,
+              color: !isDark ? cs.surfaceContainerLowest : null,
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDark
+                    ? cs.primary.withOpacity(0.12)
+                    : cs.outlineVariant.withOpacity(0.5),
+                width: 1,
+              ),
             ),
             child: Row(
               children: [
-                Icon(Icons.check_circle_rounded, size: 20, color: Colors.green),
+                Icon(
+                  Icons.check_circle_rounded,
+                  size: 20,
+                  // ✅ Semantic green that flips with brightness
+                  color: _semanticFg(context, Colors.green),
+                ),
                 const SizedBox(width: 8),
-                Text(
-                  TranslationKeys.dietNoFoodsToAvoid.tr,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: colorScheme.onSurfaceVariant,
+                Expanded(
+                  child: Text(
+                    TranslationKeys.dietNoFoodsToAvoid.tr,
+                    style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
                   ),
                 ),
               ],
@@ -171,8 +223,13 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: colorScheme.errorContainer.withOpacity(0.15),
+              // ✅ Semantic red panel that flips with brightness
+              color: _semanticBg(context, Colors.red),
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _semanticBorder(context, Colors.red),
+                width: 1,
+              ),
             ),
             child: Column(
               children: plan.foodsToAvoid.map((item) {
@@ -185,7 +242,9 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
   }
 
   Widget _buildLoadingState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -195,13 +254,10 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
             height: 64,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withOpacity(0.15),
+              color: cs.primaryContainer.withOpacity(isDark ? 0.35 : 0.15),
               shape: BoxShape.circle,
             ),
-            child: CircularProgressIndicator(
-              color: colorScheme.primary,
-              strokeWidth: 3,
-            ),
+            child: CircularProgressIndicator(color: cs.primary, strokeWidth: 3),
           ),
           const SizedBox(height: 16),
           Text(
@@ -209,7 +265,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: colorScheme.onSurfaceVariant,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],
@@ -218,7 +274,8 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
   }
 
   Widget _buildErrorState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -229,13 +286,14 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: colorScheme.errorContainer.withOpacity(0.3),
+                color: cs.errorContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline_rounded,
                 size: 36,
-                color: colorScheme.error,
+                // ✅ Correct contrast pair
+                color: cs.onErrorContainer,
               ),
             ),
             const SizedBox(height: 16),
@@ -244,24 +302,21 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               controller.errorMessage.value,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: controller.refreshData,
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 12,
@@ -279,7 +334,9 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -290,13 +347,16 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withOpacity(0.15),
+                // ✅ Slightly stronger in dark
+                color: isDark
+                    ? cs.primary.withOpacity(0.18)
+                    : cs.primaryContainer.withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.restaurant_menu_rounded,
                 size: 40,
-                color: colorScheme.primary.withOpacity(0.4),
+                color: cs.primary.withOpacity(isDark ? 0.7 : 0.4),
               ),
             ),
             const SizedBox(height: 16),
@@ -305,7 +365,7 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
                 fontFamily: 'PlayfairDisplay',
               ),
             ),
@@ -313,17 +373,14 @@ class DietPlanDetailScreen extends GetView<DietPlanController> {
             Text(
               TranslationKeys.dietPlanNotFoundDesc.tr,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: controller.navigateBack,
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 12,

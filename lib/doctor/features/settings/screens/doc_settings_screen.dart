@@ -24,7 +24,7 @@ class DoctorSettingsScreen extends GetView<DoctorProfileController> {
           const TopAppNavBar.gradient(
             title: 'Settings',
             height: 64,
-            showBackButton: true,
+            showBackButton: false,
           ),
           Expanded(
             child: Obx(() {

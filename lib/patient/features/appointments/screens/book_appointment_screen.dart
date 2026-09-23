@@ -16,12 +16,30 @@ import 'package:get/get.dart';
 class BookAppointmentScreen extends GetView<BookAppointmentController> {
   const BookAppointmentScreen({super.key});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  /// Semantic color helper — flips blue/purple to lighter shades in dark mode
+  /// so they're readable against dark surfaces.
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.blue)
+      return isDark ? Colors.blue.shade300 : Colors.blue.shade600;
+    if (base == Colors.purple)
+      return isDark ? Colors.purple.shade300 : Colors.purple.shade600;
+    if (base == Colors.green)
+      return isDark ? Colors.green.shade300 : Colors.green.shade800;
+    if (base == Colors.red)
+      return isDark ? Colors.red.shade300 : Colors.red.shade800;
+    return base;
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textScale = MediaQuery.textScalerOf(context);
 
     return Scaffold(
+      // ✅ surface, not deprecated background
       backgroundColor: colorScheme.background,
       appBar: PatientTopAppBar(
         title: TranslationKeys.bookingBookAppointment.tr,
@@ -105,32 +123,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withValues(alpha: 0.04),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline_rounded,
-                            size: 16,
-                            color: colorScheme.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              TranslationKeys.appointmentsConfirmationNotice.tr,
-                              style: TextStyle(
-                                fontSize: textScale.scale(11).clamp(9.0, 12.0),
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildInfoNotice(context),
                     const SizedBox(height: 8),
                   ],
                 ),
@@ -140,6 +133,41 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
           ],
         );
       }),
+    );
+  }
+
+  // ==================== INFO NOTICE ====================
+
+  Widget _buildInfoNotice(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+    final textScale = MediaQuery.textScalerOf(context);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        // ✅ Stronger tint in dark so the notice is visible
+        color: cs.primary.withValues(alpha: isDark ? 0.12 : 0.04),
+        borderRadius: BorderRadius.circular(10),
+        border: isDark
+            ? Border.all(color: cs.primary.withValues(alpha: 0.20), width: 1)
+            : null,
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline_rounded, size: 16, color: cs.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              TranslationKeys.appointmentsConfirmationNotice.tr,
+              style: TextStyle(
+                fontSize: textScale.scale(11).clamp(9.0, 12.0),
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -162,7 +190,8 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                   type: 'in_person',
                   label: TranslationKeys.bookingInPerson.tr,
                   icon: Icons.local_hospital_rounded,
-                  color: Colors.blue.shade600,
+                  // ✅ Semantic blue that flips with brightness
+                  color: _semanticFg(context, Colors.blue),
                   isSelected: controller.selectedType.value == 'in_person',
                   onTap: () => controller.selectedType.value = 'in_person',
                 ),
@@ -173,7 +202,8 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                   type: 'video_consultation',
                   label: TranslationKeys.bookingVideo.tr,
                   icon: Icons.videocam_rounded,
-                  color: Colors.purple.shade600,
+                  // ✅ Semantic purple that flips with brightness
+                  color: _semanticFg(context, Colors.purple),
                   isSelected:
                       controller.selectedType.value == 'video_consultation',
                   onTap: () =>
@@ -190,7 +220,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
   // ==================== DATE SELECTION ====================
 
   Widget _buildDateSelection(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
 
     return Column(
@@ -206,25 +236,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
             onTap: () => controller.pickDate(context),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: AlignmentDirectional.topStart,
-                      end: AlignmentDirectional.bottomEnd,
-                      colors: [
-                        colorScheme.primary,
-                        colorScheme.primary.withValues(alpha: 0.7),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.calendar_today_rounded,
-                    size: 20,
-                    color: colorScheme.onPrimary,
-                  ),
-                ),
+                _buildSelectionIcon(cs, Icons.calendar_today_rounded),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
@@ -233,15 +245,15 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                       fontSize: textScale.scale(14).clamp(12.0, 16.0),
                       fontWeight: FontWeight.w500,
                       color: controller.selectedDate.value != null
-                          ? colorScheme.onSurface
-                          : colorScheme.onSurfaceVariant,
+                          ? cs.onSurface
+                          : cs.onSurfaceVariant,
                     ),
                   ),
                 ),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 16,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  color: cs.onSurfaceVariant.withValues(alpha: 0.5),
                 ),
               ],
             ),
@@ -254,12 +266,12 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
   // ==================== TIME SELECTION ====================
 
   Widget _buildTimeSelection(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min, // ✅ Added
+      mainAxisSize: MainAxisSize.min,
       children: [
         BookingSectionHeader(
           title: TranslationKeys.bookingSelectTime.tr,
@@ -271,25 +283,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
             onTap: () => controller.pickTime(context),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: AlignmentDirectional.topStart,
-                      end: AlignmentDirectional.bottomEnd,
-                      colors: [
-                        colorScheme.primary,
-                        colorScheme.primary.withValues(alpha: 0.7),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.access_time_rounded,
-                    size: 20,
-                    color: colorScheme.onPrimary,
-                  ),
-                ),
+                _buildSelectionIcon(cs, Icons.access_time_rounded),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
@@ -298,15 +292,15 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                       fontSize: textScale.scale(14).clamp(12.0, 16.0),
                       fontWeight: FontWeight.w500,
                       color: controller.selectedTime.value != null
-                          ? colorScheme.onSurface
-                          : colorScheme.onSurfaceVariant,
+                          ? cs.onSurface
+                          : cs.onSurfaceVariant,
                     ),
                   ),
                 ),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 16,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  color: cs.onSurfaceVariant.withValues(alpha: 0.5),
                 ),
               ],
             ),
@@ -318,13 +312,12 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
           style: TextStyle(
             fontSize: textScale.scale(12).clamp(10.0, 13.0),
             fontWeight: FontWeight.w600,
-            color: colorScheme.onSurfaceVariant,
+            color: cs.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 10),
-        // ✅ Fixed: Use SizedBox with explicit height for horizontal ListView
         SizedBox(
-          height: 50, // Fixed height for horizontal ListView
+          height: 50,
           child: Obx(
             () => ListView.separated(
               scrollDirection: Axis.horizontal,
@@ -349,10 +342,28 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
       ],
     );
   }
+
+  /// Shared icon container used by both date and time selectors.
+  Widget _buildSelectionIcon(ColorScheme cs, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
+          colors: [cs.primary, cs.primary.withValues(alpha: 0.7)],
+        ),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(icon, size: 20, color: cs.onPrimary),
+    );
+  }
+
   // ==================== REASON FIELD ====================
 
   Widget _buildReasonField(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
 
     return Column(
@@ -368,32 +379,39 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
           maxLines: 3,
           style: TextStyle(
             fontSize: textScale.scale(13).clamp(11.0, 15.0),
-            color: colorScheme.onSurface,
+            color: cs.onSurface,
           ),
           decoration: InputDecoration(
             hintText: TranslationKeys.bookingReasonHint.tr,
             hintStyle: TextStyle(
               fontSize: textScale.scale(12).clamp(10.0, 14.0),
-              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+              color: cs.onSurfaceVariant.withValues(alpha: 0.7),
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(
-                color: colorScheme.outline.withValues(alpha: 0.15),
+                color: isDark
+                    ? cs.primary.withValues(alpha: 0.20)
+                    : cs.outline.withValues(alpha: 0.15),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(
-                color: colorScheme.outline.withValues(alpha: 0.15),
+                color: isDark
+                    ? cs.primary.withValues(alpha: 0.20)
+                    : cs.outline.withValues(alpha: 0.15),
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: colorScheme.primary, width: 2),
+              borderSide: BorderSide(color: cs.primary, width: 2),
             ),
             filled: true,
-            fillColor: colorScheme.surfaceContainerLowest,
+            // ✅ Dark: elevated lifted surface; Light: solid surface
+            fillColor: isDark
+                ? cs.surfaceContainerHigh
+                : cs.surfaceContainerLowest,
             contentPadding: const EdgeInsets.all(16),
           ),
         ),
@@ -404,20 +422,44 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
   // ==================== STICKY BOOK BUTTON ====================
 
   Widget _buildStickyBookButton(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Obx(
       () => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: 0.95),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.08),
-              blurRadius: 24,
-              offset: const Offset(0, -6),
+          // ✅ Gradient-in-dark / solid-in-light — SAME pattern as every
+          //    other working card in the app. This is what fixes the
+          //    white bar behind the stepper.
+          gradient: isDark
+              ? LinearGradient(
+                  begin: AlignmentDirectional.topStart,
+                  end: AlignmentDirectional.bottomEnd,
+                  colors: [
+                    cs.primary.withValues(alpha: 0.10),
+                    cs.primaryContainer.withValues(alpha: 0.06),
+                  ],
+                )
+              : null,
+          color: !isDark ? cs.surface.withValues(alpha: 0.95) : null,
+          border: Border(
+            top: BorderSide(
+              color: isDark
+                  ? cs.primary.withValues(alpha: 0.15)
+                  : Colors.transparent,
+              width: 1,
             ),
-          ],
+          ),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: cs.shadow.withValues(alpha: 0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, -6),
+                  ),
+                ],
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SafeArea(
@@ -433,25 +475,28 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                       ? controller.showBookingConfirmationDialog
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: controller.canBook
-                        ? colorScheme.primary
-                        : colorScheme.onSurface.withValues(alpha: 0.12),
-                    foregroundColor: colorScheme.onPrimary,
+                    backgroundColor: cs.primary,
+                    foregroundColor: cs.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                     elevation: controller.canBook ? 4 : 0,
-                    disabledBackgroundColor: colorScheme.onSurface.withValues(
-                      alpha: 0.08,
-                    ),
+                    // ✅ Disabled state must be a visible but muted surface,
+                    //    NOT a light wash. Explicitly compute per theme.
+                    disabledBackgroundColor: isDark
+                        ? cs.primary.withValues(alpha: 0.18)
+                        : cs.onSurface.withValues(alpha: 0.12),
+                    disabledForegroundColor: isDark
+                        ? cs.onPrimary.withValues(alpha: 0.55)
+                        : cs.onSurface.withValues(alpha: 0.38),
                   ),
                   child: controller.isLoading.value
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
-                            color: Colors.white,
+                            color: cs.onPrimary,
                             strokeWidth: 2.5,
                           ),
                         )
@@ -461,16 +506,18 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
                             Icon(
                               Icons.check_circle_rounded,
                               size: 20,
+                              // ✅ Icon color must match the disabled
+                              //    foreground, not full onPrimary
                               color: controller.canBook
-                                  ? colorScheme.onPrimary
-                                  : colorScheme.onPrimary.withValues(
-                                      alpha: 0.4,
-                                    ),
+                                  ? cs.onPrimary
+                                  : (isDark
+                                        ? cs.onPrimary.withValues(alpha: 0.55)
+                                        : cs.onSurface.withValues(alpha: 0.38)),
                             ),
                             const SizedBox(width: 10),
                             Text(
                               TranslationKeys.appointmentsConfirmBooking.tr,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -487,7 +534,9 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
   }
 
   Widget _buildBookingProgress(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
     final hasDoctor = controller.doctor.value != null;
     final hasType = controller.selectedType.value.isNotEmpty;
     final hasDate = controller.selectedDate.value != null;
@@ -495,46 +544,102 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
 
     final steps = [hasDoctor, hasType, hasDate, hasTime];
 
+    // ─────────────────────────────────────────────────────────────
+    // Dark mode gets stronger alphas so the tracker reads clearly
+    // on the sticky bar's `surfaceContainerHigh` background.
+    // Light mode keeps the soft neutral look.
+    // ─────────────────────────────────────────────────────────────
+
+    // Complete step — always solid primary
+    final completeBg = cs.primary;
+    final completeFg = cs.onPrimary;
+
+    // Incomplete step — tinted fill + visible border
+    final incompleteBg = isDark
+        ? cs.primary.withValues(alpha: 0.28)
+        : cs.outlineVariant.withValues(alpha: 0.30);
+
+    final incompleteBorder = isDark
+        ? cs.primary.withValues(alpha: 0.60)
+        : cs.outlineVariant.withValues(alpha: 0.60);
+
+    // "Next step" number — full-strength primary
+    final nextStepFg = cs.primary;
+
+    // "Future step" number — muted but readable
+    final futureStepFg = isDark
+        ? cs.onSurfaceVariant.withValues(alpha: 0.85)
+        : cs.onSurfaceVariant;
+
+    // Connector lines
+    final activeConnector = cs.primary;
+    final inactiveConnector = isDark
+        ? cs.primary.withValues(alpha: 0.28)
+        : cs.outlineVariant.withValues(alpha: 0.40);
+
+    // Glow on complete circles
+    final completeGlow = completeBg.withValues(alpha: isDark ? 0.55 : 0.30);
+
     return Row(
       children: [
         ...List.generate(4, (index) {
           final isComplete = steps[index];
+          final isNextStep =
+              !isComplete &&
+              (index == 0 || steps.sublist(0, index).every((s) => s));
+
           return Expanded(
             child: Row(
               children: [
+                // ─────────────────────────────────────────────
+                // Step circle
+                // ─────────────────────────────────────────────
                 Container(
-                  width: 24,
-                  height: 24,
+                  width: 26,
+                  height: 26,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isComplete
-                        ? colorScheme.primary
-                        : colorScheme.outline.withValues(alpha: 0.2),
+                    color: isComplete ? completeBg : incompleteBg,
+                    border: Border.all(
+                      color: isComplete ? completeBg : incompleteBorder,
+                      width: isComplete ? 2 : 1.5,
+                    ),
+                    boxShadow: isComplete
+                        ? [
+                            BoxShadow(
+                              color: completeGlow,
+                              blurRadius: isDark ? 10 : 8,
+                            ),
+                          ]
+                        : null,
                   ),
                   child: Center(
                     child: isComplete
-                        ? Icon(
-                            Icons.check_rounded,
-                            size: 14,
-                            color: colorScheme.onPrimary,
-                          )
+                        ? Icon(Icons.check_rounded, size: 15, color: completeFg)
                         : Text(
                             '${index + 1}',
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w700,
+                              // ✅ "Next" step is full primary; later
+                              //    steps are muted so the user's eye
+                              //    lands on the next action.
+                              color: isNextStep ? nextStepFg : futureStepFg,
                             ),
                           ),
                   ),
                 ),
+
+                // ─────────────────────────────────────────────
+                // Connector line
+                // ─────────────────────────────────────────────
                 if (index < 3)
                   Expanded(
                     child: Container(
                       height: 2,
                       color: steps[index] && steps[index + 1]
-                          ? colorScheme.primary
-                          : colorScheme.outline.withValues(alpha: 0.15),
+                          ? activeConnector
+                          : inactiveConnector,
                     ),
                   ),
               ],
@@ -544,11 +649,12 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
       ],
     );
   }
-
   // ==================== STATE WIDGETS ====================
 
   Widget _buildLoadingState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -558,13 +664,13 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
             height: 64,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.15),
+              // ✅ Stronger tint in dark
+              color: cs.primaryContainer.withValues(
+                alpha: isDark ? 0.35 : 0.15,
+              ),
               shape: BoxShape.circle,
             ),
-            child: CircularProgressIndicator(
-              color: colorScheme.primary,
-              strokeWidth: 3,
-            ),
+            child: CircularProgressIndicator(color: cs.primary, strokeWidth: 3),
           ),
           const SizedBox(height: 16),
           Text(
@@ -572,7 +678,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: colorScheme.onSurfaceVariant,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],
@@ -581,8 +687,9 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
   }
 
   Widget _buildErrorState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -593,13 +700,14 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: colorScheme.errorContainer.withValues(alpha: 0.3),
+                color: cs.errorContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline_rounded,
                 size: 36,
-                color: colorScheme.error,
+                // ✅ Correct contrast pair
+                color: cs.onErrorContainer,
               ),
             ),
             const SizedBox(height: 16),
@@ -608,7 +716,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
               style: TextStyle(
                 fontSize: textScale.scale(16).clamp(14.0, 18.0),
                 fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -617,15 +725,15 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: textScale.scale(12).clamp(10.0, 14.0),
-                color: colorScheme.onSurfaceVariant,
+                color: cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: controller.loadDoctor,
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 12,
@@ -643,8 +751,10 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -655,13 +765,16 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withValues(alpha: 0.15),
+                // ✅ Stronger tint in dark
+                color: isDark
+                    ? cs.primary.withValues(alpha: 0.18)
+                    : cs.primaryContainer.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.medical_services_rounded,
                 size: 40,
-                color: colorScheme.primary.withValues(alpha: 0.4),
+                color: cs.primary.withValues(alpha: isDark ? 0.7 : 0.4),
               ),
             ),
             const SizedBox(height: 16),
@@ -670,7 +783,7 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
               style: TextStyle(
                 fontSize: textScale.scale(18).clamp(16.0, 20.0),
                 fontWeight: FontWeight.w700,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
                 fontFamily: 'PlayfairDisplay',
               ),
             ),
@@ -680,15 +793,15 @@ class BookAppointmentScreen extends GetView<BookAppointmentController> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: textScale.scale(12).clamp(10.0, 14.0),
-                color: colorScheme.onSurfaceVariant,
+                color: cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: controller.navigateBack,
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 12,

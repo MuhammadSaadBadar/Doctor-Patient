@@ -31,6 +31,7 @@ class ProcedureFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final textScale = MediaQuery.textScalerOf(context);
 
     return Column(
@@ -64,12 +65,17 @@ class ProcedureFormField extends StatelessWidget {
           onTap: onTap,
           child: Container(
             decoration: BoxDecoration(
-              color: colorScheme.surface,
+              // ✅ Dark: lifted inner field; Light: solid surface
+              color: isDark
+                  ? colorScheme.surfaceContainerHigh
+                  : colorScheme.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: errorText != null && errorText!.isNotEmpty
                     ? colorScheme.error
-                    : colorScheme.outlineVariant.withValues(alpha: 0.3),
+                    : (isDark
+                          ? colorScheme.primary.withValues(alpha: 0.20)
+                          : colorScheme.outlineVariant.withValues(alpha: 0.3)),
                 width: errorText != null && errorText!.isNotEmpty ? 2 : 1,
               ),
             ),
@@ -91,7 +97,10 @@ class ProcedureFormField extends StatelessWidget {
                     decoration: InputDecoration(
                       hintText: hint,
                       hintStyle: TextStyle(
-                        color: colorScheme.outline,
+                        // ✅ Hint reads on both themes
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.7,
+                        ),
                         fontSize: textScale.scale(12).clamp(10.0, 16.0),
                       ),
                       border: InputBorder.none,
@@ -118,7 +127,7 @@ class ProcedureFormField extends StatelessWidget {
             errorText!,
             style: TextStyle(
               fontSize: textScale.scale(10).clamp(8.0, 14.0),
-              color: colorScheme.error
+              color: colorScheme.error,
             ),
           ),
         ],

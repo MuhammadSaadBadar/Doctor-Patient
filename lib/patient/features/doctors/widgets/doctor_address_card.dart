@@ -16,10 +16,14 @@ class DoctorAddressCard extends StatelessWidget {
     this.longitude,
   });
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+    final isDark = _isDark(context);
 
     final hasLocation =
         area != null && area!.isNotEmpty && city != null && city!.isNotEmpty;
@@ -31,31 +35,51 @@ class DoctorAddressCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
+        // ✅ Gradient-in-dark / solid-in-light — matches the rest of the app
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  colorScheme.primary.withValues(alpha: 0.10),
+                  colorScheme.primaryContainer.withValues(alpha: 0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? colorScheme.surfaceContainerLowest : null,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          color: isDark
+              ? colorScheme.primary.withValues(alpha: 0.12)
+              : colorScheme.outlineVariant.withValues(alpha: 0.3),
+          width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize:
-            MainAxisSize.min, // ✅ Critical: Prevents unbounded height issues
+        mainAxisSize: MainAxisSize.min,
         children: [
+          // ─────────────────────────────────────────────
           // Header Row
+          // ─────────────────────────────────────────────
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  // ✅ Stronger tint in dark so it's actually visible
+                  color: colorScheme.primary.withValues(
+                    alpha: isDark ? 0.22 : 0.1,
+                  ),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
@@ -77,7 +101,9 @@ class DoctorAddressCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Address - Area
+          // ─────────────────────────────────────────────
+          // Area
+          // ─────────────────────────────────────────────
           if (area != null && area!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 4),
@@ -103,7 +129,9 @@ class DoctorAddressCard extends StatelessWidget {
               ),
             ),
 
+          // ─────────────────────────────────────────────
           // City
+          // ─────────────────────────────────────────────
           if (city != null && city!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 4),
@@ -129,7 +157,9 @@ class DoctorAddressCard extends StatelessWidget {
               ),
             ),
 
-          // Location coordinates
+          // ─────────────────────────────────────────────
+          // Coordinates
+          // ─────────────────────────────────────────────
           if (latitude != null && longitude != null) ...[
             const SizedBox(height: 8),
             Row(
@@ -142,7 +172,7 @@ class DoctorAddressCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '📍 ${latitude!.toStringAsFixed(4)}, ${longitude!.toStringAsFixed(4)}',
+                    '${latitude!.toStringAsFixed(4)}, ${longitude!.toStringAsFixed(4)}',
                     style: TextStyle(
                       fontSize: textScale.scale(11).clamp(9.0, 14.0),
                       color: colorScheme.onSurfaceVariant,
@@ -155,7 +185,9 @@ class DoctorAddressCard extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // Get Directions button
+          // ─────────────────────────────────────────────
+          // Get Directions row
+          // ─────────────────────────────────────────────
           Row(
             children: [
               Icon(

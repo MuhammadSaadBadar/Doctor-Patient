@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class AddProcedureController extends GetxController {
-  final SurgicalProcedureRepository _repository = Get.find<SurgicalProcedureRepository>();
+  final SurgicalProcedureRepository _repository =
+      Get.find<SurgicalProcedureRepository>();
 
   // State
   final isLoading = false.obs;
@@ -88,16 +89,79 @@ class AddProcedureController extends GetxController {
     }
   }
 
+  // lib/patient/features/surgical_procedures/controllers/add_procedure_controller.dart
+
   Future<void> pickDate(BuildContext context) async {
-    final date = await showDatePicker(
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final picked = await showDatePicker(
       context: context,
       initialDate: selectedDate.value ?? DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            datePickerTheme: DatePickerThemeData(
+              // ✅ Dialog background — matches scaffold in dark
+              backgroundColor: isDark ? cs.background : cs.surface,
+              // ✅ Header strip (the top band with the selected date)
+              headerBackgroundColor: isDark ? cs.background : cs.surface,
+              headerForegroundColor: isDark ? cs.onBackground : cs.onSurface,
+              // ✅ Day numbers
+              dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return cs.onPrimary;
+                }
+                if (states.contains(WidgetState.disabled)) {
+                  return (isDark ? cs.onBackground : cs.onSurface).withValues(
+                    alpha: 0.38,
+                  );
+                }
+                return isDark ? cs.onBackground : cs.onSurface;
+              }),
+              // ✅ Day circle background (only for the selected day)
+              dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return cs.primary;
+                }
+                return null; // transparent → shows dialog background
+              }),
+              // ✅ Today's ring
+              todayBorder: BorderSide(color: cs.primary, width: 1.5),
+              todayForegroundColor: WidgetStatePropertyAll(cs.primary),
+              // ✅ Weekday header (Mon, Tue, Wed...)
+              weekdayStyle: TextStyle(
+                color: (isDark ? cs.onBackground : cs.onSurface).withValues(
+                  alpha: 0.7,
+                ),
+                fontWeight: FontWeight.w600,
+              ),
+              // ✅ Month/year label
+              yearForegroundColor: WidgetStatePropertyAll(
+                isDark ? cs.onBackground : cs.onSurface,
+              ),
+              // ✅ Cancel / OK buttons
+              cancelButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              confirmButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
-    if (date != null) {
-      selectedDate.value = date;
-      validateDate();
+
+    if (picked != null) {
+      selectedDate.value = picked;
+      dateError.value = '';
     }
   }
 

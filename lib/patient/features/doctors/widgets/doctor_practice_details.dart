@@ -8,24 +8,47 @@ class DoctorPracticeDetails extends StatelessWidget {
 
   const DoctorPracticeDetails({super.key, required this.doctor});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
     final profile = doctor.doctorProfile;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
+        // ✅ Gradient-in-dark, solid-in-light
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  colorScheme.primary.withValues(alpha: 0.10),
+                  colorScheme.primaryContainer.withValues(alpha: 0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? colorScheme.surfaceContainerLowest : null,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 2),
-            ),
-        ],
+        border: Border.all(
+          color: isDark
+              ? colorScheme.primary.withValues(alpha: 0.12)
+              : colorScheme.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,6 +80,7 @@ class DoctorPracticeDetails extends StatelessWidget {
             label: 'Consultation Fee',
             value: profile?.formattedFee ?? 'Free',
             isPrice: true,
+            isLast: true,
           ),
         ],
       ),
@@ -69,19 +93,26 @@ class DoctorPracticeDetails extends StatelessWidget {
     required String label,
     required String value,
     bool isPrice = false,
+    bool isLast = false,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
+        border: isLast
+            ? null
+            : Border(
+                bottom: BorderSide(
+                  // ✅ Stronger divider in dark
+                  color: isDark
+                      ? colorScheme.primary.withValues(alpha: 0.12)
+                      : colorScheme.outlineVariant.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+              ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -109,7 +140,9 @@ class DoctorPracticeDetails extends StatelessWidget {
             child: Text(
               value,
               style: TextStyle(
-                fontSize: textScale.scale(isPrice ? 16 : 12).clamp(isPrice ? 14.0 : 10.0, isPrice ? 22.0 : 16.0),
+                fontSize: textScale
+                    .scale(isPrice ? 16 : 12)
+                    .clamp(isPrice ? 14.0 : 10.0, isPrice ? 22.0 : 16.0),
                 fontWeight: isPrice ? FontWeight.w700 : FontWeight.w500,
                 color: isPrice ? colorScheme.primary : colorScheme.onSurface,
               ),

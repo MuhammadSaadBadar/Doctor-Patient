@@ -18,27 +18,50 @@ class ProcedureStatCard extends StatelessWidget {
     this.backgroundColor,
   });
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
+        // ✅ Gradient-in-dark, solid-in-light
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  colorScheme.primary.withValues(alpha: 0.10),
+                  colorScheme.primaryContainer.withValues(alpha: 0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? colorScheme.surfaceContainerLowest : null,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(
+          color: isDark
+              ? colorScheme.primary.withValues(alpha: 0.12)
+              : colorScheme.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // ✅ Prevents unbounded height issues
+        mainAxisSize: MainAxisSize.min,
         children: [
           ConstrainedBox(
             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -46,9 +69,10 @@ class ProcedureStatCard extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
+                // ✅ Caller already provides a brightened tint in dark
                 color:
                     backgroundColor ??
-                    colorScheme.primary.withValues(alpha: 0.1),
+                    colorScheme.primary.withValues(alpha: isDark ? 0.22 : 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -60,7 +84,6 @@ class ProcedureStatCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            // ✅ Removed Flexible wrapper
             value,
             style: TextStyle(
               fontSize: textScale.scale(18).clamp(14.0, 24.0),
@@ -69,7 +92,6 @@ class ProcedureStatCard extends StatelessWidget {
             ),
           ),
           Text(
-            // ✅ Removed Flexible wrapper
             label,
             style: TextStyle(
               fontSize: textScale.scale(10).clamp(8.0, 13.0),

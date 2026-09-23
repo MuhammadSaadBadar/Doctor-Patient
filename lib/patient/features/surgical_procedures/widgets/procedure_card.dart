@@ -15,27 +15,50 @@ class ProcedureCard extends StatelessWidget {
     required this.onDelete,
   });
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final textScale = MediaQuery.textScalerOf(context);
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
+        // ✅ Gradient-in-dark, solid-in-light
+        gradient: isDark
+            ? LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: [
+                  colorScheme.primary.withValues(alpha: 0.10),
+                  colorScheme.primaryContainer.withValues(alpha: 0.06),
+                ],
+              )
+            : null,
+        color: !isDark ? colorScheme.surfaceContainerLowest : null,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(
+          color: isDark
+              ? colorScheme.primary.withValues(alpha: 0.12)
+              : colorScheme.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // ✅ Prevents unbounded height issues
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,7 +67,10 @@ class ProcedureCard extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: procedure.categoryColor.withValues(alpha: 0.15),
+                  // ✅ Category tint bumped in dark
+                  color: procedure.categoryColor.withValues(
+                    alpha: isDark ? 0.22 : 0.15,
+                  ),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -57,10 +83,9 @@ class ProcedureCard extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min, // ✅ Added
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      // ✅ Removed Flexible wrapper
                       procedure.procedureName,
                       style: TextStyle(
                         fontSize: textScale.scale(14).clamp(12.0, 18.0),
@@ -74,11 +99,10 @@ class ProcedureCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          // ✅ Removed Flexible wrapper
                           procedure.formattedDate,
                           style: TextStyle(
                             fontSize: textScale.scale(11).clamp(9.0, 15.0),
-                            color: colorScheme.outline,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -114,7 +138,10 @@ class ProcedureCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: procedure.categoryColor.withValues(alpha: 0.1),
+              // ✅ Category chip tint bumped in dark
+              color: procedure.categoryColor.withValues(
+                alpha: isDark ? 0.20 : 0.1,
+              ),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -132,11 +159,19 @@ class ProcedureCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: colorScheme.surface,
+                // ✅ Notes box — dark uses stronger primary tint
+                color: isDark
+                    ? colorScheme.primary.withValues(alpha: 0.08)
+                    : colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
+                border: isDark
+                    ? Border.all(
+                        color: colorScheme.primary.withValues(alpha: 0.10),
+                        width: 1,
+                      )
+                    : null,
               ),
               child: Text(
-                // ✅ Removed Flexible wrapper
                 procedure.notes!,
                 style: TextStyle(
                   fontSize: textScale.scale(11).clamp(9.0, 15.0),
@@ -199,15 +234,32 @@ class ProcedureCard extends StatelessWidget {
     bool isDelete = false,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
+    // ✅ Delete button — stronger contrast pair in dark
+    final deleteBg = isDark
+        ? colorScheme.error.withValues(alpha: 0.20)
+        : colorScheme.errorContainer.withValues(alpha: 0.4);
+
+    // ✅ Edit button — dark uses primary tint, light uses surfaceContainer
+    final editBg = isDark
+        ? colorScheme.primary.withValues(alpha: 0.14)
+        : colorScheme.surfaceContainer;
 
     return Container(
       width: 36,
       height: 36,
       decoration: BoxDecoration(
-        color: isDelete
-            ? colorScheme.errorContainer.withValues(alpha: 0.4)
-            : colorScheme.surfaceContainer,
+        color: isDelete ? deleteBg : editBg,
         shape: BoxShape.circle,
+        border: isDark
+            ? Border.all(
+                color: isDelete
+                    ? colorScheme.error.withValues(alpha: 0.35)
+                    : colorScheme.primary.withValues(alpha: 0.20),
+                width: 1,
+              )
+            : null,
       ),
       child: IconButton(
         icon: Icon(

@@ -28,23 +28,28 @@ class ReminderFormField extends StatelessWidget {
     this.onTap,
   });
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+    final hasError = errorText != null && errorText!.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(icon, size: 20, color: colorScheme.primary),
+            Icon(icon, size: 20, color: cs.primary),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
               ),
             ),
             if (required) ...[
@@ -54,7 +59,7 @@ class ReminderFormField extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: colorScheme.primary,
+                  color: cs.primary,
                 ),
               ),
             ],
@@ -65,13 +70,28 @@ class ReminderFormField extends StatelessWidget {
           onTap: onTap,
           child: Container(
             decoration: BoxDecoration(
-              color: colorScheme.background,
+              // ✅ Dark: primary gradient over the scaffold — same pattern
+              //    as every other card in the app. NEVER `surfaceContainerHigh`
+              //    because that token renders white in this app's dark scheme.
+              gradient: isDark
+                  ? LinearGradient(
+                      begin: AlignmentDirectional.topStart,
+                      end: AlignmentDirectional.bottomEnd,
+                      colors: [
+                        cs.primary.withValues(alpha: 0.10),
+                        cs.primaryContainer.withValues(alpha: 0.06),
+                      ],
+                    )
+                  : null,
+              color: !isDark ? cs.surfaceContainerLowest : null,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: errorText != null && errorText!.isNotEmpty
-                    ? colorScheme.error
-                    : colorScheme.outlineVariant.withOpacity(0.3),
-                width: errorText != null && errorText!.isNotEmpty ? 2 : 1,
+                color: hasError
+                    ? cs.error
+                    : (isDark
+                          ? cs.primary.withValues(alpha: 0.20)
+                          : cs.outlineVariant.withValues(alpha: 0.3)),
+                width: hasError ? 2 : 1,
               ),
             ),
             child: Row(
@@ -85,7 +105,7 @@ class ReminderFormField extends StatelessWidget {
                     decoration: InputDecoration(
                       hintText: hint,
                       hintStyle: TextStyle(
-                        color: colorScheme.outlineVariant,
+                        color: cs.onSurfaceVariant.withValues(alpha: 0.7),
                         fontSize: 14,
                       ),
                       border: InputBorder.none,
@@ -94,10 +114,7 @@ class ReminderFormField extends StatelessWidget {
                         vertical: 14,
                       ),
                     ),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colorScheme.onSurface,
-                    ),
+                    style: TextStyle(fontSize: 14, color: cs.onSurface),
                   ),
                 ),
                 if (suffix != null) suffix!,
@@ -105,12 +122,9 @@ class ReminderFormField extends StatelessWidget {
             ),
           ),
         ),
-        if (errorText != null && errorText!.isNotEmpty) ...[
+        if (hasError) ...[
           const SizedBox(height: 4),
-          Text(
-            errorText!,
-            style: TextStyle(fontSize: 12, color: colorScheme.error),
-          ),
+          Text(errorText!, style: TextStyle(fontSize: 12, color: cs.error)),
         ],
       ],
     );

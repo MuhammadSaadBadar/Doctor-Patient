@@ -14,32 +14,44 @@ class ReminderStepper extends StatelessWidget {
     required this.onDecrement,
   });
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Row(
       children: [
+        // ─────────────────────────────────────────────
+        // Minus button — tinted, NOT a surface token
+        // ─────────────────────────────────────────────
         GestureDetector(
           onTap: onDecrement,
           child: Container(
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: colorScheme.surface,
+              // ✅ Dark: primary-tinted circle; Light: neutral surface
+              color: isDark ? cs.primary.withValues(alpha: 0.15) : cs.surface,
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: colorScheme.shadow.withOpacity(0.04),
-                  blurRadius: 4,
-                ),
-              ],
+              border: isDark
+                  ? Border.all(
+                      color: cs.primary.withValues(alpha: 0.30),
+                      width: 1,
+                    )
+                  : null,
+              boxShadow: isDark
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: cs.shadow.withValues(alpha: 0.04),
+                        blurRadius: 4,
+                      ),
+                    ],
             ),
-            child: Icon(
-              Icons.remove_rounded,
-              size: 18,
-              color: colorScheme.primary,
-            ),
+            child: Icon(Icons.remove_rounded, size: 18, color: cs.primary),
           ),
         ),
         const SizedBox(width: 12),
@@ -48,30 +60,30 @@ class ReminderStepper extends StatelessWidget {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
+            color: cs.onSurface,
           ),
         ),
         const SizedBox(width: 12),
+
+        // ─────────────────────────────────────────────
+        // Plus button — solid primary
+        // ─────────────────────────────────────────────
         GestureDetector(
           onTap: onIncrement,
           child: Container(
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: colorScheme.primary,
+              color: cs.primary,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: colorScheme.primary.withOpacity(0.3),
-                  blurRadius: 8,
+                  color: cs.primary.withValues(alpha: isDark ? 0.45 : 0.30),
+                  blurRadius: isDark ? 10 : 8,
                 ),
               ],
             ),
-            child: Icon(
-              Icons.add_rounded,
-              size: 18,
-              color: colorScheme.onPrimary,
-            ),
+            child: Icon(Icons.add_rounded, size: 18, color: cs.onPrimary),
           ),
         ),
       ],

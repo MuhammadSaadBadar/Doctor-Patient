@@ -19,7 +19,7 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
     final textScale = MediaQuery.textScalerOf(context);
 
     return Scaffold(
-      backgroundColor: cs.surface,
+      backgroundColor: cs.background,
       appBar: PatientTopAppBar(
         title: TranslationKeys.exerciseTitle.tr,
         trailingActions: [
@@ -162,8 +162,8 @@ class ExerciseVideosScreen extends GetView<ExerciseVideoController> {
             final id = filter['id'] as String;
             final labelKey = filter['label'] as String;
             final label = id.startsWith('t')
-              ? labelKey.tr.replaceAll('@number', id.substring(1))
-              : labelKey.tr;
+                ? labelKey.tr.replaceAll('@number', id.substring(1))
+                : labelKey.tr;
             final icon = filter['icon'] as IconData;
             final isSelected = controller.selectedFilter.value == id;
             final count = controller.getFilterCount(id);

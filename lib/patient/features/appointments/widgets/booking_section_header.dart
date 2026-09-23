@@ -17,6 +17,7 @@ class BookingSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -24,15 +25,26 @@ class BookingSectionHeader extends StatelessWidget {
         Row(
           children: [
             if (icon != null) ...[
-              Icon(icon!, size: 20, color: colorScheme.primary),
+              Icon(
+                icon!,
+                size: 20,
+                // ✅ Dark: bright pink; Light: primary (unchanged)
+                color: isDark
+                    ? colorScheme.primaryFixed
+                    : colorScheme.primary,
+              ),
               const SizedBox(width: 8),
             ],
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: colorScheme.onSurface,
+            Flexible(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
           ],
@@ -41,7 +53,13 @@ class BookingSectionHeader extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             subtitle!,
-            style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 13,
+              // ✅ Dark: slightly muted; Light: onSurfaceVariant (unchanged)
+              color: isDark
+                  ? colorScheme.onSurfaceVariant.withOpacity(0.8)
+                  : colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ],

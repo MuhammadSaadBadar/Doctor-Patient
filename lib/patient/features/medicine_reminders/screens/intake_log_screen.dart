@@ -11,17 +11,32 @@ import 'package:get/get.dart';
 class IntakeLogScreen extends GetView<IntakeLogController> {
   const IntakeLogScreen({super.key});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.green)
+      return isDark ? Colors.green.shade300 : Colors.green.shade800;
+    if (base == Colors.orange)
+      return isDark ? Colors.orange.shade300 : Colors.orange.shade800;
+    if (base == Colors.red)
+      return isDark ? Colors.red.shade300 : Colors.red.shade800;
+    return base;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      // ✅ surface, not deprecated background
+      backgroundColor: cs.background,
       appBar: PatientTopAppBar(
         title: 'Adherence History',
         trailingActions: [
           IconButton(
-            icon: Icon(Icons.filter_list_rounded, color: colorScheme.primary),
+            icon: Icon(Icons.filter_list_rounded, color: cs.primary),
             onPressed: () {},
           ),
         ],
@@ -41,7 +56,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
 
         return RefreshIndicator(
           onRefresh: controller.refreshData,
-          color: colorScheme.primary,
+          color: cs.primary,
           child: NotificationListener<ScrollNotification>(
             onNotification: (notification) {
               if (notification is ScrollEndNotification) {
@@ -57,11 +72,8 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
               child: Column(
                 children: [
-                  // Filter & View Toggle
                   _buildFilterBar(context),
                   const SizedBox(height: 16),
-
-                  // Summary Stats
                   Obx(
                     () => IntakeLogSummaryCard(
                       taken: controller.takenCount,
@@ -71,11 +83,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // List View
                   _buildListView(context),
-
-                  // Calendar View (hidden by default)
                   _buildCalendarView(context),
                 ],
               ),
@@ -87,21 +95,17 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
   }
 
   Widget _buildFilterBar(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Column(
       children: [
-        // View Toggle
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.filter_list_rounded,
-                  size: 20,
-                  color: colorScheme.primary,
-                ),
+                Icon(Icons.filter_list_rounded, size: 20, color: cs.primary),
                 const SizedBox(width: 8),
                 Text(
                   'Adherence Records',
@@ -109,7 +113,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
-                    color: colorScheme.onSurfaceVariant,
+                    color: cs.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -118,8 +122,17 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
               () => Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainer,
+                  // ✅ Slightly stronger in dark
+                  color: isDark
+                      ? cs.primary.withOpacity(0.10)
+                      : cs.surfaceContainer,
                   borderRadius: BorderRadius.circular(30),
+                  border: isDark
+                      ? Border.all(
+                          color: cs.primary.withOpacity(0.15),
+                          width: 1,
+                        )
+                      : null,
                 ),
                 child: Row(
                   children: [
@@ -156,10 +169,23 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
             height: 44,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceContainer,
+              // ✅ Gradient tint in dark
+              gradient: isDark
+                  ? LinearGradient(
+                      begin: AlignmentDirectional.topStart,
+                      end: AlignmentDirectional.bottomEnd,
+                      colors: [
+                        cs.primary.withOpacity(0.10),
+                        cs.primaryContainer.withOpacity(0.06),
+                      ],
+                    )
+                  : null,
+              color: !isDark ? cs.surfaceContainer : null,
               borderRadius: BorderRadius.circular(30),
               border: Border.all(
-                color: colorScheme.outlineVariant.withOpacity(0.3),
+                color: isDark
+                    ? cs.primary.withOpacity(0.15)
+                    : cs.outlineVariant.withOpacity(0.3),
               ),
             ),
             child: Row(
@@ -168,7 +194,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                 Icon(
                   Icons.medication_rounded,
                   size: 18,
-                  color: colorScheme.onSurfaceVariant,
+                  color: cs.onSurfaceVariant,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -182,7 +208,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurfaceVariant,
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                         items: [
@@ -193,7 +219,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
+                                color: cs.onSurface,
                               ),
                             ),
                           ),
@@ -205,7 +231,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: colorScheme.onSurface,
+                                  color: cs.onSurface,
                                 ),
                               ),
                             );
@@ -214,7 +240,10 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                         onChanged: (value) {
                           controller.setReminderFilter(value);
                         },
-                        dropdownColor: colorScheme.surface,
+                        // ✅ surfaceContainerHigh reads correctly in both themes
+                        dropdownColor: isDark
+                            ? cs.surfaceContainerHigh
+                            : cs.surface,
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
@@ -226,7 +255,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                     child: Icon(
                       Icons.close_rounded,
                       size: 18,
-                      color: colorScheme.onSurfaceVariant,
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
               ],
@@ -240,15 +269,31 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
           () => Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerLowest,
+              // ✅ Gradient in dark
+              gradient: isDark
+                  ? LinearGradient(
+                      begin: AlignmentDirectional.topStart,
+                      end: AlignmentDirectional.bottomEnd,
+                      colors: [
+                        cs.primary.withOpacity(0.10),
+                        cs.primaryContainer.withOpacity(0.06),
+                      ],
+                    )
+                  : null,
+              color: !isDark ? cs.surfaceContainerLowest : null,
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: colorScheme.shadow.withOpacity(0.04),
-                  blurRadius: 16,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              border: isDark
+                  ? Border.all(color: cs.primary.withOpacity(0.12), width: 1)
+                  : null,
+              boxShadow: isDark
+                  ? [
+                      BoxShadow(
+                        color: cs.shadow.withOpacity(0.05),
+                        blurRadius: 6,
+                        offset: const Offset(0, 1),
+                      ),
+                    ]
+                  : null,
             ),
             child: Row(
               children: [
@@ -270,19 +315,19 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
     required String value,
     required bool isSelected,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return GestureDetector(
       onTap: () => controller.setViewType(value),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? colorScheme.primary : Colors.transparent,
+          color: isSelected ? cs.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(30),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: colorScheme.primary.withOpacity(0.2),
+                    color: cs.primary.withOpacity(0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -294,9 +339,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: isSelected
-                ? colorScheme.onPrimary
-                : colorScheme.onSurfaceVariant,
+            color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
           ),
         ),
       ),
@@ -308,7 +351,8 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
     required String label,
     required String value,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final isSelected = controller.selectedDateRange.value == value;
 
     return Expanded(
@@ -318,7 +362,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
             color: isSelected
-                ? colorScheme.primary.withOpacity(0.1)
+                ? cs.primary.withOpacity(isDark ? 0.22 : 0.10)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
@@ -328,9 +372,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: isSelected
-                  ? colorScheme.primary
-                  : colorScheme.onSurfaceVariant,
+              color: isSelected ? cs.primary : cs.onSurfaceVariant,
             ),
           ),
         ),
@@ -339,7 +381,8 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
   }
 
   Widget _buildListView(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Obx(() {
       if (controller.viewType.value == 'calendar') {
@@ -355,10 +398,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
             padding: const EdgeInsets.symmetric(vertical: 32),
             child: Text(
               'No records found',
-              style: TextStyle(
-                fontSize: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
             ),
           ),
         );
@@ -373,7 +413,6 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Date Header
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                 child: Row(
@@ -384,7 +423,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: colorScheme.onSurface,
+                        color: cs.onSurface,
                         fontFamily: 'PlayfairDisplay',
                       ),
                     ),
@@ -394,7 +433,8 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: colorScheme.primary.withOpacity(0.1),
+                        // ✅ Stronger in dark
+                        color: cs.primary.withOpacity(isDark ? 0.20 : 0.10),
                         borderRadius: BorderRadius.circular(30),
                       ),
                       child: Text(
@@ -402,20 +442,19 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: colorScheme.primary,
+                          color: cs.primary,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              // Log Entries
               Column(
                 children: logsForDate.map((log) {
-                  // Look up medicine name from reminder controller
                   String medicineName = 'Unknown Medicine';
                   if (Get.isRegistered<MedicineReminderController>()) {
-                    final reminderController = Get.find<MedicineReminderController>();
+                    final reminderController =
+                        Get.find<MedicineReminderController>();
                     final reminder = reminderController.reminders
                         .firstWhereOrNull((r) => r.id == log.reminderId);
                     if (reminder != null) {
@@ -458,7 +497,8 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
   }
 
   Widget _buildCalendarView(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final now = DateTime.now();
     final months = [
       'January',
@@ -480,10 +520,8 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
         return const SizedBox.shrink();
       }
 
-      // Get the current month being viewed (default to current month)
       final currentMonth = DateTime(now.year, now.month);
 
-      // Build adherence map for quick lookup
       final adherenceMap = <String, Map<String, int>>{};
       for (final log in controller.logs) {
         final dateKey = log.scheduledFor.toIso8601String().split('T')[0];
@@ -501,7 +539,6 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
               adherenceMap[dateKey]!['pending']! + 1;
       }
 
-      // Get first day of month and number of days
       final firstDayOfMonth = DateTime(
         currentMonth.year,
         currentMonth.month,
@@ -513,59 +550,70 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
         0,
       );
       final daysInMonth = lastDayOfMonth.day;
-      final firstWeekday = firstDayOfMonth.weekday; // 1 = Monday, 7 = Sunday
+      final firstWeekday = firstDayOfMonth.weekday;
+
+      // Semantic hues
+      final greenFg = _semanticFg(context, Colors.green);
+      final orangeFg = _semanticFg(context, Colors.orange);
+      final redFg = _semanticFg(context, Colors.red);
 
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLowest,
+          // ✅ Gradient in dark
+          gradient: isDark
+              ? LinearGradient(
+                  begin: AlignmentDirectional.topStart,
+                  end: AlignmentDirectional.bottomEnd,
+                  colors: [
+                    cs.primary.withOpacity(0.10),
+                    cs.primaryContainer.withOpacity(0.06),
+                  ],
+                )
+              : null,
+          color: !isDark ? cs.surfaceContainerLowest : null,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withOpacity(0.04),
-              blurRadius: 16,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          border: Border.all(
+            color: isDark
+                ? cs.primary.withOpacity(0.12)
+                : cs.outlineVariant.withOpacity(0.5),
+            width: 1,
+          ),
+          boxShadow: isDark
+              ? [
+                  BoxShadow(
+                    color: cs.shadow.withOpacity(0.05),
+                    blurRadius: 6,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           children: [
-            // Calendar Header with Month Navigation
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon: Icon(
-                    Icons.chevron_left_rounded,
-                    color: colorScheme.primary,
-                  ),
-                  onPressed: () {
-                    // TODO: Implement month navigation
-                  },
+                  icon: Icon(Icons.chevron_left_rounded, color: cs.primary),
+                  onPressed: () {},
                 ),
                 Text(
                   '${months[currentMonth.month - 1]} ${currentMonth.year}',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
+                    color: cs.onSurface,
                     fontFamily: 'PlayfairDisplay',
                   ),
                 ),
                 IconButton(
-                  icon: Icon(
-                    Icons.chevron_right_rounded,
-                    color: colorScheme.primary,
-                  ),
-                  onPressed: () {
-                    // TODO: Implement month navigation
-                  },
+                  icon: Icon(Icons.chevron_right_rounded, color: cs.primary),
+                  onPressed: () {},
                 ),
               ],
             ),
             const SizedBox(height: 16),
-
-            // Weekday Headers
             Row(
               children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((
                 day,
@@ -577,7 +625,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurfaceVariant,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -585,8 +633,6 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
               }).toList(),
             ),
             const SizedBox(height: 8),
-
-            // Calendar Grid
             ...List.generate((daysInMonth + firstWeekday - 1) ~/ 7 + 1, (
               weekIndex,
             ) {
@@ -612,6 +658,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                   ).toIso8601String().split('T')[0];
                   final dayAdherence = adherenceMap[dateKey];
 
+                  // ✅ Use semantic foreground colors, not raw hues
                   Color? dayColor;
                   if (dayAdherence != null) {
                     final total =
@@ -621,11 +668,11 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                     if (total > 0) {
                       final takenPct = (dayAdherence['taken'] ?? 0) / total;
                       if (takenPct >= 0.8) {
-                        dayColor = Colors.green;
+                        dayColor = greenFg;
                       } else if (takenPct >= 0.5) {
-                        dayColor = Colors.orange;
+                        dayColor = orangeFg;
                       } else {
-                        dayColor = Colors.red;
+                        dayColor = redFg;
                       }
                     }
                   }
@@ -636,11 +683,12 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                       margin: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
                         color: isToday
-                            ? colorScheme.primary.withOpacity(0.15)
-                            : dayColor?.withOpacity(0.15) ?? Colors.transparent,
+                            ? cs.primary.withOpacity(isDark ? 0.22 : 0.15)
+                            : dayColor?.withOpacity(isDark ? 0.20 : 0.15) ??
+                                  Colors.transparent,
                         borderRadius: BorderRadius.circular(8),
                         border: isToday
-                            ? Border.all(color: colorScheme.primary, width: 2)
+                            ? Border.all(color: cs.primary, width: 2)
                             : null,
                       ),
                       child: Stack(
@@ -654,8 +702,8 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                                     ? FontWeight.w700
                                     : FontWeight.w500,
                                 color: isToday
-                                    ? colorScheme.primary
-                                    : (dayColor ?? colorScheme.onSurface),
+                                    ? cs.primary
+                                    : (dayColor ?? cs.onSurface),
                               ),
                             ),
                           ),
@@ -676,8 +724,8 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                                       margin: const EdgeInsets.symmetric(
                                         horizontal: 1,
                                       ),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.green,
+                                      decoration: BoxDecoration(
+                                        color: greenFg,
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -688,8 +736,8 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                                       margin: const EdgeInsets.symmetric(
                                         horizontal: 1,
                                       ),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.orange,
+                                      decoration: BoxDecoration(
+                                        color: orangeFg,
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -701,7 +749,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                                         horizontal: 1,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: colorScheme.error,
+                                        color: cs.error,
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -715,33 +763,22 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
                 }),
               );
             }),
-
             const SizedBox(height: 16),
-
-            // Legend
             Wrap(
               alignment: WrapAlignment.center,
               spacing: 12,
               runSpacing: 8,
               children: [
+                _buildLegendItem(context, color: greenFg, label: 'Good (≥80%)'),
                 _buildLegendItem(
                   context,
-                  color: Colors.green,
-                  label: 'Good (≥80%)',
-                ),
-                _buildLegendItem(
-                  context,
-                  color: Colors.orange,
+                  color: orangeFg,
                   label: 'Fair (50-79%)',
                 ),
+                _buildLegendItem(context, color: redFg, label: 'Poor (<50%)'),
                 _buildLegendItem(
                   context,
-                  color: Colors.red,
-                  label: 'Poor (<50%)',
-                ),
-                _buildLegendItem(
-                  context,
-                  color: colorScheme.onSurfaceVariant.withOpacity(0.3),
+                  color: cs.onSurfaceVariant.withOpacity(0.3),
                   label: 'No Data',
                 ),
               ],
@@ -757,7 +794,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
     required Color color,
     required String label,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -768,16 +805,14 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
-        ),
+        Text(label, style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant)),
       ],
     );
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Center(
       child: Padding(
@@ -788,13 +823,14 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.08),
+                // ✅ Stronger in dark
+                color: cs.primary.withOpacity(isDark ? 0.18 : 0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.medication_rounded,
                 size: 32,
-                color: colorScheme.primary.withOpacity(0.4),
+                color: cs.primary.withOpacity(isDark ? 0.7 : 0.4),
               ),
             ),
             const SizedBox(height: 16),
@@ -803,7 +839,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
                 fontFamily: 'PlayfairDisplay',
               ),
             ),
@@ -811,17 +847,14 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
             Text(
               'Start taking your medicines to track adherence and keep you and baby healthy.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => Get.toNamed('/medicine-reminders/add'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -840,7 +873,9 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
   }
 
   Widget _buildLoadingState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -850,13 +885,10 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
             height: 64,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withOpacity(0.15),
+              color: cs.primaryContainer.withOpacity(isDark ? 0.35 : 0.15),
               shape: BoxShape.circle,
             ),
-            child: CircularProgressIndicator(
-              color: colorScheme.primary,
-              strokeWidth: 3,
-            ),
+            child: CircularProgressIndicator(color: cs.primary, strokeWidth: 3),
           ),
           const SizedBox(height: 16),
           Text(
@@ -864,7 +896,7 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: colorScheme.onSurfaceVariant,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],
@@ -873,7 +905,8 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
   }
 
   Widget _buildErrorState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -884,13 +917,13 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: colorScheme.errorContainer.withOpacity(0.3),
+                color: cs.errorContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline_rounded,
                 size: 36,
-                color: colorScheme.error,
+                color: cs.onErrorContainer,
               ),
             ),
             const SizedBox(height: 16),
@@ -899,24 +932,21 @@ class IntakeLogScreen extends GetView<IntakeLogController> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               controller.errorMessage.value,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: controller.refreshData,
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 12,

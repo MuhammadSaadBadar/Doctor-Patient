@@ -16,24 +16,17 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textScale = MediaQuery.textScalerOf(context);
 
     return Scaffold(
+      // ✅ surface instead of deprecated background
       backgroundColor: colorScheme.background,
       appBar: PatientTopAppBar(title: TranslationKeys.bookingDetails.tr),
       body: Obx(() {
-        if (controller.isLoading.value) {
-          return _buildLoadingState(context);
-        }
-
-        if (controller.hasError.value) {
-          return _buildErrorState(context);
-        }
+        if (controller.isLoading.value) return _buildLoadingState(context);
+        if (controller.hasError.value) return _buildErrorState(context);
 
         final appointment = controller.appointment.value;
-        if (appointment == null) {
-          return _buildEmptyState(context);
-        }
+        if (appointment == null) return _buildEmptyState(context);
 
         return RefreshIndicator(
           onRefresh: controller.refreshData,
@@ -43,7 +36,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min, // ✅ Added
+              mainAxisSize: MainAxisSize.min,
               children: [
                 _buildStatusBadge(context, appointment),
                 const SizedBox(height: 24),
@@ -80,17 +73,95 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Shared helpers
+  // ─────────────────────────────────────────────────────────────
+
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  /// A card decoration that works in both light and dark:
+  /// - Light: soft shadow + white surface
+  /// - Dark:  no shadow + slightly lifted surface + subtle outline
+  BoxDecoration _cardDecoration(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return BoxDecoration(
+      // ✅ Dark: gradient over the scaffold (matches SettingsSection / profile cards)
+      gradient: isDark
+          ? LinearGradient(
+              begin: AlignmentDirectional.topStart,
+              end: AlignmentDirectional.bottomEnd,
+              colors: [
+                cs.primary.withOpacity(0.10),
+                cs.primaryContainer.withOpacity(0.06),
+              ],
+            )
+          : null,
+      // ✅ Light: solid surface
+      color: !isDark ? cs.surfaceContainerLowest : null,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: isDark
+            ? cs.primary.withOpacity(0.12)
+            : cs.outlineVariant.withOpacity(0.5),
+        width: 1,
+      ),
+      boxShadow: isDark
+          ? [
+              BoxShadow(
+                color: cs.shadow.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 1),
+              ),
+            ]
+          : null,
+    );
+  }
+
+  /// Returns a foreground color for a semantic hue that
+  /// stays readable on both light and dark backgrounds.
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    // In dark mode, use the "shade200/300" equivalents of the hue.
+    if (base == Colors.green)
+      return isDark ? Colors.green.shade300 : Colors.green.shade800;
+    if (base == Colors.red)
+      return isDark ? Colors.red.shade300 : Colors.red.shade800;
+    if (base == Colors.amber)
+      return isDark ? Colors.amber.shade300 : Colors.amber.shade800;
+    if (base == Colors.orange)
+      return isDark ? Colors.orange.shade300 : Colors.orange.shade800;
+    return base;
+  }
+
+  Color _semanticBg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    return base.withValues(alpha: isDark ? 0.18 : 0.08);
+  }
+
+  Color _semanticBorder(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    return base.withValues(alpha: isDark ? 0.45 : 0.30);
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Status badge
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildStatusBadge(BuildContext context, Appointment appointment) {
-    final colorScheme = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+    final statusColor = appointment.statusColor;
+
     return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: appointment.statusColor.withValues(alpha: 0.15),
+          color: _semanticBg(context, statusColor),
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: appointment.statusColor.withValues(alpha: 0.3),
+            color: _semanticBorder(context, statusColor),
             width: 1.5,
           ),
         ),
@@ -101,7 +172,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
               width: 10,
               height: 10,
               decoration: BoxDecoration(
-                color: appointment.statusColor,
+                color: _semanticFg(context, statusColor),
                 shape: BoxShape.circle,
               ),
             ),
@@ -111,7 +182,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
               style: TextStyle(
                 fontSize: textScale.scale(14).clamp(12.0, 16.0),
                 fontWeight: FontWeight.w700,
-                color: appointment.statusColor,
+                color: _semanticFg(context, statusColor),
               ),
             ),
           ],
@@ -120,22 +191,17 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Doctor section
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildDoctorSection(BuildContext context, Appointment appointment) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: _cardDecoration(context),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -150,26 +216,24 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min, // ✅ Added
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  // ✅ Removed Flexible wrapper
                   appointment.doctorFullName,
                   style: TextStyle(
                     fontSize: textScale.scale(16).clamp(14.0, 18.0),
                     fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
+                    color: cs.onSurface,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  // ✅ Removed Flexible wrapper
                   appointment.doctorSpecialty,
                   style: TextStyle(
                     fontSize: textScale.scale(12).clamp(10.0, 14.0),
-                    color: colorScheme.primary,
+                    color: cs.primary,
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
@@ -181,7 +245,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
                     Icon(
                       appointment.typeIcon,
                       size: 16,
-                      color: colorScheme.onSurfaceVariant,
+                      color: cs.onSurfaceVariant,
                     ),
                     const SizedBox(width: 6),
                     Expanded(
@@ -189,7 +253,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
                         appointment.typeLabel,
                         style: TextStyle(
                           fontSize: textScale.scale(11).clamp(9.0, 13.0),
-                          color: colorScheme.onSurfaceVariant,
+                          color: cs.onSurfaceVariant,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -205,32 +269,27 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Details section
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildDetailsSection(BuildContext context, Appointment appointment) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: _cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // ✅ Added
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             TranslationKeys.bookingDetails.tr,
             style: TextStyle(
               fontSize: textScale.scale(14).clamp(12.0, 16.0),
               fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: 16),
@@ -296,8 +355,10 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     String label,
     String value,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+    final isDark = _isDark(context);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -305,23 +366,25 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+            color: isDark
+                ? cs.primaryContainer.withValues(alpha: 0.25)
+                : cs.primaryContainer.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, size: 18, color: colorScheme.primary),
+          child: Icon(icon, size: 18, color: cs.primary),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min, // ✅ Added
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 label,
                 style: TextStyle(
                   fontSize: textScale.scale(11).clamp(9.0, 12.0),
                   fontWeight: FontWeight.w500,
-                  color: colorScheme.onSurfaceVariant,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 2),
@@ -330,7 +393,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
                 style: TextStyle(
                   fontSize: textScale.scale(12).clamp(10.0, 14.0),
                   fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
+                  color: cs.onSurface,
                 ),
               ),
             ],
@@ -340,31 +403,27 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Payment section
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildPaymentSection(BuildContext context, Appointment appointment) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
     final payment = appointment.payment!;
+    final statusColor = controller.paymentStatusColor;
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
+      decoration: _cardDecoration(context).copyWith(
         border: Border.all(
-          color: controller.paymentStatusColor.withValues(alpha: 0.3),
+          color: _semanticBorder(context, statusColor),
           width: 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // ✅ Added
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
@@ -373,7 +432,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
                 style: TextStyle(
                   fontSize: textScale.scale(14).clamp(12.0, 16.0),
                   fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
+                  color: cs.onSurface,
                 ),
               ),
               const Spacer(),
@@ -383,7 +442,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: controller.paymentStatusColor.withValues(alpha: 0.15),
+                  color: _semanticBg(context, statusColor),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -391,7 +450,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
                   style: TextStyle(
                     fontSize: textScale.scale(11).clamp(9.0, 12.0),
                     fontWeight: FontWeight.w600,
-                    color: controller.paymentStatusColor,
+                    color: _semanticFg(context, statusColor),
                   ),
                 ),
               ),
@@ -409,7 +468,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
             TranslationKeys.appointmentsPlatformFee.tr,
             payment.formattedCommission,
           ),
-          const Divider(height: 24),
+          Divider(height: 24, color: cs.outlineVariant),
           _buildPaymentRow(
             context,
             TranslationKeys.appointmentsTotalAmount.tr,
@@ -421,7 +480,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
             controller.paymentStatusDisplay,
             style: TextStyle(
               fontSize: textScale.scale(12).clamp(10.0, 13.0),
-              color: colorScheme.onSurfaceVariant,
+              color: cs.onSurfaceVariant,
             ),
           ),
           if (payment.paymentReference.isNotEmpty) ...[
@@ -433,7 +492,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
               ),
               style: TextStyle(
                 fontSize: textScale.scale(11).clamp(9.0, 12.0),
-                color: colorScheme.onSurfaceVariant,
+                color: cs.onSurfaceVariant,
               ),
             ),
           ],
@@ -448,8 +507,9 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     String value, {
     bool isTotal = false,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -461,9 +521,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
                   .scale(isTotal ? 14 : 12)
                   .clamp(10.0, isTotal ? 16.0 : 14.0),
               fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-              color: isTotal
-                  ? colorScheme.onSurface
-                  : colorScheme.onSurfaceVariant,
+              color: isTotal ? cs.onSurface : cs.onSurfaceVariant,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -476,92 +534,90 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
                 .scale(isTotal ? 16 : 12)
                 .clamp(10.0, isTotal ? 18.0 : 14.0),
             fontWeight: FontWeight.w700,
-            color: isTotal ? colorScheme.primary : colorScheme.onSurface,
+            color: isTotal ? cs.primary : cs.onSurface,
           ),
         ),
       ],
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Doctor contact (green semantic)
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildDoctorContactSection(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.green.withValues(alpha: 0.08),
+        color: _semanticBg(context, Colors.green),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.green.withValues(alpha: 0.3),
+          color: _semanticBorder(context, Colors.green),
           width: 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // ✅ Added
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
-              Icon(Icons.contact_phone_rounded, color: Colors.green, size: 20),
+              Icon(
+                Icons.contact_phone_rounded,
+                color: _semanticFg(context, Colors.green),
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 TranslationKeys.appointmentsDoctorContact.tr,
                 style: TextStyle(
                   fontSize: textScale.scale(14).clamp(12.0, 16.0),
                   fontWeight: FontWeight.w700,
-                  color: Colors.green.shade800,
+                  color: _semanticFg(context, Colors.green),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  controller.doctorPhone,
-                  style: TextStyle(
-                    fontSize: textScale.scale(14).clamp(12.0, 16.0),
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            controller.doctorPhone,
+            style: TextStyle(
+              fontSize: textScale.scale(14).clamp(12.0, 16.0),
+              fontWeight: FontWeight.w600,
+              color: cs.onSurface,
+            ),
           ),
         ],
       ),
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Doctor notes
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildDoctorNotesSection(
     BuildContext context,
     Appointment appointment,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: _cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // ✅ Added
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
               Icon(
                 Icons.medical_information_rounded,
-                color: colorScheme.primary,
+                color: cs.primary,
                 size: 20,
               ),
               const SizedBox(width: 8),
@@ -570,7 +626,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
                 style: TextStyle(
                   fontSize: textScale.scale(14).clamp(12.0, 16.0),
                   fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
+                  color: cs.onSurface,
                 ),
               ),
             ],
@@ -581,7 +637,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
             style: TextStyle(
               fontSize: textScale.scale(12).clamp(10.0, 14.0),
               height: 1.6,
-              color: colorScheme.onSurfaceVariant,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],
@@ -589,33 +645,45 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Cancellation (red semantic)
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildCancellationSection(
     BuildContext context,
     Appointment appointment,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.08),
+        color: _semanticBg(context, Colors.red),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red.withValues(alpha: 0.3), width: 1),
+        border: Border.all(
+          color: _semanticBorder(context, Colors.red),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // ✅ Added
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
-              Icon(Icons.cancel_rounded, color: Colors.red, size: 20),
+              Icon(
+                Icons.cancel_rounded,
+                color: _semanticFg(context, Colors.red),
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 TranslationKeys.appointmentsCancellationReason.tr,
                 style: TextStyle(
                   fontSize: textScale.scale(14).clamp(12.0, 16.0),
                   fontWeight: FontWeight.w700,
-                  color: Colors.red.shade800,
+                  color: _semanticFg(context, Colors.red),
                 ),
               ),
             ],
@@ -626,7 +694,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
             style: TextStyle(
               fontSize: textScale.scale(12).clamp(10.0, 14.0),
               height: 1.6,
-              color: colorScheme.onSurfaceVariant,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],
@@ -634,22 +702,39 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Action buttons — use error / primary / tertiary instead of raw Colors
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildActionButtons(BuildContext context, Appointment appointment) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final buttons = <Widget>[];
 
     if (controller.canCancel) {
       buttons.add(
         Expanded(
           child: OutlinedButton.icon(
-            icon: const Icon(Icons.cancel_rounded, size: 20),
-            label: Text(TranslationKeys.appointmentsCancel.tr),
+            icon: const Icon(Icons.cancel_rounded, size: 18),
+            label: const Text(
+              'Cancel',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.red,
-              side: const BorderSide(color: Colors.red, width: 1.5),
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              // ✅ Dark: brighter red for contrast; Light: use error token
+              foregroundColor: isDark ? const Color(0xFFE57373) : cs.error,
+              side: BorderSide(
+                color: isDark ? const Color(0xFFE57373) : cs.error,
+                width: 1.5,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
             ),
             onPressed: () => _showCancelDialog(context, appointment),
@@ -659,18 +744,26 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     }
 
     if (controller.canReschedule) {
-      buttons.add(const SizedBox(width: 12));
+      if (buttons.isNotEmpty) buttons.add(const SizedBox(width: 12));
       buttons.add(
         Expanded(
           child: OutlinedButton.icon(
-            icon: const Icon(Icons.schedule_rounded, size: 20),
-            label: Text(TranslationKeys.bookingReschedule.tr),
+            icon: const Icon(Icons.schedule_rounded, size: 18),
+            label: const Text(
+              'Reschedule',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: colorScheme.primary,
-              side: BorderSide(color: colorScheme.primary, width: 1.5),
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              foregroundColor: cs.primary,
+              side: BorderSide(color: cs.primary, width: 1.5),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
             ),
             onPressed: () => _navigateToReschedule(appointment),
@@ -680,18 +773,26 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     }
 
     if (controller.canPayNow) {
-      buttons.add(const SizedBox(width: 12));
+      if (buttons.isNotEmpty) buttons.add(const SizedBox(width: 12));
       buttons.add(
         Expanded(
           child: ElevatedButton.icon(
-            icon: const Icon(Icons.payment_rounded, size: 20),
-            label: Text(TranslationKeys.appointmentsPayNow.tr),
+            icon: const Icon(Icons.payment_rounded, size: 18),
+            label: const Text(
+              'Pay Now',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.amber.shade700,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              backgroundColor: cs.tertiaryContainer,
+              foregroundColor: cs.onTertiaryContainer,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
             ),
             onPressed: () => _markPaymentAsPaid(appointment),
@@ -701,18 +802,26 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     }
 
     if (controller.canRate) {
-      buttons.add(const SizedBox(width: 12));
+      if (buttons.isNotEmpty) buttons.add(const SizedBox(width: 12));
       buttons.add(
         Expanded(
           child: OutlinedButton.icon(
-            icon: const Icon(Icons.star_rounded, size: 20),
-            label: Text(TranslationKeys.appointmentsRate.tr),
+            icon: const Icon(Icons.star_rounded, size: 18),
+            label: const Text(
+              'Rate',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.amber.shade700,
-              side: BorderSide(color: Colors.amber.shade700, width: 1.5),
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              foregroundColor: cs.tertiary,
+              side: BorderSide(color: cs.tertiary, width: 1.5),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
             ),
             onPressed: () => _showRatingDialog(context, appointment),
@@ -723,11 +832,17 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
 
     if (buttons.isEmpty) return const SizedBox.shrink();
 
-    return Wrap(spacing: 12, runSpacing: 12, children: buttons);
+    // ✅ Row (not Wrap) so Expanded children actually flex
+    return Row(children: buttons);
   }
+  // ─────────────────────────────────────────────────────────────
+  // Loading / Error / Empty
+  // ─────────────────────────────────────────────────────────────
 
   Widget _buildLoadingState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -737,18 +852,15 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
             height: 64,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.2),
+              color: cs.primaryContainer.withValues(alpha: isDark ? 0.35 : 0.2),
               shape: BoxShape.circle,
             ),
-            child: CircularProgressIndicator(
-              color: colorScheme.primary,
-              strokeWidth: 3,
-            ),
+            child: CircularProgressIndicator(color: cs.primary, strokeWidth: 3),
           ),
           const SizedBox(height: 16),
           Text(
             TranslationKeys.appointmentsLoadingDetail.tr,
-            style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
+            style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
           ),
         ],
       ),
@@ -756,26 +868,27 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
   }
 
   Widget _buildErrorState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min, // ✅ Added
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: colorScheme.errorContainer,
+                color: cs.errorContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline_rounded,
                 size: 36,
-                color: colorScheme.error,
+                color: cs.onErrorContainer,
               ),
             ),
             const SizedBox(height: 16),
@@ -784,7 +897,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
               style: TextStyle(
                 fontSize: textScale.scale(16).clamp(14.0, 18.0),
                 fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -793,15 +906,15 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: textScale.scale(12).clamp(10.0, 14.0),
-                color: colorScheme.onSurfaceVariant,
+                color: cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: controller.refreshData,
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 12,
@@ -819,19 +932,20 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final textScale = MediaQuery.textScalerOf(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min, // ✅ Added
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.event_busy_rounded,
               size: 64,
-              color: colorScheme.outline.withValues(alpha: 0.4),
+              color: cs.outline.withValues(alpha: 0.4),
             ),
             const SizedBox(height: 16),
             Text(
@@ -839,7 +953,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
               style: TextStyle(
                 fontSize: textScale.scale(16).clamp(14.0, 18.0),
                 fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -848,15 +962,15 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: textScale.scale(12).clamp(10.0, 14.0),
-                color: colorScheme.onSurfaceVariant,
+                color: cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => Get.back(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 12,
@@ -873,8 +987,12 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Dialogs
+  // ─────────────────────────────────────────────────────────────
+
   void _showCancelDialog(BuildContext context, Appointment appointment) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final reasonController = TextEditingController();
 
     Get.defaultDialog(
@@ -882,15 +1000,16 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
       titleStyle: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w700,
-        color: colorScheme.onSurface,
+        color: cs.onSurface,
       ),
+      backgroundColor: cs.surfaceContainerHigh,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             'Are you sure you want to cancel your appointment with ${appointment.doctorFullName} on ${appointment.formattedDate} at ${appointment.formattedTime}?',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
+            style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -912,9 +1031,10 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
       ),
       textCancel: 'Keep Appointment',
       textConfirm: 'Cancel Appointment',
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.red,
-      cancelTextColor: colorScheme.onSurface,
+      // ✅ Let GetX theme the confirm button — no hardcoded white
+      buttonColor: cs.error,
+      confirmTextColor: cs.onError,
+      cancelTextColor: cs.onSurface,
       onConfirm: () async {
         Get.back();
         final reason = reasonController.text.trim();
@@ -935,7 +1055,7 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
   }
 
   void _showRatingDialog(BuildContext context, Appointment appointment) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     int selectedScore = 5;
     final commentController = TextEditingController();
 
@@ -944,37 +1064,43 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
       titleStyle: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w700,
-        color: colorScheme.onSurface,
+        color: cs.onSurface,
       ),
+      backgroundColor: cs.surfaceContainerHigh,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             'How was your appointment with ${appointment.doctorFullName}?',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
+            style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(5, (index) {
-              final star = index + 1;
-              return GestureDetector(
-                onTap: () => selectedScore = star,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Icon(
-                    star <= selectedScore
-                        ? Icons.star_rounded
-                        : Icons.star_border_rounded,
-                    size: 36,
-                    color: star <= selectedScore
-                        ? Colors.amber
-                        : colorScheme.onSurfaceVariant,
-                  ),
-                ),
+          StatefulBuilder(
+            builder: (context, setState) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  final star = index + 1;
+                  return GestureDetector(
+                    onTap: () => setState(() => selectedScore = star),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Icon(
+                        star <= selectedScore
+                            ? Icons.star_rounded
+                            : Icons.star_border_rounded,
+                        size: 36,
+                        // ✅ Use theme tertiary for stars
+                        color: star <= selectedScore
+                            ? cs.tertiary
+                            : cs.onSurfaceVariant,
+                      ),
+                    ),
+                  );
+                }),
               );
-            }),
+            },
           ),
           const SizedBox(height: 16),
           TextField(
@@ -996,9 +1122,10 @@ class AppointmentDetailScreen extends GetView<AppointmentDetailController> {
       ),
       textCancel: 'Cancel',
       textConfirm: 'Submit Rating',
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.amber.shade700,
-      cancelTextColor: colorScheme.onSurface,
+      // ✅ Theme-aware confirm button
+      buttonColor: cs.primary,
+      confirmTextColor: cs.onPrimary,
+      cancelTextColor: cs.onSurface,
       onConfirm: () async {
         Get.back();
         final comment = commentController.text.trim();

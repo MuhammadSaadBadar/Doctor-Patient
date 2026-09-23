@@ -10,27 +10,32 @@ class ProcedureEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final textScale = MediaQuery.textScalerOf(context);
 
     return Center(
-      // ✅ Added Center for proper positioning
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
         child: Column(
-          mainAxisSize: MainAxisSize.min, // ✅ Prevents unbounded height issues
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: colorScheme.surfaceContainer,
+                // ✅ Stronger tint in dark
+                color: isDark
+                    ? colorScheme.primary.withValues(alpha: 0.18)
+                    : colorScheme.surfaceContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.medical_services_rounded,
                 size: 40,
-                color: colorScheme.primary.withValues(alpha: 0.4),
+                color: colorScheme.primary.withValues(
+                  alpha: isDark ? 0.7 : 0.4,
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -46,7 +51,6 @@ class ProcedureEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              // ✅ Removed Flexible wrapper
               'Keep your care team informed by logging any past surgeries or procedures.',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -72,7 +76,7 @@ class ProcedureEmptyState extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.add_rounded, size: 18),
+                  const Icon(Icons.add_rounded, size: 18),
                   const SizedBox(width: 6),
                   Text(
                     'Add First Procedure',

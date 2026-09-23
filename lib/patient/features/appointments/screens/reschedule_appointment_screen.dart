@@ -16,6 +16,7 @@ class RescheduleAppointmentScreen
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      // ✅ surface, not deprecated background
       backgroundColor: colorScheme.background,
       appBar: PatientTopAppBar(title: TranslationKeys.bookingReschedule.tr),
       body: Obx(() {
@@ -33,7 +34,6 @@ class RescheduleAppointmentScreen
           return _buildEmptyState(context);
         }
 
-        // ✅ FIXED: Use Column with mainAxisSize: MainAxisSize.min
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -42,7 +42,7 @@ class RescheduleAppointmentScreen
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min, // ✅ Added
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildCurrentAppointmentCard(context, appointment),
                     const SizedBox(height: 24),
@@ -62,57 +62,122 @@ class RescheduleAppointmentScreen
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Shared helpers (same pattern as AppointmentDetailScreen)
+  // ─────────────────────────────────────────────────────────────
+
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  /// Card decoration — gradient in dark, solid in light.
+  /// Matches `SettingsSection`, `_buildProfileSummaryCard`, etc.
+  BoxDecoration _cardDecoration(
+    BuildContext context, {
+    double radius = 16,
+    Border? border,
+  }) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
+    return BoxDecoration(
+      gradient: isDark
+          ? LinearGradient(
+              begin: AlignmentDirectional.topStart,
+              end: AlignmentDirectional.bottomEnd,
+              colors: [
+                cs.primary.withOpacity(0.10),
+                cs.primaryContainer.withOpacity(0.06),
+              ],
+            )
+          : null,
+      color: !isDark ? cs.surfaceContainerLowest : null,
+      borderRadius: BorderRadius.circular(radius),
+      border:
+          border ??
+          Border.all(
+            color: isDark
+                ? cs.primary.withOpacity(0.12)
+                : cs.outlineVariant.withOpacity(0.5),
+            width: 1,
+          ),
+      boxShadow: isDark
+          ? [
+              BoxShadow(
+                color: cs.shadow.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 1),
+              ),
+            ]
+          : null,
+    );
+  }
+
+  /// Returns a hue that stays readable on both light and dark backgrounds.
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.orange)
+      return isDark ? Colors.orange.shade300 : Colors.orange.shade800;
+    if (base == Colors.amber)
+      return isDark ? Colors.amber.shade200 : Colors.amber.shade800;
+    return base;
+  }
+
+  Color _semanticBg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    return base.withOpacity(isDark ? 0.16 : 0.08);
+  }
+
+  Color _semanticBorder(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    return base.withOpacity(isDark ? 0.45 : 0.30);
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Current appointment card
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildCurrentAppointmentCard(
     BuildContext context,
     Appointment appointment,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
-      ),
+      decoration: _cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // ✅ Added
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
-            mainAxisSize: MainAxisSize.min, // ✅ Added
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  // ✅ Semantic orange tint that flips with brightness
+                  color: _semanticBg(context, Colors.orange),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.schedule_rounded,
                   size: 20,
-                  color: Colors.orange,
+                  color: _semanticFg(context, Colors.orange),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min, // ✅ Added
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       TranslationKeys.appointmentsCurrent.tr,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurfaceVariant,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                     Text(
@@ -120,7 +185,7 @@ class RescheduleAppointmentScreen
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: colorScheme.onSurface,
+                        color: cs.onSurface,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -162,15 +227,15 @@ class RescheduleAppointmentScreen
     String label,
     String value,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return Row(
-      mainAxisSize: MainAxisSize.min, // ✅ Added
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: colorScheme.onSurfaceVariant),
+        Icon(icon, size: 18, color: cs.onSurfaceVariant),
         const SizedBox(width: 12),
         Text(
           '$label: ',
-          style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+          style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
         ),
         Flexible(
           child: Text(
@@ -178,7 +243,7 @@ class RescheduleAppointmentScreen
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
+              color: cs.onSurface,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -188,19 +253,24 @@ class RescheduleAppointmentScreen
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Date selection
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildDateSelection(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min, // ✅ Added
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           TranslationKeys.appointmentsNewDate.tr,
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
+            color: cs.onSurface,
           ),
         ),
         const SizedBox(height: 12),
@@ -210,24 +280,25 @@ class RescheduleAppointmentScreen
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
-            ),
+            // ✅ Same card treatment as the rest of the screen
+            decoration: _cardDecoration(context, radius: 12),
             child: Row(
-              mainAxisSize: MainAxisSize.min, // ✅ Added
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer,
+                    // ✅ Primary tint works in both themes because it sits
+                    //    on top of the gradient card
+                    color: isDark
+                        ? cs.primary.withOpacity(0.18)
+                        : cs.primaryContainer,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     Icons.calendar_today_rounded,
                     size: 20,
-                    color: colorScheme.primary,
+                    color: cs.primary,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -238,15 +309,15 @@ class RescheduleAppointmentScreen
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: controller.selectedDate.value != null
-                          ? colorScheme.onSurface
-                          : colorScheme.onSurfaceVariant,
+                          ? cs.onSurface
+                          : cs.onSurfaceVariant,
                     ),
                   ),
                 ),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 16,
-                  color: colorScheme.onSurfaceVariant,
+                  color: cs.onSurfaceVariant,
                 ),
               ],
             ),
@@ -256,19 +327,24 @@ class RescheduleAppointmentScreen
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Time selection
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildTimeSelection(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min, // ✅ Added
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           TranslationKeys.appointmentsNewTime.tr,
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
+            color: cs.onSurface,
           ),
         ),
         const SizedBox(height: 12),
@@ -278,24 +354,22 @@ class RescheduleAppointmentScreen
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
-            ),
+            decoration: _cardDecoration(context, radius: 12),
             child: Row(
-              mainAxisSize: MainAxisSize.min, // ✅ Added
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer,
+                    color: isDark
+                        ? cs.primary.withOpacity(0.18)
+                        : cs.primaryContainer,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     Icons.access_time_rounded,
                     size: 20,
-                    color: colorScheme.primary,
+                    color: cs.primary,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -306,15 +380,15 @@ class RescheduleAppointmentScreen
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: controller.selectedTime.value != null
-                          ? colorScheme.onSurface
-                          : colorScheme.onSurfaceVariant,
+                          ? cs.onSurface
+                          : cs.onSurfaceVariant,
                     ),
                   ),
                 ),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 16,
-                  color: colorScheme.onSurfaceVariant,
+                  color: cs.onSurfaceVariant,
                 ),
               ],
             ),
@@ -323,12 +397,11 @@ class RescheduleAppointmentScreen
         const SizedBox(height: 12),
         Text(
           TranslationKeys.appointmentsAvailableSlots.tr,
-          style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
+          style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
         ),
         const SizedBox(height: 8),
-        // ✅ Fixed: Use SizedBox with explicit height for horizontal ListView
         SizedBox(
-          height: 50, // Fixed height for horizontal ListView
+          height: 50,
           child: Obx(
             () => ListView.separated(
               scrollDirection: Axis.horizontal,
@@ -340,6 +413,36 @@ class RescheduleAppointmentScreen
                     controller.selectedTime.value != null &&
                     controller.selectedTime.value!.hour == slot.hour &&
                     controller.selectedTime.value!.minute == slot.minute;
+
+                // ✅ Chip: gradient tint when unselected in dark, solid
+                //    primary when selected
+                final chipDecoration = isSelected
+                    ? BoxDecoration(
+                        color: cs.primary,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: cs.primary, width: 2),
+                      )
+                    : BoxDecoration(
+                        gradient: isDark
+                            ? LinearGradient(
+                                begin: AlignmentDirectional.topStart,
+                                end: AlignmentDirectional.bottomEnd,
+                                colors: [
+                                  cs.primary.withOpacity(0.10),
+                                  cs.primaryContainer.withOpacity(0.06),
+                                ],
+                              )
+                            : null,
+                        color: !isDark ? cs.surfaceContainerLowest : null,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: isDark
+                              ? cs.primary.withOpacity(0.25)
+                              : cs.outlineVariant.withOpacity(0.5),
+                          width: 1,
+                        ),
+                      );
+
                 return GestureDetector(
                   onTap: () => controller.selectedTime.value = slot,
                   child: AnimatedContainer(
@@ -348,27 +451,14 @@ class RescheduleAppointmentScreen
                       horizontal: 16,
                       vertical: 8,
                     ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? colorScheme.primary
-                          : colorScheme.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: isSelected
-                            ? colorScheme.primary
-                            : colorScheme.outline.withOpacity(0.2),
-                        width: isSelected ? 2 : 1,
-                      ),
-                    ),
+                    decoration: chipDecoration,
                     child: Center(
                       child: Text(
                         _formatTimeOfDay(slot),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: isSelected
-                              ? colorScheme.onPrimary
-                              : colorScheme.onSurface,
+                          color: isSelected ? cs.onPrimary : cs.onSurface,
                         ),
                       ),
                     ),
@@ -389,46 +479,50 @@ class RescheduleAppointmentScreen
     return '$hour:$minute $period';
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Warning card — amber semantic, brightness-aware
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildWarningCard(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(0.08),
+        color: _semanticBg(context, Colors.amber),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+        border: Border.all(
+          color: _semanticBorder(context, Colors.amber),
+          width: 1,
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // ✅ Added
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.warning_amber_rounded,
-            color: Colors.amber.shade700,
+            color: _semanticFg(context, Colors.amber),
             size: 20,
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min, // ✅ Added
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   TranslationKeys.appointmentsRescheduleImportant.tr,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: Colors.amber.shade800,
+                    color: _semanticFg(context, Colors.amber),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   TranslationKeys.appointmentsRescheduleWarning.tr,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
                 ),
               ],
             ),
@@ -438,21 +532,41 @@ class RescheduleAppointmentScreen
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Sticky bottom button
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildStickyRescheduleButton(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
 
     return Obx(
       () => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: colorScheme.surface.withOpacity(0.95),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withOpacity(0.08),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
+          // ✅ In dark, use surfaceContainerHigh so the bar reads as
+          //    "elevated above" the scaffold. In light, keep the 0.95
+          //    translucency effect.
+          color: isDark
+              ? cs.surfaceContainerHigh
+              : cs.surface.withOpacity(0.95),
+          border: Border(
+            top: BorderSide(
+              color: isDark
+                  ? cs.outlineVariant.withOpacity(0.4)
+                  : Colors.transparent,
+              width: 1,
             ),
-          ],
+          ),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: cs.shadow.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: SafeArea(
@@ -463,29 +577,29 @@ class RescheduleAppointmentScreen
                   ? controller.rescheduleAppointment
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 4,
-                disabledBackgroundColor: colorScheme.onSurface.withOpacity(
-                  0.12,
-                ),
+                disabledBackgroundColor: cs.onSurface.withOpacity(0.12),
+                disabledForegroundColor: cs.onSurface.withOpacity(0.38),
               ),
               child: controller.isLoading.value
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
-                        color: Colors.white,
+                        // ✅ Use onPrimary, not hardcoded white
+                        color: cs.onPrimary,
                         strokeWidth: 2.5,
                       ),
                     )
                   : Text(
                       TranslationKeys.bookingConfirmReschedule.tr,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -497,8 +611,14 @@ class RescheduleAppointmentScreen
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Loading / Error / Empty
+  // ─────────────────────────────────────────────────────────────
+
   Widget _buildLoadingState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -508,18 +628,15 @@ class RescheduleAppointmentScreen
             height: 64,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withOpacity(0.2),
+              color: cs.primaryContainer.withOpacity(isDark ? 0.35 : 0.2),
               shape: BoxShape.circle,
             ),
-            child: CircularProgressIndicator(
-              color: colorScheme.primary,
-              strokeWidth: 3,
-            ),
+            child: CircularProgressIndicator(color: cs.primary, strokeWidth: 3),
           ),
           const SizedBox(height: 16),
           Text(
             'Loading appointment...',
-            style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
+            style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
           ),
         ],
       ),
@@ -527,7 +644,8 @@ class RescheduleAppointmentScreen
   }
 
   Widget _buildErrorState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -538,13 +656,14 @@ class RescheduleAppointmentScreen
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: colorScheme.errorContainer,
+                color: cs.errorContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline_rounded,
                 size: 36,
-                color: colorScheme.error,
+                // ✅ Correct contrast pair
+                color: cs.onErrorContainer,
               ),
             ),
             const SizedBox(height: 16),
@@ -553,24 +672,21 @@ class RescheduleAppointmentScreen
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               controller.errorMessage.value,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: controller.loadAppointment,
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 12,
@@ -588,7 +704,8 @@ class RescheduleAppointmentScreen
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -598,7 +715,7 @@ class RescheduleAppointmentScreen
             Icon(
               Icons.event_busy_rounded,
               size: 64,
-              color: colorScheme.outline.withOpacity(0.4),
+              color: cs.outline.withOpacity(0.4),
             ),
             const SizedBox(height: 16),
             Text(
@@ -606,24 +723,21 @@ class RescheduleAppointmentScreen
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'The appointment you\'re looking for could not be found.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: controller.navigateBack,
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 12,

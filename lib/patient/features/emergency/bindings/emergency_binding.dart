@@ -5,7 +5,12 @@ import 'package:get/get.dart';
 class EmergencyBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<EmergencyRepository>(() => EmergencyRepository());
-    Get.lazyPut<EmergencyController>(() => EmergencyController());
+    // Already registered globally in InitialBinding — just ensure findable
+    if (!Get.isRegistered<EmergencyRepository>()) {
+      Get.put<EmergencyRepository>(EmergencyRepository(), permanent: true);
+    }
+    if (!Get.isRegistered<EmergencyController>()) {
+      Get.put<EmergencyController>(EmergencyController(), permanent: true);
+    }
   }
 }

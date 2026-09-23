@@ -23,9 +23,24 @@ class ReminderCard extends StatelessWidget {
     this.onTap,
   });
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.green)
+      return isDark ? Colors.green.shade300 : Colors.green.shade800;
+    if (base == Colors.orange)
+      return isDark ? Colors.orange.shade300 : Colors.orange.shade800;
+    if (base == Colors.red)
+      return isDark ? Colors.red.shade300 : Colors.red.shade800;
+    return base;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
     final adherencePct = reminder.adherencePercentage;
     final isActive = reminder.isActive;
 
@@ -35,36 +50,51 @@ class ReminderCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLowest,
+          // ✅ Gradient in dark, solid in light
+          gradient: isDark
+              ? LinearGradient(
+                  begin: AlignmentDirectional.topStart,
+                  end: AlignmentDirectional.bottomEnd,
+                  colors: [
+                    cs.primary.withOpacity(0.10),
+                    cs.primaryContainer.withOpacity(0.06),
+                  ],
+                )
+              : null,
+          color: !isDark ? cs.surfaceContainerLowest : null,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: colorScheme.outlineVariant.withOpacity(0.3),
+            color: isDark
+                ? cs.primary.withOpacity(0.12)
+                : cs.outlineVariant.withOpacity(0.5),
+            width: 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: isDark
+              ? [
+                  BoxShadow(
+                    color: cs.shadow.withOpacity(0.05),
+                    blurRadius: 6,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header: Icon + Name + Toggle
             Row(
               children: [
                 Container(
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.1),
+                    color: cs.primary.withOpacity(isDark ? 0.18 : 0.10),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     Icons.medical_services_sharp,
                     size: 24,
-                    color: colorScheme.primary,
+                    color: cs.primary,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -72,68 +102,57 @@ class ReminderCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-Text(
-                          reminder.medicineName,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.onSurface,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      Text(
+                        reminder.medicineName,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: cs.onSurface,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: 2),
-Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        reminder.formattedDosage,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: colorScheme.onSurface,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              reminder.formattedDosage,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: cs.onSurface,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 4,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: cs.outlineVariant,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              reminder.frequencyLabel,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: cs.onSurfaceVariant,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 4,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: colorScheme.outlineVariant,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        reminder.frequencyLabel,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
                     ],
                   ),
                 ),
-                // Toggle Switch
-                // Transform.scale(
-                //   scale: 0.8,
-                //   child: Switch(
-                //     value: isActive,
-                //     onChanged: (_) => onToggle(),
-                //     activeColor: colorScheme.tertiary,
-                //     inactiveThumbColor: colorScheme.onSurfaceVariant,
-                //     inactiveTrackColor: colorScheme.surfaceVariant,
-                //   ),
-                // ),
               ],
             ),
             const SizedBox(height: 12),
@@ -142,19 +161,20 @@ Row(
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerLow,
+                // ✅ Dark: slightly lifted inner box
+                color: isDark
+                    ? cs.primaryContainer.withOpacity(0.08)
+                    : cs.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: colorScheme.outlineVariant.withOpacity(0.15),
+                  color: isDark
+                      ? cs.primary.withOpacity(0.10)
+                      : cs.outlineVariant.withOpacity(0.15),
                 ),
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.schedule_rounded,
-                    size: 16,
-                    color: colorScheme.secondary,
-                  ),
+                  Icon(Icons.schedule_rounded, size: 16, color: cs.secondary),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
@@ -162,61 +182,62 @@ Row(
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: colorScheme.onSurface,
+                        color: cs.onSurface,
                       ),
                     ),
                   ),
                   Icon(
                     Icons.event_rounded,
                     size: 14,
-                    color: colorScheme.onSurfaceVariant,
+                    color: cs.onSurfaceVariant,
                   ),
                   const SizedBox(width: 4),
                   Expanded(
-                  child: Text(
-                    'Started: ${reminder.formattedStartDate}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: colorScheme.onSurfaceVariant,
+                    child: Text(
+                      'Started: ${reminder.formattedStartDate}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: cs.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
                 ],
               ),
             ),
             const SizedBox(height: 12),
 
-            // Divider
             Divider(
-              color: colorScheme.outlineVariant.withOpacity(0.2),
+              color: isDark
+                  ? cs.primary.withOpacity(0.12)
+                  : cs.outlineVariant.withOpacity(0.2),
               height: 1,
             ),
             const SizedBox(height: 12),
 
-            // Adherence Breakdown
+            // Adherence Breakdown — semantic foreground colors
             Row(
               children: [
                 _buildAdherenceItem(
                   context,
                   icon: Icons.check_circle_rounded,
                   label: 'Taken: ${reminder.takenCount}',
-                  color: colorScheme.tertiary,
+                  color: cs.tertiary,
                 ),
                 const SizedBox(width: 12),
                 _buildAdherenceItem(
                   context,
                   icon: Icons.history_toggle_off_rounded,
                   label: 'Skipped: ${reminder.skippedCount}',
-                  color: Colors.orange.shade400,
+                  color: _semanticFg(context, Colors.orange),
                 ),
                 const SizedBox(width: 12),
                 _buildAdherenceItem(
                   context,
                   icon: Icons.hourglass_top_rounded,
                   label: 'Pending: ${reminder.pendingCount}',
-                  color: colorScheme.error,
+                  color: cs.error,
                 ),
                 const Spacer(),
                 Text(
@@ -231,24 +252,27 @@ Row(
             ),
             const SizedBox(height: 6),
 
-            // Progress Bar
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: LinearProgressIndicator(
                 value: adherencePct / 100,
                 minHeight: 6,
-                backgroundColor: colorScheme.surfaceContainer,
+                backgroundColor: isDark
+                    ? cs.primary.withOpacity(0.12)
+                    : cs.surfaceContainer,
                 valueColor: AlwaysStoppedAnimation<Color>(
                   reminder.adherenceColor,
                 ),
               ),
             ),
 
-            // Intake Actions for Today's Doses
+            // Intake actions — semantic colors
             if (isActive && (onTakeNow != null || onSkipNow != null)) ...[
               const SizedBox(height: 12),
               Divider(
-                color: colorScheme.outlineVariant.withOpacity(0.2),
+                color: isDark
+                    ? cs.primary.withOpacity(0.12)
+                    : cs.outlineVariant.withOpacity(0.2),
                 height: 1,
               ),
               const SizedBox(height: 12),
@@ -261,18 +285,18 @@ Row(
                       icon: Icon(
                         Icons.close_rounded,
                         size: 16,
-                        color: Colors.orange,
+                        color: _semanticFg(context, Colors.orange),
                       ),
                       label: Text(
                         'Skip',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Colors.orange,
+                          color: _semanticFg(context, Colors.orange),
                         ),
                       ),
                       style: TextButton.styleFrom(
-                        foregroundColor: Colors.orange,
+                        foregroundColor: _semanticFg(context, Colors.orange),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 8,
@@ -280,7 +304,10 @@ Row(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                           side: BorderSide(
-                            color: Colors.orange.withOpacity(0.3),
+                            color: _semanticFg(
+                              context,
+                              Colors.orange,
+                            ).withOpacity(isDark ? 0.5 : 0.3),
                           ),
                         ),
                       ),
@@ -293,19 +320,20 @@ Row(
                       icon: Icon(
                         Icons.check_rounded,
                         size: 16,
-                        color: Colors.white,
+                        color: cs.onTertiary,
                       ),
                       label: Text(
                         'Taken',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: cs.onTertiary,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
+                        // ✅ Use tertiary token instead of raw green
+                        backgroundColor: cs.tertiary,
+                        foregroundColor: cs.onTertiary,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 8,
@@ -332,8 +360,6 @@ Row(
     required String label,
     required Color color,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Row(
       children: [
         Icon(icon, size: 14, color: color),

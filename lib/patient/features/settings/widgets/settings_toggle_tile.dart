@@ -1,5 +1,6 @@
+// lib/patient/features/settings/widgets/settings_toggle_tile.dart
+
 import 'package:flutter/material.dart';
-import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/themes/app_theme.dart';
 import 'package:doctor/core/widgets/material_symbol_icon.dart';
 
@@ -25,12 +26,24 @@ class SettingsToggleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final borderRadius = BorderRadiusDirectional.only(
       topStart: isFirst ? const Radius.circular(12) : Radius.zero,
       topEnd: isFirst ? const Radius.circular(12) : Radius.zero,
       bottomStart: isLast ? const Radius.circular(12) : Radius.zero,
       bottomEnd: isLast ? const Radius.circular(12) : Radius.zero,
     );
+
+    // ✅ Theme-aware colors
+    final iconColor = isDark
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant;
+
+    final subtitleColor = isDark
+        ? colorScheme.onSurfaceVariant.withOpacity(0.75)
+        : colorScheme.onSurfaceVariant;
 
     return Container(
       decoration: BoxDecoration(
@@ -41,11 +54,7 @@ class SettingsToggleTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            MaterialSymbolIcon(
-              icon,
-              size: 24,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            MaterialSymbolIcon(icon, size: 24, color: iconColor),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -54,7 +63,7 @@ class SettingsToggleTile extends StatelessWidget {
                   Text(
                     title,
                     style: AppTheme.bodyMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
+                      color: colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -62,21 +71,28 @@ class SettingsToggleTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: AppTheme.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                      style: AppTheme.bodySmall.copyWith(color: subtitleColor),
                     ),
                   ],
                 ],
               ),
             ),
+            // ✅ Theme-aware Switch (dark mode gets stronger contrast)
             Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: AppColors.primary,
-              activeTrackColor: Theme.of(context).colorScheme.primary.withOpacity(0.12),
-              inactiveTrackColor: Theme.of(context).colorScheme.surfaceVariant,
-              inactiveThumbColor: Theme.of(context).colorScheme.surface,
+              // Light mode: pink thumb on pink track
+              // Dark mode: bright pink thumb on darker pink track
+              activeColor: isDark ? colorScheme.primary : colorScheme.onPrimary,
+              activeTrackColor: isDark
+                  ? colorScheme.primary.withOpacity(0.35)
+                  : colorScheme.primary.withOpacity(0.12),
+              inactiveTrackColor: isDark
+                  ? colorScheme.surfaceContainerHigh
+                  : colorScheme.surfaceVariant,
+              inactiveThumbColor: isDark
+                  ? colorScheme.onSurfaceVariant
+                  : colorScheme.surface,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ],

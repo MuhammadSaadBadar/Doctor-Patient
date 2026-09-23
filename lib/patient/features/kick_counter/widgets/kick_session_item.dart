@@ -11,9 +11,21 @@ class KickSessionItem extends StatelessWidget {
 
   const KickSessionItem({super.key, required this.session, this.onTap});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.orange)
+      return isDark ? Colors.orange.shade300 : Colors.orange.shade800;
+    return base;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+    final orangeFg = _semanticFg(context, Colors.orange);
 
     return InkWell(
       onTap: onTap,
@@ -21,10 +33,24 @@ class KickSessionItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLowest,
+          // ✅ Gradient in dark, solid in light
+          gradient: isDark
+              ? LinearGradient(
+                  begin: AlignmentDirectional.topStart,
+                  end: AlignmentDirectional.bottomEnd,
+                  colors: [
+                    cs.primary.withOpacity(0.10),
+                    cs.primaryContainer.withOpacity(0.06),
+                  ],
+                )
+              : null,
+          color: !isDark ? cs.surfaceContainerLowest : null,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.2),
+            color: isDark
+                ? cs.primary.withOpacity(0.12)
+                : cs.outlineVariant.withValues(alpha: 0.2),
+            width: 1,
           ),
         ),
         child: Row(
@@ -34,9 +60,10 @@ class KickSessionItem extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
+                // ✅ Semantic tint depending on active state
                 color: session.isActive
-                    ? Colors.orange.withValues(alpha: 0.12)
-                    : colorScheme.primary.withValues(alpha: 0.1),
+                    ? Colors.orange.withOpacity(isDark ? 0.22 : 0.12)
+                    : cs.primary.withOpacity(isDark ? 0.20 : 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -44,7 +71,7 @@ class KickSessionItem extends StatelessWidget {
                     ? Icons.timer_rounded
                     : Icons.check_circle_rounded,
                 size: 20,
-                color: session.isActive ? Colors.orange : colorScheme.primary,
+                color: session.isActive ? orangeFg : cs.primary,
               ),
             ),
             const SizedBox(width: 12),
@@ -62,7 +89,7 @@ class KickSessionItem extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
+                            color: cs.onSurface,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -75,7 +102,9 @@ class KickSessionItem extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withValues(alpha: 0.12),
+                            color: Colors.orange.withOpacity(
+                              isDark ? 0.20 : 0.12,
+                            ),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
@@ -83,7 +112,7 @@ class KickSessionItem extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: Colors.orange.shade700,
+                              color: orangeFg,
                             ),
                           ),
                         ),
@@ -93,10 +122,7 @@ class KickSessionItem extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '${_formatTime(session.startedAt)} · ${session.duration}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                    style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -106,7 +132,7 @@ class KickSessionItem extends StatelessWidget {
             Icon(
               Icons.chevron_right_rounded,
               size: 20,
-              color: colorScheme.onSurfaceVariant,
+              color: cs.onSurfaceVariant,
             ),
           ],
         ),

@@ -20,11 +20,11 @@ class KickCounterDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Responsive sizing based on available width
         final size = constraints.maxWidth * 0.65;
         final clampedSize = size.clamp(150.0, 220.0);
         final fontSize = clampedSize * 0.28;
@@ -35,17 +35,32 @@ class KickCounterDisplay extends StatelessWidget {
           height: clampedSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: colorScheme.surfaceContainerLowest,
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withOpacity(0.06),
-                blurRadius: 16,
-              ),
-            ],
+            // ✅ Dark: gradient to lift circle; Light: solid surface
+            gradient: isDark
+                ? LinearGradient(
+                    begin: AlignmentDirectional.topStart,
+                    end: AlignmentDirectional.bottomEnd,
+                    colors: [
+                      cs.primary.withOpacity(0.10),
+                      cs.primaryContainer.withOpacity(0.06),
+                    ],
+                  )
+                : null,
+            color: !isDark ? cs.surfaceContainerLowest : null,
+            boxShadow: isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: cs.shadow.withOpacity(0.06),
+                      blurRadius: 16,
+                    ),
+                  ],
             border: Border.all(
               color: isActive
-                  ? colorScheme.primary
-                  : colorScheme.outlineVariant.withOpacity(0.3),
+                  ? cs.primary
+                  : (isDark
+                        ? cs.primary.withOpacity(0.20)
+                        : cs.outlineVariant.withOpacity(0.3)),
               width: isActive ? 4 : 2,
             ),
           ),
@@ -60,7 +75,7 @@ class KickCounterDisplay extends StatelessWidget {
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.5,
-                    color: colorScheme.onSurfaceVariant,
+                    color: cs.onSurfaceVariant,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -75,13 +90,14 @@ class KickCounterDisplay extends StatelessWidget {
                       width: clampedSize * 0.65,
                       height: clampedSize * 0.65,
                       child: CircularProgressIndicator(
-                        value: isActive ? 0.3 : 1.0, // Visual indicator only
+                        value: isActive ? 0.3 : 1.0,
                         strokeWidth: 5,
-                        backgroundColor: colorScheme.primary.withOpacity(0.1),
+                        // ✅ Stronger tint in dark
+                        backgroundColor: cs.primary.withOpacity(
+                          isDark ? 0.18 : 0.1,
+                        ),
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          isActive
-                              ? colorScheme.primary
-                              : colorScheme.onSurfaceVariant,
+                          isActive ? cs.primary : cs.onSurfaceVariant,
                         ),
                         strokeCap: StrokeCap.round,
                       ),
@@ -91,9 +107,7 @@ class KickCounterDisplay extends StatelessWidget {
                       style: TextStyle(
                         fontSize: fontSize,
                         fontWeight: FontWeight.w700,
-                        color: isActive
-                            ? colorScheme.primary
-                            : colorScheme.onSurfaceVariant,
+                        color: isActive ? cs.primary : cs.onSurfaceVariant,
                         height: 1.1,
                       ),
                     ),
@@ -108,19 +122,21 @@ class KickCounterDisplay extends StatelessWidget {
                     _buildCounterButton(
                       icon: Icons.remove_rounded,
                       onTap: onRemove,
-                      colorScheme: colorScheme,
+                      colorScheme: cs,
                       isAdd: false,
                       size: buttonSize,
                       enabled: isActive && kickCount > 0,
+                      isDark: isDark,
                     ),
                     const SizedBox(width: 8),
                     _buildCounterButton(
                       icon: Icons.add_rounded,
                       onTap: onAdd,
-                      colorScheme: colorScheme,
+                      colorScheme: cs,
                       isAdd: true,
                       size: buttonSize,
                       enabled: isActive,
+                      isDark: isDark,
                     ),
                   ],
                 ),
@@ -139,7 +155,13 @@ class KickCounterDisplay extends StatelessWidget {
     required bool isAdd,
     required double size,
     required bool enabled,
+    required bool isDark,
   }) {
+    // ✅ Minus button background — lifted surface in dark
+    final minusBg = isDark
+        ? colorScheme.primaryContainer.withOpacity(0.20)
+        : colorScheme.surfaceContainer;
+
     return GestureDetector(
       onTap: enabled ? onTap : null,
       child: Container(
@@ -151,12 +173,12 @@ class KickCounterDisplay extends StatelessWidget {
               ? (enabled
                     ? colorScheme.primary
                     : colorScheme.primary.withOpacity(0.3))
-              : colorScheme.surfaceContainer,
+              : minusBg,
           boxShadow: isAdd && enabled
               ? [
                   BoxShadow(
-                    color: colorScheme.primary.withOpacity(0.3),
-                    blurRadius: 8,
+                    color: colorScheme.primary.withOpacity(isDark ? 0.45 : 0.3),
+                    blurRadius: isDark ? 10 : 8,
                   ),
                 ]
               : null,

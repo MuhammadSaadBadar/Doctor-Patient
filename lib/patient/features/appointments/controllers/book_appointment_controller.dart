@@ -109,7 +109,8 @@ class BookAppointmentController extends GetxController {
 
   double get platformCommission {
     final fee = consultationFeeValue ?? 0;
-    final commissionPercent = paymentMethod.value?.commissionPercentageValue ?? 0;
+    final commissionPercent =
+        paymentMethod.value?.commissionPercentageValue ?? 0;
     return fee * (commissionPercent / 100);
   }
 
@@ -173,21 +174,76 @@ class BookAppointmentController extends GetxController {
   double? get clinicLongitude => doctor.value?.doctorProfile?.longitude;
 
   Future<void> pickDate(BuildContext context) async {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final now = DateTime.now();
+
     final picked = await showDatePicker(
       context: context,
-      initialDate:
-          selectedDate.value ?? DateTime.now().add(const Duration(days: 1)),
-      firstDate: DateTime.now().add(const Duration(days: 1)),
-      lastDate: DateTime.now().add(const Duration(days: 90)),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: Theme.of(context).colorScheme.copyWith(
-            primary: Theme.of(context).colorScheme.primary,
+      initialDate: selectedDate.value ?? now.add(const Duration(days: 1)),
+      firstDate: now.add(const Duration(days: 1)),
+      lastDate: now.add(const Duration(days: 90)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            datePickerTheme: DatePickerThemeData(
+              // ✅ Dialog surface — matches scaffold in dark
+              backgroundColor: isDark ? cs.background : cs.surface,
+              // ✅ Header strip (the band with the selected date + edit icon)
+              headerBackgroundColor: isDark ? cs.background : cs.surface,
+              headerForegroundColor: isDark ? cs.onBackground : cs.onSurface,
+              // ✅ Day numbers
+              dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return cs.onPrimary;
+                }
+                if (states.contains(WidgetState.disabled)) {
+                  return (isDark ? cs.onBackground : cs.onSurface).withValues(
+                    alpha: 0.38,
+                  );
+                }
+                return isDark ? cs.onBackground : cs.onSurface;
+              }),
+              // ✅ Circle behind the selected day — null = transparent,
+              //    so unselected days show the dark dialog surface instead
+              //    of a white circle.
+              dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return cs.primary;
+                }
+                return null;
+              }),
+              // ✅ Today's ring
+              todayBorder: BorderSide(color: cs.primary, width: 1.5),
+              todayForegroundColor: WidgetStatePropertyAll(cs.primary),
+              // ✅ Weekday labels (Mon, Tue, Wed…)
+              weekdayStyle: TextStyle(
+                color: (isDark ? cs.onBackground : cs.onSurface).withValues(
+                  alpha: 0.7,
+                ),
+                fontWeight: FontWeight.w600,
+              ),
+              // ✅ Month / year header
+              yearForegroundColor: WidgetStatePropertyAll(
+                isDark ? cs.onBackground : cs.onSurface,
+              ),
+              // ✅ Cancel / OK
+              cancelButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              confirmButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
           ),
-        ),
-        child: child!,
-      ),
+          child: child!,
+        );
+      },
     );
+
     if (picked != null) {
       selectedDate.value = picked;
       selectedTime.value = null; // Reset time when date changes
@@ -205,18 +261,61 @@ class BookAppointmentController extends GetxController {
       return;
     }
 
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final picked = await showTimePicker(
       context: context,
-      initialTime: selectedTime.value ?? TimeOfDay(hour: 9, minute: 0),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: Theme.of(context).colorScheme.copyWith(
-            primary: Theme.of(context).colorScheme.primary,
+      initialTime: selectedTime.value ?? const TimeOfDay(hour: 9, minute: 0),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            // ✅ Same override pattern as the date picker so the time
+            //    dial and header match in dark mode.
+            timePickerTheme: TimePickerThemeData(
+              backgroundColor: isDark ? cs.background : cs.surface,
+              hourMinuteColor: isDark
+                  ? cs.primary.withValues(alpha: 0.18)
+                  : cs.primaryContainer,
+              hourMinuteTextColor: isDark
+                  ? cs.onBackground
+                  : cs.onPrimaryContainer,
+              dialBackgroundColor: isDark
+                  ? cs.primary.withValues(alpha: 0.12)
+                  : cs.surfaceVariant,
+              dialHandColor: cs.primary,
+              dialTextColor: WidgetStateColor.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return cs.onPrimary;
+                }
+                return isDark ? cs.onBackground : cs.onSurface;
+              }),
+              entryModeIconColor: isDark
+                  ? cs.onBackground
+                  : cs.onSurfaceVariant,
+              helpTextStyle: TextStyle(
+                color: (isDark ? cs.onBackground : cs.onSurface).withValues(
+                  alpha: 0.7,
+                ),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+              cancelButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              confirmButtonStyle: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
           ),
-        ),
-        child: child!,
-      ),
+          child: child!,
+        );
+      },
     );
+
     if (picked != null) {
       selectedTime.value = picked;
     }
@@ -284,7 +383,6 @@ class BookAppointmentController extends GetxController {
     }
   }
 
-  /// Confirmation dialog showing total payable amount and platform payment method.
   Future<void> showBookingConfirmationDialog() async {
     if (!canBook) return;
 
@@ -296,18 +394,34 @@ class BookAppointmentController extends GetxController {
         ? 'Video Consultation'
         : 'In-Person Visit';
 
-    final colorScheme = Get.theme.colorScheme;
+    final context = Get.context!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final pm = paymentMethod.value;
+
+    // ✅ Semantic green / orange that flip with brightness
+    final greenFg = isDark ? Colors.green.shade300 : Colors.green.shade800;
+    final orangeFg = isDark ? Colors.orange.shade300 : Colors.orange.shade800;
 
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
+        // ✅ Dialog background = colorScheme.background
+        backgroundColor: colorScheme.background,
+        // ✅ Kill M3's warm surface tint (the "cream" culprit)
+        surfaceTintColor: Colors.transparent,
+        // ✅ Theme-aware elevation shadow
+        elevation: isDark ? 0 : 6,
+        shadowColor: isDark ? Colors.transparent : colorScheme.shadow,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Column(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withOpacity(0.25),
+                // ✅ Stronger tint in dark so the badge is visible
+                color: colorScheme.primary.withValues(
+                  alpha: isDark ? 0.20 : 0.12,
+                ),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -317,7 +431,13 @@ class BookAppointmentController extends GetxController {
               ),
             ),
             const SizedBox(height: 12),
-            const Text('Confirm Booking'),
+            Text(
+              'Confirm Booking',
+              style: TextStyle(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ],
         ),
         content: SingleChildScrollView(
@@ -334,19 +454,51 @@ class BookAppointmentController extends GetxController {
                 ),
               ),
               const SizedBox(height: 16),
+
+              // ─────────────────────────────────────────────
+              // Fee summary panel
+              // ─────────────────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withOpacity(0.2),
+                  // ✅ Dark: primary-tinted gradient over background;
+                  //    Light: primaryContainer tint
+                  gradient: isDark
+                      ? LinearGradient(
+                          begin: AlignmentDirectional.topStart,
+                          end: AlignmentDirectional.bottomEnd,
+                          colors: [
+                            colorScheme.primary.withValues(alpha: 0.10),
+                            colorScheme.primaryContainer.withValues(
+                              alpha: 0.06,
+                            ),
+                          ],
+                        )
+                      : null,
+                  color: !isDark
+                      ? colorScheme.primaryContainer.withValues(alpha: 0.20)
+                      : null,
                   borderRadius: BorderRadius.circular(12),
+                  border: isDark
+                      ? Border.all(
+                          color: colorScheme.primary.withValues(alpha: 0.15),
+                          width: 1,
+                        )
+                      : null,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _dialogRow('Doctor Consultation Fee', consultationFeeDisplay),
+                    _dialogRow(
+                      'Doctor Consultation Fee',
+                      consultationFeeDisplay,
+                    ),
                     const SizedBox(height: 6),
-                    _dialogRow('Platform Commission', platformCommissionDisplay),
-                    const Divider(height: 18),
+                    _dialogRow(
+                      'Platform Commission',
+                      platformCommissionDisplay,
+                    ),
+                    Divider(height: 18, color: colorScheme.outlineVariant),
                     _dialogRow(
                       'Total Payable Amount',
                       totalPayableDisplay,
@@ -356,13 +508,22 @@ class BookAppointmentController extends GetxController {
                 ),
               ),
               const SizedBox(height: 14),
+
+              // ─────────────────────────────────────────────
+              // Payment method panel
+              // ─────────────────────────────────────────────
               if (pm != null && pm.hasAnyMethod) ...[
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.08),
+                    // ✅ Semantic green that flips with brightness
+                    color: Colors.green.withValues(alpha: isDark ? 0.14 : 0.08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    border: Border.all(
+                      color: Colors.green.withValues(
+                        alpha: isDark ? 0.40 : 0.30,
+                      ),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,7 +533,7 @@ class BookAppointmentController extends GetxController {
                           Icon(
                             Icons.account_balance_wallet_rounded,
                             size: 18,
-                            color: Colors.green.shade700,
+                            color: greenFg,
                           ),
                           const SizedBox(width: 8),
                           Text(
@@ -380,43 +541,57 @@ class BookAppointmentController extends GetxController {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
-                              color: Colors.green.shade700,
+                              color: greenFg,
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 10),
                       if (pm.hasJazzCash) ...[
-                        _paymentDetailRow('JazzCash', '${pm.jazzcashNumber} - ${pm.jazzcashAccountTitle}'),
+                        _paymentDetailRow(
+                          'JazzCash',
+                          '${pm.jazzcashNumber} - ${pm.jazzcashAccountTitle}',
+                        ),
                         const SizedBox(height: 6),
                       ],
                       if (pm.hasEasyPaisa) ...[
-                        _paymentDetailRow('EasyPaisa', '${pm.easypaisaNumber} - ${pm.easypaisaAccountTitle}'),
+                        _paymentDetailRow(
+                          'EasyPaisa',
+                          '${pm.easypaisaNumber} - ${pm.easypaisaAccountTitle}',
+                        ),
                         const SizedBox(height: 6),
                       ],
                       if (pm.hasBank) ...[
-                        _paymentDetailRow('Bank', '${pm.bankName} - ${pm.bankAccountNumber}'),
+                        _paymentDetailRow(
+                          'Bank',
+                          '${pm.bankName} - ${pm.bankAccountNumber}',
+                        ),
                       ],
                     ],
                   ),
                 ),
                 const SizedBox(height: 14),
               ],
+
+              // ─────────────────────────────────────────────
+              // Warning panel
+              // ─────────────────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.08),
+                  // ✅ Semantic orange that flips with brightness
+                  color: Colors.orange.withValues(alpha: isDark ? 0.14 : 0.08),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  border: Border.all(
+                    color: Colors.orange.withValues(
+                      alpha: isDark ? 0.40 : 0.30,
+                    ),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.info_outline_rounded,
-                      size: 18,
-                      color: Colors.orange.shade800,
-                    ),
+                    Icon(Icons.info_outline_rounded, size: 18, color: orangeFg),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -439,6 +614,9 @@ class BookAppointmentController extends GetxController {
         actions: [
           TextButton(
             onPressed: () => Get.back<bool>(result: false),
+            style: TextButton.styleFrom(
+              foregroundColor: colorScheme.onSurfaceVariant,
+            ),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
@@ -466,15 +644,21 @@ class BookAppointmentController extends GetxController {
     final colorScheme = Get.theme.colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: isTotal ? 15 : 13,
-            fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-            color: isTotal ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: isTotal ? 15 : 13,
+              fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
+              color: isTotal
+                  ? colorScheme.onSurface
+                  : colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
+        const SizedBox(width: 8),
         Text(
           value,
           style: TextStyle(
@@ -491,8 +675,8 @@ class BookAppointmentController extends GetxController {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 80,
+        Expanded(
+          flex: 2,
           child: Text(
             label,
             style: TextStyle(
@@ -502,7 +686,9 @@ class BookAppointmentController extends GetxController {
             ),
           ),
         ),
+        const SizedBox(width: 8),
         Expanded(
+          flex: 5,
           child: Text(
             value,
             style: TextStyle(

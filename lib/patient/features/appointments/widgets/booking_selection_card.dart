@@ -15,6 +15,7 @@ class BookingSelectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return InkWell(
       onTap: onTap,
@@ -23,12 +24,29 @@ class BookingSelectionCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLowest,
+          // ✅ Dark: gradient surface; Light: solid surfaceContainerLowest (unchanged)
+          gradient: isDark
+              ? LinearGradient(
+                  begin: AlignmentDirectional.topStart,
+                  end: AlignmentDirectional.bottomEnd,
+                  colors: [
+                    colorScheme.primary.withOpacity(0.10),
+                    colorScheme.primaryContainer.withOpacity(0.06),
+                  ],
+                )
+              : null,
+          color: !isDark ? colorScheme.surfaceContainerLowest : null,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: colorScheme.outline.withOpacity(0.12)),
+          border: Border.all(
+            color: isDark
+                ? colorScheme.primary.withOpacity(0.15)
+                : colorScheme.outline.withOpacity(0.12),
+          ),
           boxShadow: [
             BoxShadow(
-              color: colorScheme.shadow.withOpacity(0.03),
+              color: isDark
+                  ? colorScheme.shadow.withOpacity(0.05)
+                  : colorScheme.shadow.withOpacity(0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),

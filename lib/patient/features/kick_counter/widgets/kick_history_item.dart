@@ -10,16 +10,34 @@ class KickHistoryItem extends StatelessWidget {
 
   const KickHistoryItem({super.key, required this.session});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.orange)
+      return isDark ? Colors.orange.shade300 : Colors.orange.shade800;
+    if (base == Colors.green)
+      return isDark ? Colors.green.shade300 : Colors.green.shade800;
+    return base;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+    final orangeFg = _semanticFg(context, Colors.orange);
+    final greenFg = _semanticFg(context, Colors.green);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: colorScheme.outlineVariant.withOpacity(0.2),
+            // ✅ Stronger divider in dark
+            color: isDark
+                ? cs.primary.withOpacity(0.12)
+                : cs.outlineVariant.withOpacity(0.2),
             width: 1,
           ),
         ),
@@ -38,17 +56,14 @@ class KickHistoryItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: colorScheme.onSurface,
+                    color: cs.onSurface,
                   ),
                 ),
                 Text(
                   _formatDateDetailed(session.logDate),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
                 ),
               ],
             ),
@@ -65,7 +80,8 @@ class KickHistoryItem extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.12),
+                      // ✅ Semantic orange tint
+                      color: Colors.orange.withOpacity(isDark ? 0.20 : 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -75,7 +91,7 @@ class KickHistoryItem extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: Colors.orange.shade700,
+                        color: orangeFg,
                       ),
                     ),
                   ),
@@ -87,7 +103,7 @@ class KickHistoryItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
+                    color: cs.onSurface,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -96,7 +112,8 @@ class KickHistoryItem extends StatelessWidget {
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: session.isActive ? Colors.orange : Colors.green,
+                    // ✅ Semantic dots
+                    color: session.isActive ? orangeFg : greenFg,
                   ),
                 ),
               ],

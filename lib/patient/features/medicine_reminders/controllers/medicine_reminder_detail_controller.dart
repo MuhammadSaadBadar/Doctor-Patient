@@ -41,8 +41,50 @@ class MedicineReminderDetailController extends GetxController {
     try {
       final result = await _repository.getReminderById(id);
       if (result != null) {
-        reminder.value = result;
-        _syncAdherenceFromList(id);
+        // Fetch today's intake logs to reconstruct the correct adherence state
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+        final tomorrow = today.add(const Duration(days: 1));
+        
+        final logsResult = await _repository.getIntakeLogs(
+          page: 1,
+          pageSize: 1000, 
+          reminderId: id,
+          startDate: today,
+          endDate: tomorrow,
+        );
+
+        int taken = 0;
+        int skipped = 0;
+        
+        if (logsResult != null) {
+          final reminderLogs = logsResult.results.where((log) => 
+              log.reminderId == id &&
+              log.scheduledFor.isAfter(today.subtract(const Duration(seconds: 1))) &&
+              log.scheduledFor.isBefore(tomorrow)
+          );
+          taken = reminderLogs.where((log) => log.isTaken).length;
+          skipped = reminderLogs.where((log) => log.isSkipped).length;
+        }
+        
+        final pending = result.timesPerDay - (taken + skipped);
+        final adherence = MedicineAdherence(
+          taken: taken,
+          skipped: skipped,
+          pending: pending > 0 ? pending : 0,
+        );
+          
+        reminder.value = result.copyWith(adherence: adherence);
+        
+        // Sync the newly fetched adherence back to the list controller
+        if (Get.isRegistered<MedicineReminderController>()) {
+          final listController = Get.find<MedicineReminderController>();
+          final index = listController.reminders.indexWhere((r) => r.id == id);
+          if (index != -1) {
+             listController.reminders[index] = listController.reminders[index].copyWith(adherence: adherence);
+             listController.reminders.refresh();
+          }
+        }
       } else {
         hasError.value = true;
         errorMessage.value = 'Failed to load reminder details.';

@@ -10,25 +10,36 @@ class KickStatusBadge extends StatelessWidget {
 
   const KickStatusBadge({super.key, required this.isActive, this.kickCount});
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _semanticFg(BuildContext context, Color base) {
+    final isDark = _isDark(context);
+    if (base == Colors.green)
+      return isDark ? Colors.green.shade300 : Colors.green.shade800;
+    if (base == Colors.orange)
+      return isDark ? Colors.orange.shade300 : Colors.orange.shade800;
+    return base;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = _isDark(context);
+    final greenFg = _semanticFg(context, Colors.green);
+    final orangeFg = _semanticFg(context, Colors.orange);
 
     if (!isActive) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.12),
+          // ✅ Semantic green tint that flips with brightness
+          color: Colors.green.withOpacity(isDark ? 0.20 : 0.12),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.check_circle_rounded,
-              size: 14,
-              color: Colors.green.shade700,
-            ),
+            Icon(Icons.check_circle_rounded, size: 14, color: greenFg),
             const SizedBox(width: 4),
             Flexible(
               child: Text(
@@ -38,7 +49,7 @@ class KickStatusBadge extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Colors.green.shade700,
+                  color: greenFg,
                 ),
               ),
             ),
@@ -50,7 +61,7 @@ class KickStatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.12),
+        color: Colors.orange.withOpacity(isDark ? 0.20 : 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -59,10 +70,7 @@ class KickStatusBadge extends StatelessWidget {
           Container(
             width: 8,
             height: 8,
-            decoration: const BoxDecoration(
-              color: Colors.orange,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: orangeFg, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
           Flexible(
@@ -73,7 +81,7 @@ class KickStatusBadge extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Colors.orange.shade700,
+                color: orangeFg,
               ),
             ),
           ),

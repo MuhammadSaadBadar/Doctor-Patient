@@ -15,6 +15,7 @@ class ProcedureNotesField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final textScale = MediaQuery.textScalerOf(context);
 
     return Column(
@@ -35,7 +36,7 @@ class ProcedureNotesField extends StatelessWidget {
               'Optional',
               style: TextStyle(
                 fontSize: textScale.scale(10).clamp(8.0, 14.0),
-                color: colorScheme.outline
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -43,10 +44,15 @@ class ProcedureNotesField extends StatelessWidget {
         const SizedBox(height: 6),
         Container(
           decoration: BoxDecoration(
-            color: colorScheme.surface,
+            // ✅ Dark: lifted inner field; Light: solid surface
+            color: isDark
+                ? colorScheme.surfaceContainerHigh
+                : colorScheme.surfaceContainerLowest,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+              color: isDark
+                  ? colorScheme.primary.withValues(alpha: 0.20)
+                  : colorScheme.outlineVariant.withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -70,7 +76,9 @@ class ProcedureNotesField extends StatelessWidget {
                   decoration: InputDecoration(
                     hintText: 'Add any notes about the procedure...',
                     hintStyle: TextStyle(
-                      color: colorScheme.outline,
+                      color: colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.7,
+                      ),
                       fontSize: textScale.scale(12).clamp(10.0, 16.0),
                     ),
                     border: InputBorder.none,
@@ -81,12 +89,14 @@ class ProcedureNotesField extends StatelessWidget {
                     counterText: '${controller.text.length}/$maxLength',
                     counterStyle: TextStyle(
                       fontSize: textScale.scale(10).clamp(8.0, 14.0),
-                      color: colorScheme.outline,
+                      color: colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.7,
+                      ),
                     ),
                   ),
                   style: TextStyle(
                     fontSize: textScale.scale(12).clamp(10.0, 16.0),
-                    color: colorScheme.onSurface
+                    color: colorScheme.onSurface,
                   ),
                   onChanged: (_) {},
                 ),

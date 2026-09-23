@@ -242,7 +242,10 @@ class OtpVerificationScreen extends GetView<AuthController> {
 
   Widget _buildBackToLoginButton() {
     return TextButton.icon(
-      onPressed: () => Get.offAllNamed(AppRoutes.login),
+      onPressed: () {
+        controller.clearOtpFields();
+        Get.offAllNamed(AppRoutes.login);
+      },
       icon: MaterialSymbolIcon(
         'arrow_back_rounded',
         size: 18,

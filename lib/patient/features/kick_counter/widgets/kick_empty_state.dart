@@ -11,7 +11,8 @@ class KickEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Center(
       child: Padding(
@@ -23,13 +24,14 @@ class KickEmptyState extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.08),
+                // ✅ Stronger tint in dark
+                color: cs.primary.withOpacity(isDark ? 0.18 : 0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.child_care_rounded,
                 size: 40,
-                color: colorScheme.primary.withOpacity(0.4),
+                color: cs.primary.withOpacity(isDark ? 0.7 : 0.4),
               ),
             ),
             const SizedBox(height: 16),
@@ -38,24 +40,21 @@ class KickEmptyState extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               TranslationKeys.kickCounterStartTracking.tr,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: onActionTap ?? () => Get.back(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 12,

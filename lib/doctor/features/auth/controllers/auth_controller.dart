@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import 'package:doctor/core/constants/api_constants.dart';
 import 'package:doctor/core/constants/color_constants.dart';
 import 'package:doctor/core/constants/user_role.dart';
+import 'package:doctor/core/network/api_client.dart';
 import 'package:doctor/core/network/api_exceptions.dart';
 import 'package:doctor/core/routes/app_routes.dart';
+import 'package:doctor/core/services/storage_service.dart';
 import 'package:doctor/doctor/features/auth/repositories/auth_repository.dart';
 import 'package:doctor/doctor/features/profile/models/doc_edit_profile_model.dart';
 import 'package:doctor/doctor/features/profile/repositories/doc_edit_profile_repository.dart';
@@ -150,7 +153,6 @@ class AuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _startTimer();
   }
 
   @override
@@ -260,6 +262,7 @@ class AuthController extends GetxController {
     try {
       final error = await _repository.resetPassword(email);
       if (error == null) {
+        startOtpTimer();
         Get.toNamed(
           AppRoutes.otpVerification,
           arguments: {'email': email, 'purpose': 'reset'},
@@ -307,6 +310,7 @@ class AuthController extends GetxController {
         final error = await _repository.verifyEmail(email, otp);
         if (error == null) {
           _timer?.cancel();
+          clearOtpFields();
           Get.offAllNamed(AppRoutes.login);
           Get.snackbar(
             'Email verified',
@@ -331,6 +335,7 @@ class AuthController extends GetxController {
       if (error == null) {
         resetToken.value = _repository.getResetToken ?? '';
         _timer?.cancel();
+        clearOtpFields();
         Get.toNamed(AppRoutes.resetPassword);
       } else {
         Get.snackbar(
@@ -364,7 +369,7 @@ class AuthController extends GetxController {
           ? await _repository.resendVerification(email)
           : await _repository.resendResetOtp(email);
       if (error == null) {
-        _startTimer();
+        startOtpTimer();
         Get.snackbar(
           'OTP Sent',
           'A new verification code has been sent to your email',
@@ -393,6 +398,12 @@ class AuthController extends GetxController {
   }
 
   // ============ Reset Password Methods ============
+  void clearOtpFields() {
+    for (var controller in otpControllers) {
+      controller.clear();
+    }
+  }
+
   void toggleResetNewPasswordVisibility() {
     obscureResetNewPassword.value = !obscureResetNewPassword.value;
   }
@@ -482,7 +493,7 @@ class AuthController extends GetxController {
   }
 
   // ============ Timer Methods ============
-  void _startTimer() {
+  void startOtpTimer() {
     _timer?.cancel();
     timerSeconds.value = 120;
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -500,16 +511,51 @@ class AuthController extends GetxController {
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
-  /// Initialize global currentUser from profile endpoint after login
-  Future<void> initializeCurrentUser() async {
+  /// Populates [currentUser] from the appropriate backend endpoint.
+  ///
+  /// Must be called with an authoritative [role] so that patient data is never
+  /// loaded through the Doctor-specific repository (which would cause cross-role
+  /// state contamination — i.e. Patient name appearing in Doctor profile screens).
+  ///
+  /// When [role] is omitted, the stored role is used as a fallback.
+  Future<void> initializeCurrentUser({String? role}) async {
+    final effectiveRole = role ?? StorageService.instance.userRole ?? '';
     try {
-      final profileRepo = DoctorEditProfileRepository();
-      final profile = await profileRepo.getProfile();
-      if (profile != null) {
-        currentUser.value = UserModel.fromDoctorProfileResponse(profile);
-        debugPrint(
-          '[AUTH] Current user initialized: ${currentUser.value?.fullName}',
-        );
+      if (effectiveRole == 'doctor') {
+        // Doctor: use the Doctor profile repository which also fetches doctor_profile.
+        final profileRepo = DoctorEditProfileRepository();
+        final profile = await profileRepo.getProfile();
+        if (profile != null) {
+          currentUser.value = UserModel.fromDoctorProfileResponse(profile);
+          debugPrint(
+            '[AUTH] Doctor user initialized: ${currentUser.value?.fullName}',
+          );
+        }
+      } else {
+        // Patient (or any non-doctor role): call /api/v1/auth/me/ directly and
+        // build a minimal UserModel without the Doctor-specific profile data.
+        final apiClient = Get.find<ApiClient>();
+        final response = await apiClient.get(ApiConstants.authMe);
+        if (response.statusCode == 200) {
+          final data = response.data as Map<String, dynamic>;
+          currentUser.value = UserModel(
+            id: (data['id'] ?? '').toString(),
+            email: (data['email'] as String?) ?? '',
+            firstName: (data['first_name'] as String?) ?? '',
+            lastName: (data['last_name'] as String?) ?? '',
+            phoneNumber: (data['phone_number'] as String?) ?? '',
+            isEmailVerified: (data['is_email_verified'] as bool?) ?? false,
+            role: (data['role'] as String?) ?? effectiveRole,
+            dateJoined: DateTime.tryParse(
+                  (data['date_joined'] as String?) ?? '',
+                ) ??
+                DateTime.now(),
+            profilePictureUrl: null,
+          );
+          debugPrint(
+            '[AUTH] Patient user initialized: ${currentUser.value?.fullName}',
+          );
+        }
       }
     } catch (e) {
       debugPrint('[AUTH] Failed to initialize current user: $e');

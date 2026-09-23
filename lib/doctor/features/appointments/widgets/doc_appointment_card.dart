@@ -121,23 +121,6 @@ class AppointmentCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // More button
-                    // Material(
-                    //   color: Colors.transparent,
-                    //   shape: const CircleBorder(),
-                    //   child: InkWell(
-                    //     customBorder: const CircleBorder(),
-                    //     onTap: () => _showMenu(context),
-                    //     child: const Padding(
-                    //       padding: EdgeInsets.all(4),
-                    //       child: Icon(
-                    //         Icons.more_vert_rounded,
-                    //         size: 20,
-                    //         color: AppColors.onSurfaceVariant,
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
                   ],
                 ),
 
@@ -168,16 +151,16 @@ class AppointmentCard extends StatelessWidget {
                           ? Icons.person_rounded
                           : Icons.videocam_rounded,
                     ),
-                    if (appointment.payment != null)
-                      _buildStatusChip(
-                        label: appointment.payment!.statusDisplay,
-                        color: appointment.payment!.statusColor,
-                        icon:
-                            appointment.payment!.status ==
-                                AppointmentPaymentStatus.confirmed
-                            ? Icons.payments_rounded
-                            : Icons.pending_rounded,
-                      ),
+                    // if (appointment.payment != null)
+                    //   _buildStatusChip(
+                    //     label: appointment.payment!.statusDisplay,
+                    //     color: appointment.payment!.statusColor,
+                    //     icon:
+                    //         appointment.payment!.status ==
+                    //             AppointmentPaymentStatus.confirmed
+                    //         ? Icons.payments_rounded
+                    //         : Icons.pending_rounded,
+                    //   ),
                   ],
                 ),
 
@@ -209,49 +192,48 @@ class AppointmentCard extends StatelessWidget {
                 ],
 
                 // === PAYMENT STATUS (if present) ===
-                if (appointment.payment != null) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 5,
-                      horizontal: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: appointment.payment!.statusColor.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: appointment.payment!.statusColor.withOpacity(
-                          0.15,
-                        ),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          appointment.payment!.status ==
-                                  AppointmentPaymentStatus.confirmed
-                              ? Icons.check_circle_rounded
-                              : Icons.pending_rounded,
-                          size: 14,
-                          color: appointment.payment!.statusColor,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Payment: ${appointment.payment!.statusDisplay}',
-                          style: AppTheme.bodySmall.copyWith(
-                            color: appointment.payment!.statusColor,
-                            fontWeight: FontWeight.w600,
-                            fontSize: isMobile ? 11 : 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-
+                // if (appointment.payment != null) ...[
+                //   const SizedBox(height: 8),
+                //   Container(
+                //     width: double.infinity,
+                //     padding: const EdgeInsets.symmetric(
+                //       vertical: 5,
+                //       horizontal: 10,
+                //     ),
+                //     decoration: BoxDecoration(
+                //       color: appointment.payment!.statusColor.withOpacity(0.08),
+                //       borderRadius: BorderRadius.circular(8),
+                //       border: Border.all(
+                //         color: appointment.payment!.statusColor.withOpacity(
+                //           0.15,
+                //         ),
+                //         width: 1,
+                //       ),
+                //     ),
+                //     child: Row(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: [
+                //         Icon(
+                //           appointment.payment!.status ==
+                //                   AppointmentPaymentStatus.confirmed
+                //               ? Icons.check_circle_rounded
+                //               : Icons.pending_rounded,
+                //           size: 14,
+                //           color: appointment.payment!.statusColor,
+                //         ),
+                //         const SizedBox(width: 6),
+                //         Text(
+                //           'Payment: ${appointment.payment!.statusDisplay}',
+                //           style: AppTheme.bodySmall.copyWith(
+                //             color: appointment.payment!.statusColor,
+                //             fontWeight: FontWeight.w600,
+                //             fontSize: isMobile ? 11 : 12,
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ],
                 const SizedBox(height: 10),
 
                 // === VIEW DETAILS BUTTON ===

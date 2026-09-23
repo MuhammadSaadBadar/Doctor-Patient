@@ -17,7 +17,7 @@ class AppointmentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-return InkWell(
+    return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Container(

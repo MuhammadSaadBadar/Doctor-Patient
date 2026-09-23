@@ -2,6 +2,8 @@
 
 import 'package:doctor/core/routes/app_routes.dart';
 import 'package:doctor/patient/features/doctors/models/doctor.dart';
+import 'package:doctor/core/network/api_client.dart';
+import 'package:doctor/core/constants/api_constants.dart';
 import 'package:doctor/patient/features/doctors/models/paginated_doctor_list.dart';
 import 'package:doctor/patient/features/doctors/repositories/doctor_repository.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +22,9 @@ class DoctorController extends GetxController {
   final searchQuery = ''.obs;
   final specializations = <String>['All Experts'].obs;
 
+  // Payments
+  final commissionPercentage = 0.0.obs;
+
   // Pagination
   final currentPage = 1.obs;
   final hasMoreData = true.obs;
@@ -37,6 +42,23 @@ class DoctorController extends GetxController {
   void onInit() {
     super.onInit();
     loadDoctors();
+    loadPaymentMethods();
+  }
+
+  Future<void> loadPaymentMethods() async {
+    try {
+      final apiClient = Get.find<ApiClient>();
+      final response = await apiClient.get(ApiConstants.accountsPaymentMethods);
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+        final commissionStr = data['commission_percentage'] as String?;
+        if (commissionStr != null && commissionStr.isNotEmpty) {
+          commissionPercentage.value = double.tryParse(commissionStr) ?? 0.0;
+        }
+      }
+    } catch (e) {
+      debugPrint('[DOCTOR] Error loading payment methods: $e');
+    }
   }
 
   Future<void> loadDoctors({bool refresh = false}) async {
@@ -130,12 +152,15 @@ class DoctorController extends GetxController {
     final displaySpecs = <String, String>{};
 
     for (final doctor in doctors) {
-      final spec = doctor.doctorProfile?.specialization;
-      if (spec != null && spec.isNotEmpty) {
-        final normalized = spec.trim().toLowerCase();
-        if (!uniqueSpecs.contains(normalized)) {
-          uniqueSpecs.add(normalized);
-          displaySpecs[normalized] = spec.trim();
+      final specString = doctor.doctorProfile?.specialization;
+      if (specString != null && specString.isNotEmpty) {
+        final specs = specString.split(',');
+        for (final s in specs) {
+          final normalized = s.trim().toLowerCase();
+          if (normalized.isNotEmpty && !uniqueSpecs.contains(normalized)) {
+            uniqueSpecs.add(normalized);
+            displaySpecs[normalized] = s.trim();
+          }
         }
       }
     }

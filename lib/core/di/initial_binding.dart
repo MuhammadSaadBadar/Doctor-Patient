@@ -2,9 +2,8 @@ import 'package:get/get.dart';
 import 'package:doctor/core/network/api_client.dart';
 import 'package:doctor/core/services/storage_service.dart';
 import 'package:doctor/core/network/api_interceptors.dart';
-import 'package:doctor/doctor/features/profile/repositories/doc_profile_repository.dart';
-import 'package:doctor/core/controllers/navigation_controller.dart';
 
+import 'package:doctor/core/controllers/navigation_controller.dart';
 import 'package:doctor/doctor/features/auth/controllers/auth_controller.dart';
 
 class InitialBinding extends Bindings {
@@ -30,12 +29,8 @@ class InitialBinding extends Bindings {
 
     Get.put<ApiClient>(apiClient, permanent: true);
 
-    // Profile Repository
-    Get.put<DoctorProfileRepository>(
-      DoctorProfileRepository(),
-      permanent: true,
-    );
-
+    // DoctorProfileRepository is removed from global bindings to prevent cross-role data contamination.
+    // It should be injected in Doctor-specific bindings (e.g., DoctorProfileBinding).
     // Auth Controller
     Get.put<AuthController>(AuthController(), permanent: true);
 
