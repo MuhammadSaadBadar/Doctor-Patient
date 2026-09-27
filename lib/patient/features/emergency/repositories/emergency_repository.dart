@@ -95,14 +95,14 @@ class EmergencyRepository {
   // Multiple Overpass mirrors — tried in order on failure
   static const List<String> _overpassMirrors = [
     'https://overpass-api.de/api/interpreter',
-    'https://overpass.kumi.systems/api/interpreter',
-    'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+    'https://lz4.overpass-api.de/api/interpreter',
+    'https://z.overpass-api.de/api/interpreter',
   ];
 
   Future<({List<NearbyHospital> hospitals, bool hasNext})> getNearbyHospitals({
     required double latitude,
     required double longitude,
-    int radius = 5000,
+    int radius = 15000,
     int page = 1,
   }) async {
     final query = '''
@@ -123,6 +123,7 @@ out center tags;
           mirror,
           data: {'data': query},
           options: Options(
+            headers: {'User-Agent': 'EmergencyApp/1.0 (support@example.com)'},
             contentType: Headers.formUrlEncodedContentType,
             responseType: ResponseType.plain,
             sendTimeout: const Duration(seconds: 30),
@@ -183,9 +184,9 @@ out center tags;
       }
     }
 
-    // All mirrors failed — return empty list gracefully
-    debugPrint('[EMERGENCY] All Overpass mirrors failed, returning empty list.');
-    return (hospitals: <NearbyHospital>[], hasNext: false);
+    // All mirrors failed — throw exception to trigger proper error handling
+    debugPrint('[EMERGENCY] All Overpass mirrors failed.');
+    throw Exception('All hospital API mirrors are currently unreachable.');
   }
 }
 

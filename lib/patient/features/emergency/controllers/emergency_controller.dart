@@ -83,13 +83,6 @@ class EmergencyController extends GetxController {
 
       final all = result.hospitals;
 
-      if (all.isEmpty) {
-        // Mirrors were all unreachable — show friendly message, not error
-        hasHospitalError.value = true;
-        hospitalError.value = 'Hospital data is temporarily unavailable. Please try again later.';
-        return;
-      }
-
       // Compute distance for each hospital
       for (final h in all) {
         if (h.latitude != null && h.longitude != null) {
