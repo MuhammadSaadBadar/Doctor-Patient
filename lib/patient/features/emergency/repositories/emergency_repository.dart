@@ -92,8 +92,12 @@ class EmergencyRepository {
     }
   }
 
-  // Multiple Overpass mirrors — tried in order on failure
+  // Multiple Overpass mirrors — tried in order on failure.
+  // NOTE: On Flutter Web, only GET requests with no custom headers are CORS
+  // "simple requests" (no preflight). We therefore use GET + query param.
+  // overpass.private.coffee is listed first because it explicitly allows CORS.
   static const List<String> _overpassMirrors = [
+    'https://overpass.private.coffee/api/interpreter',
     'https://overpass-api.de/api/interpreter',
     'https://lz4.overpass-api.de/api/interpreter',
     'https://z.overpass-api.de/api/interpreter',
@@ -119,14 +123,16 @@ out center tags;
     for (final mirror in _overpassMirrors) {
       try {
         debugPrint('[EMERGENCY] Trying Overpass mirror: $mirror');
-        final response = await Dio().post(
+        // Use GET + query parameter so the browser sends a CORS "simple
+        // request" (no preflight).  Custom headers such as User-Agent and
+        // the sendTimeout option both force an OPTIONS preflight that most
+        // Overpass servers reject, causing the 504 errors seen on web.
+        final response = await Dio().get(
           mirror,
-          data: {'data': query},
+          queryParameters: {'data': query},
           options: Options(
-            headers: {'User-Agent': 'EmergencyApp/1.0 (support@example.com)'},
-            contentType: Headers.formUrlEncodedContentType,
+            // No custom headers — keep the request CORS-simple.
             responseType: ResponseType.plain,
-            sendTimeout: const Duration(seconds: 30),
             receiveTimeout: const Duration(seconds: 30),
           ),
         );

@@ -20,7 +20,8 @@ class KickCounterScreen extends GetView<KickCounterController> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      // ✅ surface, not deprecated background
+      // ✅ surface,
+      // not deprecated background
       backgroundColor: colorScheme.background,
       appBar: PatientTopAppBar(
         title: TranslationKeys.kickCounterTitle.tr,

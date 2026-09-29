@@ -16,7 +16,8 @@ class TokenRefreshResult {
 
 class AuthInterceptor extends Interceptor {
   /// Marker placed in [RequestOptions.extra] to prevent a replayed request
-  /// from being refreshed (and retried) more than once.
+  /// from being refreshed (and retried) m
+  /// ore than once.
   static const String retriedFlag = 'auth_retried';
 
   Dio? _dio; // Changed from final to nullable
@@ -112,11 +113,15 @@ class AuthInterceptor extends Interceptor {
     // Do not attach the access token to the refresh endpoint.
     // If the access token is expired, the server will reject the request with 401
     // before it even processes the refresh token in the body.
-    if (token != null && token.isNotEmpty && !options.path.contains('/auth/token/refresh/')) {
+    if (token != null &&
+        token.isNotEmpty &&
+        !options.path.contains('/auth/token/refresh/')) {
       options.headers['Authorization'] = 'Bearer $token';
       debugPrint('[HTTP] AUTH header attached.');
     } else {
-      debugPrint('[HTTP] AUTH header skipped — no token available or refresh endpoint.');
+      debugPrint(
+        '[HTTP] AUTH header skipped — no token available or refresh endpoint.',
+      );
     }
     handler.next(options);
   }
