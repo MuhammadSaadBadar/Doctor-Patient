@@ -484,7 +484,7 @@ class EmergencyScreen extends GetView<EmergencyController> {
     return Obx(() {
       if (controller.isLoadingHospitals.value && controller.hospitals.isEmpty)
         return _loading(context);
-      if (controller.hasHospitalError.value)
+      if (controller.hasHospitalError.value && controller.hospitals.isEmpty)
         return _error(
           context,
           controller.hospitalError.value,

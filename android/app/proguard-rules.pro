@@ -40,3 +40,4 @@
 
 # Suppress warnings for missing classes
 -dontwarn javax.annotation.**
+-dontwarn com.google.android.play.core.**

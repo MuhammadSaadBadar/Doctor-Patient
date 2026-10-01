@@ -58,11 +58,15 @@ class EmergencyController extends GetxController {
     }
   }
 
-  Future<void> loadHospitals({bool refresh = true}) async {
+  Future<void> loadHospitals({bool refresh = false}) async {
     if (isLoadingHospitals.value) return;
     isLoadingHospitals.value = true;
     hasHospitalError.value = false;
-    if (refresh) hospitals.clear();
+
+    if (refresh) {
+      hospitals.clear();
+      hospitalError.value = '';
+    }
 
     try {
       final position = await _locationService.getCurrentPosition();
@@ -101,11 +105,15 @@ class EmergencyController extends GetxController {
         return da.compareTo(db);
       });
 
-      hospitals.assignAll(all);
+      if (all.isNotEmpty || refresh) {
+        hospitals.assignAll(all);
+      }
       hasMoreHospitals.value = false;
     } catch (e) {
       hasHospitalError.value = true;
-      hospitalError.value = e.toString().replaceFirst('Exception: ', '');
+      hospitalError.value = e.toString().contains('Location permission')
+          ? 'Location permission or GPS is unavailable.'
+          : 'Nearby hospitals are temporarily unavailable.';
       debugPrint('[EMERGENCY] Hospital error: $e');
     } finally {
       isLoadingHospitals.value = false;

@@ -11,6 +11,10 @@ import 'package:get/get.dart';
 
 class EmergencyRepository {
   final ApiClient _apiClient = Get.find<ApiClient>();
+  final Dio _overpassClient;
+
+  EmergencyRepository({Dio? overpassClient})
+    : _overpassClient = overpassClient ?? Dio();
 
   Future<({List<PatientSosEvent> events, bool hasNext})> getSosEvents({
     int page = 1,
@@ -92,10 +96,6 @@ class EmergencyRepository {
     }
   }
 
-  // Multiple Overpass mirrors — tried in order on failure.
-  // NOTE: On Flutter Web, only GET requests with no custom headers are CORS
-  // "simple requests" (no preflight). We therefore use GET + query param.
-  // overpass.private.coffee is listed first because it explicitly allows CORS.
   static const List<String> _overpassMirrors = [
     'https://overpass.private.coffee/api/interpreter',
     'https://overpass-api.de/api/interpreter',
@@ -103,96 +103,154 @@ class EmergencyRepository {
     'https://z.overpass-api.de/api/interpreter',
   ];
 
+  static const int _maxOverpassAttempts = 5;
+  static const Duration _overpassConnectTimeout = Duration(seconds: 8);
+  static const Duration _overpassSendTimeout = Duration(seconds: 10);
+  static const Duration _overpassReceiveTimeout = Duration(seconds: 35);
+
   Future<({List<NearbyHospital> hospitals, bool hasNext})> getNearbyHospitals({
     required double latitude,
     required double longitude,
-    int radius = 15000,
+    int radius = 5000,
     int page = 1,
   }) async {
-    final query = '''
-[out:json][timeout:25];
+    if (!latitude.isFinite ||
+        !longitude.isFinite ||
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180) {
+      throw const FormatException('Invalid location coordinates.');
+    }
+
+    final query =
+        '''
+[out:json][timeout:15];
 (
-  node["amenity"="hospital"](around:$radius,$latitude,$longitude);
-  way["amenity"="hospital"](around:$radius,$latitude,$longitude);
-  node["amenity"="clinic"](around:$radius,$latitude,$longitude);
-  way["amenity"="clinic"](around:$radius,$latitude,$longitude);
+  nwr["amenity"="hospital"](around:$radius,$latitude,$longitude);
+  nwr["amenity"="clinic"](around:$radius,$latitude,$longitude);
 );
-out center tags;
+out center tags qt;
 ''';
 
-    for (final mirror in _overpassMirrors) {
+    DioException? lastTransientError;
+    for (var attempt = 0; attempt < _maxOverpassAttempts; attempt++) {
+      if (attempt > 0) {
+        await Future<void>.delayed(_retryDelay(attempt));
+      }
+
+      final mirror = _overpassMirrors[attempt % _overpassMirrors.length];
       try {
-        debugPrint('[EMERGENCY] Trying Overpass mirror: $mirror');
-        // Use GET + query parameter so the browser sends a CORS "simple
-        // request" (no preflight).  Custom headers such as User-Agent and
-        // the sendTimeout option both force an OPTIONS preflight that most
-        // Overpass servers reject, causing the 504 errors seen on web.
-        final response = await Dio().get(
+        debugPrint(
+          '[EMERGENCY] Overpass attempt ${attempt + 1}/$_maxOverpassAttempts',
+        );
+        final response = await _overpassClient.get(
           mirror,
           queryParameters: {'data': query},
           options: Options(
-            // No custom headers — keep the request CORS-simple.
             responseType: ResponseType.plain,
-            receiveTimeout: const Duration(seconds: 30),
+            headers: {'User-Agent': 'DoctorApp/1.0 (contact@doctorapp.com)'},
+            connectTimeout: _overpassConnectTimeout,
+            sendTimeout: _overpassSendTimeout,
+            receiveTimeout: _overpassReceiveTimeout,
+            validateStatus: (status) => status != null,
           ),
         );
 
-        if (response.statusCode != 200) {
-          debugPrint('[EMERGENCY] Mirror $mirror returned ${response.statusCode}, trying next...');
-          continue;
+        final statusCode = response.statusCode ?? 0;
+        if (statusCode != 200) {
+          if (_isTransientStatus(statusCode)) {
+            debugPrint('[EMERGENCY] Overpass returned $statusCode');
+            continue;
+          }
+          throw FormatException(
+            'Overpass request rejected with status $statusCode.',
+          );
         }
 
-        final raw = response.data;
-        final Map<String, dynamic> data = raw is String
-            ? json.decode(raw) as Map<String, dynamic>
-            : raw as Map<String, dynamic>;
+        final hospitals = _parseOverpassHospitals(response.data);
 
-        final elements = (data['elements'] as List<dynamic>? ?? []);
-
-        final hospitals = elements.map<NearbyHospital>((el) {
-          final tags = (el['tags'] as Map<String, dynamic>? ?? {});
-          final lat = (el['lat'] ?? el['center']?['lat']) as num?;
-          final lon = (el['lon'] ?? el['center']?['lon']) as num?;
-
-          final name = (tags['name'] as String?)?.trim();
-          final street = (tags['addr:street'] as String?)?.trim();
-          final houseNo = (tags['addr:housenumber'] as String?)?.trim();
-          final city = (tags['addr:city'] as String?)?.trim();
-
-          final addressParts = <String>[
-            if (houseNo != null && street != null) '$houseNo $street',
-            if (street != null && houseNo == null) street,
-            if (city != null) city,
-          ];
-
-          return NearbyHospital(
-            placeId: 'osm_${el['type']}_${el['id']}',
-            name: name?.isNotEmpty == true ? name! : 'Hospital',
-            address: addressParts.isNotEmpty
-                ? addressParts.join(', ')
-                : 'Address unavailable',
-            latitude: lat?.toDouble(),
-            longitude: lon?.toDouble(),
-            rating: null,
-            isOpenNow: null,
-          );
-        }).toList();
-
-        debugPrint('[EMERGENCY] Loaded ${hospitals.length} hospitals from $mirror');
+        debugPrint('[EMERGENCY] Loaded ${hospitals.length} hospitals');
         return (hospitals: hospitals, hasNext: false);
       } on DioException catch (e) {
-        debugPrint('[EMERGENCY] Overpass mirror $mirror error: ${e.message}');
-        // Try next mirror
-        continue;
-      } catch (e) {
-        debugPrint('[EMERGENCY] Overpass parse error on $mirror: $e');
-        continue;
+        if (!_isTransientError(e)) rethrow;
+        lastTransientError = e;
+        debugPrint('[EMERGENCY] Transient Overpass failure: ${e.type}');
       }
     }
 
-    // All mirrors failed — throw exception to trigger proper error handling
-    debugPrint('[EMERGENCY] All Overpass mirrors failed.');
-    throw Exception('All hospital API mirrors are currently unreachable.');
+    debugPrint(
+      '[EMERGENCY] Overpass unavailable after $_maxOverpassAttempts attempts',
+    );
+    throw Exception(
+      lastTransientError == null
+          ? 'Nearby hospitals are temporarily unavailable.'
+          : 'Nearby hospitals could not be loaded right now.',
+    );
+  }
+
+  List<NearbyHospital> _parseOverpassHospitals(dynamic raw) {
+    final decoded = raw is String ? json.decode(raw) : raw;
+    if (decoded is! Map<String, dynamic>) {
+      throw const FormatException('Unsupported Overpass response.');
+    }
+
+    final elements = decoded['elements'];
+    if (elements is! List) {
+      throw const FormatException('Unsupported Overpass response.');
+    }
+
+    return elements.whereType<Map<String, dynamic>>().map((element) {
+      final tags = element['tags'] is Map
+          ? Map<String, dynamic>.from(element['tags'] as Map)
+          : <String, dynamic>{};
+      final center = element['center'] is Map
+          ? Map<String, dynamic>.from(element['center'] as Map)
+          : const <String, dynamic>{};
+      final latitude = (element['lat'] ?? center['lat']) as num?;
+      final longitude = (element['lon'] ?? center['lon']) as num?;
+      final name = (tags['name'] as String?)?.trim();
+      final street = (tags['addr:street'] as String?)?.trim();
+      final houseNumber = (tags['addr:housenumber'] as String?)?.trim();
+      final city = (tags['addr:city'] as String?)?.trim();
+      final addressParts = <String>[
+        if (houseNumber != null && street != null) '$houseNumber $street',
+        if (street != null && houseNumber == null) street,
+        if (city != null) city,
+      ];
+
+      return NearbyHospital(
+        placeId: 'osm_${element['type']}_${element['id']}',
+        name: name?.isNotEmpty == true ? name! : 'Hospital',
+        address: addressParts.isNotEmpty
+            ? addressParts.join(', ')
+            : 'Address unavailable',
+        latitude: latitude?.toDouble(),
+        longitude: longitude?.toDouble(),
+        rating: null,
+        isOpenNow: null,
+      );
+    }).toList();
+  }
+
+  bool _isTransientStatus(int statusCode) {
+    return statusCode == 403 ||
+        statusCode == 429 ||
+        statusCode == 502 ||
+        statusCode == 503 ||
+        statusCode == 504;
+  }
+
+  bool _isTransientError(DioException error) {
+    return error.type == DioExceptionType.connectionError ||
+        error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.unknown;
+  }
+
+  Duration _retryDelay(int attempt) {
+    final seconds = 1 << (attempt - 1);
+    return Duration(seconds: seconds > 8 ? 8 : seconds);
   }
 }
-
